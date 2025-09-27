@@ -1,0 +1,105 @@
+/* Navbar main container */
+.navbar {
+  background-color: #019f01; /* Green background for navbar */
+  padding: 25px 30px;         /* Space inside navbar */
+  color: white;               /* Default text color */
+}
+
+/* Flex container to align logo and buttons */
+.navbar-container {
+  display: flex;              /* Use flexbox layout */
+  justify-content: space-between; /* Space between logo and buttons */
+  align-items: center;        /* Center vertically */
+}
+
+/* Logo styling */
+.logo {
+  font-size: 24px;            /* Logo font size */
+  font-weight: bold;          /* Bold text */
+  color: white;               /* White text for logo */
+  margin: 0;                  /* Remove default margin */
+}
+
+/* Container for buttons */
+.nav-buttons {
+  display: flex;              /* Display buttons in a row */
+  gap: 10px;                  /* Space between buttons */
+}
+
+/* Normal buttons (Home, About Us, Signup) */
+.nav-btn {
+  background-color: white;    /* White button background */
+  color: #019f01;             /* Green text */
+  border: none;               /* Remove border */
+  padding: 8px 15px;          /* Button padding */
+  border-radius: 5px;         /* Rounded corners */
+  cursor: pointer;            /* Mouse pointer on hover */
+  font-weight: bold;          /* Bold text */
+}
+
+/* Hover effect for normal buttons */
+.nav-btn:hover {
+  background-color: #cccccc;  /* Light gray on hover */
+  color: #019f01;             /* Keep text green */
+}
+
+/* Login button styling */
+.login-btn {
+  background-color: white;    /* White background */
+  color: #019f01;             /* Green text */
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Hover effect for login button */
+.login-btn:hover {
+  background-color: #cccccc;  /* Light gray on hover */
+  color: #019f01;             /* Green text on hover */
+}
+
+/* Mobile-friendly responsive design */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 20px 15px;
+  }
+  
+  .logo {
+    font-size: 20px;
+  }
+  
+  .nav-buttons {
+    gap: 8px;
+  }
+  
+  .nav-btn, .login-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 15px 10px;
+  }
+  
+  .navbar-container {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .logo {
+    font-size: 18px;
+  }
+  
+  .nav-buttons {
+    gap: 5px;
+  }
+  
+  .nav-btn, .login-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
