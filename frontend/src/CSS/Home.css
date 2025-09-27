@@ -1,0 +1,101 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  background-color: #bacdeb;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 21px;
+  max-width: 2800px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.card {
+  background-color: #e5e4ea;
+  padding: 23px;
+  border-radius: 23px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.card-icon {
+  font-size: 30px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.card-description {
+  color: #7f8c8d;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Mobile-friendly responsive design */
+@media (max-width: 768px) {
+  .grid-container {
+    padding: 0 10px;
+    gap: 15px;
+  }
+  
+  .card {
+    padding: 18px;
+  }
+  
+  .card-icon {
+    font-size: 26px;
+  }
+  
+  .card-title {
+    font-size: 16px;
+  }
+  
+  .card-description {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+    padding: 0 8px;
+    gap: 12px;
+  }
+  
+  .card {
+    padding: 15px;
+  }
+  
+  .card-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+  
+  .card-title {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  
+  .card-description {
+    font-size: 12px;
+  }
+}
