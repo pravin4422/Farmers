@@ -9,4 +9,8 @@ const productSchema = new mongoose.Schema({
     total: { type: Number, required: true }
 }, { timestamps: true });
 
+productSchema.pre('validate', function(next) {
+    this.total = this.quantity * this.cost;
+    next();
+}); 
 module.exports = mongoose.model('Product', productSchema);

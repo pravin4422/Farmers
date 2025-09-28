@@ -1,17 +1,22 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const historySchema = new mongoose.Schema({
-    action: String,
-    date: { type: Date, default: Date.now },
-    data: Object
+const TractorSchema = new mongoose.Schema({
+  date: { type: Date, required: true },
+  day: { type: String, required: true }, // ✅ Added day field
+  work: { type: String, required: true }, // ✅ Changed from workType to work
+  tractorName: { type: String, required: true }, // ✅ Changed from name to tractorName
+  timeSegments: [{ // ✅ Added timeSegments array
+    period: { type: String, required: true }, // Morning, Afternoon, Evening, Night
+    hours: { type: Number, required: true }
+  }],
+  totalHours: { type: Number, required: true },
+  rate: { type: Number, required: true },
+  total: { type: Number, required: true },
+  moneyGiven: { type: String, enum: ['Okay', 'Not'], default: 'Not' }, // ✅ Changed to string
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, {
+  timestamps: false // We're handling timestamps manually
 });
 
-const tractorSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    type: { type: String },
-    status: { type: String, default: "active" },
-    createdAt: { type: Date, default: Date.now },
-    history: [historySchema]
-});
-
-module.exports = mongoose.model("Tractor", tractorSchema);
+module.exports = mongoose.model('Tractor', TractorSchema);
