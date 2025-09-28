@@ -119,7 +119,7 @@ function Home() {
   };
 
   const routes = [
-    "/create", "/prices", "/farming-details", "/agro-chemicals",
+    "/creator", "/prices", "/farming-details", "/agro-chemicals",
     "/weather", "/forum", "/agro-infectors", "/organic-farming",
     "/inorganic-farming", "/farming-structure", "/schemes", "/others"
   ];
