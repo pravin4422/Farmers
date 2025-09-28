@@ -1,0 +1,268 @@
+/* Main container */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: white;
+  color: #019f01;
+}
+
+/* Dark theme for main container */
+.login-container.dark {
+  background-color: #1a1a1a;
+  color: #4ade80;
+}
+
+/* Header with controls */
+.login-header {
+  position: absolute;
+  top: 90px;
+  right: 20px;
+  z-index: 10;
+}
+
+.theme-language-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border-color: #019f01;
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+.theme-btn {
+  font-size: 1.4rem;
+}
+
+.language-btn {
+  color: #019f01;
+  font-size: 0.9rem;
+}
+
+/* Dark theme for control buttons */
+.login-container.dark .control-btn {
+  background: rgba(42, 42, 42, 0.9);
+  color: #4ade80;
+}
+
+.login-container.dark .control-btn:hover {
+  border-color: #4ade80;
+  background: rgba(51, 51, 51, 0.9);
+}
+
+.login-container.dark .language-btn {
+  color: #4ade80;
+}
+
+/* Content wrapper */
+.login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Heading */
+.login-container h2,
+.login-title {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* Dark theme for heading */
+.login-container.dark h2,
+.login-container.dark .login-title {
+  color: #4ade80;
+}
+
+/* Form box */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 250px;
+}
+
+/* Input fields */
+.login-form input,
+.login-input {
+  padding: 10px;
+  border: 2px solid #019f01;
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Dark theme for input fields */
+.login-container.dark .login-form input,
+.login-container.dark .login-input {
+  background-color: #2a2a2a;
+  border-color: #4ade80;
+  color: #ffffff;
+}
+
+.login-container.dark .login-form input::placeholder,
+.login-container.dark .login-input::placeholder {
+  color: #b0b0b0;
+}
+
+/* Button */
+.login-form button,
+.login-button {
+  background-color: #019f01;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Dark theme for button */
+.login-container.dark .login-form button,
+.login-container.dark .login-button {
+  background-color: #4ade80;
+  color: #1a1a1a;
+}
+
+/* Button hover */
+.login-form button:hover,
+.login-button:hover {
+  background-color: white;
+  color: #019f01;
+  border: 2px solid #019f01;
+}
+
+/* Dark theme button hover */
+.login-container.dark .login-form button:hover,
+.login-container.dark .login-button:hover {
+  background-color: #2a2a2a;
+  color: #4ade80;
+  border: 2px solid #4ade80;
+}
+
+/* Forgot password link */
+.forgot-password {
+  margin-top: 15px;
+}
+
+.forgot-password a,
+.forgot-password-link {
+  text-decoration: none;
+  color: #019f01; /* Green link */
+  font-weight: bold;
+}
+
+/* Dark theme for forgot password link */
+.login-container.dark .forgot-password a,
+.login-container.dark .forgot-password-link {
+  color: #4ade80;
+}
+
+.forgot-password a:hover,
+.forgot-password-link:hover {
+  text-decoration: underline; /* Underline on hover */
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .login-header {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .theme-language-controls {
+    gap: 8px;
+  }
+  
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+  
+  .theme-btn {
+    font-size: 1.2rem;
+  }
+  
+  .language-btn {
+    font-size: 0.8rem;
+  }
+  
+  .login-form {
+    width: 300px;
+  }
+  
+  .login-container h2,
+  .login-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 20px;
+  }
+  
+  .control-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+  
+  .theme-btn {
+    font-size: 1.1rem;
+  }
+  
+  .language-btn {
+    font-size: 0.7rem;
+  }
+  
+  .login-form {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .login-container h2,
+  .login-title {
+    font-size: 20px;
+  }
+  
+  .login-form input,
+  .login-input {
+    padding: 12px;
+  }
+  
+  .login-form button,
+  .login-button {
+    padding: 12px;
+  }
+}

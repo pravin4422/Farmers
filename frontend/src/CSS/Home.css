@@ -1,101 +1,152 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-  background-color: #bacdeb;
+/* Home.css */
+
+/* Ensure full width coverage */
+* {
   margin: 0;
   padding: 0;
-  line-height: 1.6;
+  box-sizing: border-box;
 }
 
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 21px;
-  max-width: 2800px;
+body, html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.home-container {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+.home-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  z-index: -1;
+}
+
+/* Content wrapper for proper centering */
+.home-content {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  position: relative;
+  z-index: 1;
 }
 
-.card {
-  background-color: #e5e4ea;
-  padding: 23px;
-  border-radius: 23px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.home-container h1 {
+  font-size: 3rem;
+  text-align: center;
+  color: #2c5530;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+.home-container > p {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #5a6c57;
+  margin-bottom: 3rem;
+  font-weight: 300;
 }
 
-.card-icon {
-  font-size: 30px;
-  margin-bottom: 15px;
-  display: block;
+.home-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem 0;
 }
 
-.card-title {
-  font-weight: bold;
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: #2c3e50;
+.home-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
 }
 
-.card-description {
-  color: #7f8c8d;
-  font-size: 14px;
-  line-height: 1.5;
+.home-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
+  transition: left 0.5s ease;
 }
 
-/* Mobile-friendly responsive design */
+.home-card:hover::before {
+  left: 100%;
+}
+
+.home-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  border-color: #4caf50;
+}
+
+.home-card h3 {
+  font-size: 1.5rem;
+  color: #2c5530;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.home-card p {
+  color: #666;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .grid-container {
-    padding: 0 10px;
-    gap: 15px;
+  .home-container {
+    padding: 1rem;
   }
   
-  .card {
-    padding: 18px;
+  .home-container h1 {
+    font-size: 2.5rem;
   }
   
-  .card-icon {
-    font-size: 26px;
+  .home-sections {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
-  .card-title {
-    font-size: 16px;
-  }
-  
-  .card-description {
-    font-size: 13px;
+  .home-card {
+    padding: 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .grid-container {
-    grid-template-columns: 1fr;
-    padding: 0 8px;
-    gap: 12px;
+  .home-container h1 {
+    font-size: 2rem;
   }
   
-  .card {
-    padding: 15px;
+  .home-container > p {
+    font-size: 1rem;
   }
   
-  .card-icon {
-    font-size: 24px;
-    margin-bottom: 12px;
-  }
-  
-  .card-title {
-    font-size: 15px;
-    margin-bottom: 8px;
-  }
-  
-  .card-description {
-    font-size: 12px;
+  .home-card h3 {
+    font-size: 1.3rem;
   }
 }
