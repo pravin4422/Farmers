@@ -31,7 +31,7 @@ function CultivatingField() {
   const entriesPerPage = 5;
 
   // Replace with your actual API base URL
-  const API_BASE_URL = 'http://localhost:3001/api'; // Update this to your backend URL
+  const API_BASE_URL = 'http://localhost:5000/api'; // Update this to your backend URL
 
   // API Functions
   const saveToDatabase = async (activityData) => {

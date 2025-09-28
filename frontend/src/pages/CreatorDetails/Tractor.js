@@ -51,7 +51,7 @@ function Tractor() {
   const [listeningField, setListeningField] = useState(null);
 
   // Database API endpoints - Replace with your actual API endpoints
-  const API_BASE_URL = 'http://localhost:3001/api'; // Replace with your backend URL
+  const API_BASE_URL = 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchLastEntries();
@@ -86,7 +86,7 @@ function Tractor() {
   const fetchLastEntries = async () => {
     try {
       const [tractorResponse, kamittyResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/tractor/latest`),
+        fetch(`${API_BASE_URL}/tractors/latest`),
         fetch(`${API_BASE_URL}/kamitty/latest`)
       ]);
 
@@ -286,7 +286,7 @@ function Tractor() {
       timeSegments,
       totalHours: totalHours.toFixed(2),
       rate: parseFloat(rate),
-      total: total.toFixed(2),
+      total: total.toFixed(2), // Fixed: changed from totalAmount to total
       moneyGiven,
       createdAt: editingId ? undefined : new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -339,7 +339,7 @@ function Tractor() {
       setWork(entry.work);
       setTractorName(entry.tractorName);
       setTimeSegments(entry.timeSegments);
-      setRate(entry.rate);
+      setRate(entry.rate.toString()); // Ensure string for input
       setMoneyGiven(entry.moneyGiven);
       setEditingId(entry.id);
     } else {
@@ -358,17 +358,17 @@ function Tractor() {
       if (success) {
         if (type === 'tractor') {
           if (lastTractorEntry && lastTractorEntry.id === entryId) {
-            fetchLastEntries(); // Refresh last entry
+            fetchLastEntries();
           }
           if (showTractorHistory) {
-            fetchHistoryEntries('tractor'); // Refresh history if showing
+            fetchHistoryEntries('tractor');
           }
         } else {
           if (lastKamittyEntry && lastKamittyEntry.id === entryId) {
-            fetchLastEntries(); // Refresh last entry
+            fetchLastEntries();
           }
           if (showKamittyHistory) {
-            fetchHistoryEntries('kamitty'); // Refresh history if showing
+            fetchHistoryEntries('kamitty');
           }
         }
       }
@@ -383,7 +383,16 @@ function Tractor() {
     };
 
     setLoading(true);
+    
+    // Temporarily set the editingId to make the API call work correctly
+    const originalEditingId = editingId;
+    setEditingId(entry.id);
+    
     const success = await saveTractorEntryToDatabase(updatedEntry);
+    
+    // Restore original editing state
+    setEditingId(originalEditingId);
+    
     if (success && showTractorHistory) {
       fetchHistoryEntries('tractor');
     }

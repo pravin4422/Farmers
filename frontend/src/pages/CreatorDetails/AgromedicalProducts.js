@@ -23,7 +23,7 @@ function AgromedicalProducts() {
   const [error, setError] = useState('');
 
   // Replace with your actual API base URL
-  const API_BASE_URL = 'http://localhost:3001/api'; // Update this to your backend URL
+  const API_BASE_URL = 'http://localhost:5000/api'; // Update this to your backend URL
 
   const translations = {
     en: {
