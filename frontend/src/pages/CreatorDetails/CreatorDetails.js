@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../CSS/Mainpages/CreatorDetail.css';
+import '../../css/Mainpages/CreatorDetail.css';
+
 
 function CreatorDetail() {
   const [showForm, setShowForm] = useState(false);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../CSS/Mainpages/Tractor.css';
+import '../../css/Mainpages/Tractor.css';
+
 
 function Tractor() {
   const navigate = useNavigate();
