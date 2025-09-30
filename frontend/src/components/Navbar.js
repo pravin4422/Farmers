@@ -2,12 +2,20 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import '../css/Navbar.css';
 
-function Navbar() {
+const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem("token"); // check login
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // remove token
+    // Clear all localStorage items
+    localStorage.removeItem("token");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("displayName");
+    localStorage.removeItem("user");
+    
+    // Update user state
+    setUser(null);
+    
+    // Navigate to login
     navigate("/login");
   };
 
@@ -17,15 +25,19 @@ function Navbar() {
         <h2 className="logo">Backbone</h2>
         <div className="nav-buttons">
           <Link to="/"><button className="nav-btn">Home</button></Link>
+          <Link to="/about"><button className="nav-btn">About Us</button></Link>
 
-          {isLoggedIn ? (
+          {user ? (
             <>
-              <Link to="/creator"><button className="nav-btn">Creator</button></Link>
-              <Link to="/prices"><button className="nav-btn">Prices</button></Link>
+              {/* After Login: Show username and Logout */}
+              <span className="user-name" style={{ marginRight: '10px', color: 'white', fontWeight: '500' }}>
+                {user.displayName || user.email}
+              </span>
               <button className="login-btn" onClick={handleLogout}>Logout</button>
             </>
           ) : (
             <>
+              {/* Before Login: Show Signup and Login */}
               <Link to="/signup"><button className="nav-btn">Signup</button></Link>
               <Link to="/login"><button className="login-btn">Login</button></Link>
             </>
@@ -34,6 +46,6 @@ function Navbar() {
       </div>
     </nav>
   );
-}
+};
 
 export default Navbar;

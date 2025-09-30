@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import '../css/Signup.css'; 
 import api from '../api';
 
-
-function Signup() {
+function Signup({ setUser }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState('tamil');
   const [formData, setFormData] = useState({
@@ -50,8 +49,8 @@ function Signup() {
 
   // Load theme and language preferences
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const savedLanguage = localStorage.getItem('language');
+    const savedTheme = sessionStorage.getItem('theme');
+    const savedLanguage = sessionStorage.getItem('language');
     
     if (savedTheme) {
       setIsDarkMode(savedTheme === 'dark');
@@ -65,12 +64,12 @@ function Signup() {
   // Apply theme
   useEffect(() => {
     document.body.className = isDarkMode ? 'dark-theme' : 'light-theme';
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    sessionStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
   // Save language preference
   useEffect(() => {
-    localStorage.setItem('language', language);
+    sessionStorage.setItem('language', language);
   }, [language]);
 
   const toggleTheme = () => {
@@ -118,16 +117,27 @@ function Signup() {
         password: formData.password
       });
 
-      // Store authentication token
-      localStorage.setItem('authToken', response.data.token);
+      // Store token with CONSISTENT key name (token not authToken)
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userEmail', formData.email);
       
-      // Store user data
+      // Store the user's NAME (this is the key part!)
+      localStorage.setItem('displayName', formData.name);
+      
+      // Store full user object if backend returns it
       if (response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
-      // Redirect to dashboard
-      navigate('/Login');
+      // Update App.js user state
+      setUser({
+        token: response.data.token,
+        email: formData.email,
+        displayName: formData.name
+      });
+
+      // Redirect to home page (not login)
+      navigate('/');
       
     } catch (err) {
       // Handle error from backend
