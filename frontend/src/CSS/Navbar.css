@@ -24,6 +24,7 @@
 .nav-buttons {
   display: flex;              /* Display buttons in a row */
   gap: 10px;                  /* Space between buttons */
+  align-items: center;        /* Center items vertically - ADDED */
 }
 
 /* Normal buttons (Home, About Us, Signup) */
@@ -60,6 +61,13 @@
   color: #019f01;             /* Green text on hover */
 }
 
+/* User display name styling - ADDED */
+.nav-buttons span {
+  color: white;               /* White text for username */
+  font-weight: 500;           /* Medium weight */
+  margin-right: 5px;          /* Small space before logout button */
+}
+
 /* Mobile-friendly responsive design */
 @media (max-width: 768px) {
   .navbar {
@@ -76,6 +84,11 @@
   
   .nav-btn, .login-btn {
     padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  /* User name responsive - ADDED */
+  .nav-buttons span {
     font-size: 14px;
   }
 }
@@ -101,5 +114,11 @@
   .nav-btn, .login-btn {
     padding: 5px 10px;
     font-size: 12px;
+  }
+  
+  /* User name responsive - ADDED */
+  .nav-buttons span {
+    font-size: 12px;
+    margin-right: 3px;
   }
 }

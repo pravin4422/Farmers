@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom";
 import '../css/Login.css';
 import api from '../api'; 
 
-
-
-function Login() {
+function Login({ setUser }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState("tamil");
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -32,10 +30,10 @@ function Login() {
     }
   };
 
-  // Load theme & language from localStorage
+  // Load theme & language from memory (not localStorage)
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    const savedLanguage = localStorage.getItem("language");
+    const savedTheme = sessionStorage.getItem("theme");
+    const savedLanguage = sessionStorage.getItem("language");
     if (savedTheme) setIsDarkMode(savedTheme === "dark");
     if (savedLanguage) setLanguage(savedLanguage);
   }, []);
@@ -43,12 +41,12 @@ function Login() {
   // Apply theme
   useEffect(() => {
     document.body.className = isDarkMode ? "dark-theme" : "light-theme";
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    sessionStorage.setItem("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   // Save language
   useEffect(() => {
-    localStorage.setItem("language", language);
+    sessionStorage.setItem("language", language);
   }, [language]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
@@ -72,11 +70,31 @@ function Login() {
     try {
       const response = await api.post("/auth/login", formData);
 
-      // Store token & user
-      localStorage.setItem("authToken", response.data.token);
+      // Store token & user with CONSISTENT key names
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("userEmail", formData.email);
+      
+      // Extract displayName from backend response
+      let displayName = formData.email; // Default to email
+      
       if (response.data.user) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        
+        // Get name from backend user object
+        displayName = response.data.user.name || 
+                     response.data.user.displayName || 
+                     response.data.user.username || 
+                     formData.email;
+        
+        localStorage.setItem("displayName", displayName);
       }
+
+      // Update user state in App.js
+      setUser({
+        token: response.data.token,
+        email: formData.email,
+        displayName: displayName
+      });
 
       // Redirect
       navigate("/");
