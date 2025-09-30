@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../CSS/Mainpages/AgromedicalProducts.css';
+import '../../css/Mainpages/AgromedicalProducts.css';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';

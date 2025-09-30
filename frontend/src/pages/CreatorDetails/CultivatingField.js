@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import '../../CSS/Mainpages/CultivatingField.css';
+import '../../css/Mainpages/CultivatingField.css';
+
 
 
 function CultivatingField() {
