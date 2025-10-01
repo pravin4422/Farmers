@@ -8,10 +8,14 @@ const {
   deleteEntry
 } = require('../controllers/creatorController');
 
-router.post('/', createEntry);
-router.get('/latest', getLatestEntry);
-router.get('/history', getHistory);
-router.put('/:id', updateEntry);
-router.delete('/:id', deleteEntry);
+// ✅ Import auth middleware
+const { protect } = require('../middleware/authMiddleware');
+
+// ✅ Apply protect middleware to all routes
+router.post('/', protect, createEntry);
+router.get('/latest', protect, getLatestEntry);
+router.get('/history', protect, getHistory);
+router.put('/:id', protect, updateEntry);
+router.delete('/:id', protect, deleteEntry);
 
 module.exports = router;

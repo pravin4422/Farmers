@@ -13,6 +13,9 @@ const WorkerSchema = new mongoose.Schema({
 });
 
 const CreatorSchema = new mongoose.Schema({
+  // ✅ Link every entry to a user
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+
   seedDate: { type: Date, required: true },
   seedWeight: { type: Number },
   seedCost: { type: Number },
@@ -27,4 +30,4 @@ const CreatorSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Creator', CreatorSchema);
+module.exports = mongoose.model("Creator", CreatorSchema);

@@ -21,12 +21,12 @@ import CultivatingField from "./pages/CreatorDetails/CultivatingField";
 function App() {
   const [user, setUser] = useState(null);
 
-  // Load user from localStorage on mount
+  // ✅ Load user from localStorage on mount
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken"); // fixed name
     const email = localStorage.getItem("userEmail");
     const displayName = localStorage.getItem("displayName");
-    
+
     if (token && email) {
       setUser({ token, email, displayName: displayName || email });
     }
@@ -53,11 +53,11 @@ function App() {
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Protected Routes */}
+        {/* ✅ Protected Routes */}
         <Route
           path="/creator"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute>
               <CreatorDetail user={user} />
             </ProtectedRoute>
           }
@@ -65,7 +65,7 @@ function App() {
         <Route
           path="/tractor"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute>
               <Tractor user={user} />
             </ProtectedRoute>
           }
@@ -73,7 +73,7 @@ function App() {
         <Route
           path="/agromedicalproducts"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute>
               <AgromedicalProducts user={user} />
             </ProtectedRoute>
           }
@@ -81,12 +81,13 @@ function App() {
         <Route
           path="/cultivatingfield"
           element={
-            <ProtectedRoute user={user}>
+            <ProtectedRoute>
               <CultivatingField user={user} />
             </ProtectedRoute>
           }
         />
 
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
