@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+
+// Import all controller functions
 const {
   createEntry,
   getLatestEntry,
@@ -9,7 +11,7 @@ const {
 } = require('../controllers/creatorController');
 
 // ✅ Import auth middleware
-const { protect } = require('../middleware/authMiddleware');
+const protect = require('../middleware/authMiddleware'); // ✅ fixed import
 
 // ✅ Apply protect middleware to all routes
 router.post('/', protect, createEntry);

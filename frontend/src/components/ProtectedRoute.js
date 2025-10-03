@@ -1,14 +1,14 @@
 // src/components/ProtectedRoute.js
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
-  // Check if token exists in localStorage
-  const token = localStorage.getItem("authToken"); // make sure it matches what you save in Login.js
+  const token = localStorage.getItem("token"); // ✅ matches Login.js
+  const location = useLocation();
 
   if (!token) {
-    alert("Please login to access this page");
-    return <Navigate to="/login" replace />;
+    // Redirect to login and remember where user came from
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // If token exists, allow access

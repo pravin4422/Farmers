@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../css/Mainpages/CreatorDetail.css';
 
-
 function CreatorDetail() {
   const [showForm, setShowForm] = useState(false);
   const [language, setLanguage] = useState('en');
@@ -12,7 +11,7 @@ function CreatorDetail() {
   
   // Filter states
   const [showHistory, setShowHistory] = useState(false);
-  const [filterType, setFilterType] = useState('date'); // 'date', 'month', 'year'
+  const [filterType, setFilterType] = useState('date');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState('');
@@ -43,18 +42,45 @@ function CreatorDetail() {
   const [workers, setWorkers] = useState([]);
 
   const navigate = useNavigate();
-
-  // Database API endpoints - Replace these with your actual API endpoints
-  const API_BASE_URL = 'http://localhost:5000/api'; // Replace with your backend URL
+  const API_BASE_URL = 'http://localhost:5000/api';
   
+  const getAuthToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+  };
+
+  const getAuthHeaders = () => {
+    const token = getAuthToken();
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    };
+  };
+
   useEffect(() => {
+    checkAuthentication();
     fetchLastEntry();
   }, []);
 
-  // Fetch the last entry from database
+  // ✅ Silent authentication check - no alert
+  const checkAuthentication = () => {
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+  };
+
+  // ✅ Fetch with silent redirect on auth failure
   const fetchLastEntry = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/creator-details/latest`);
+      const response = await fetch(`${API_BASE_URL}/creator-details/latest`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         setLastEntry(data);
@@ -64,7 +90,6 @@ function CreatorDetail() {
     }
   };
 
-  // Fetch history entries based on filter
   const fetchHistoryEntries = async () => {
     setLoading(true);
     try {
@@ -78,7 +103,15 @@ function CreatorDetail() {
         url += `year=${selectedYear}`;
       }
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.status === 401) {
+        navigate('/login', { replace: true });
+        return;
+      }
+      
       if (response.ok) {
         const data = await response.json();
         setHistoryEntries(data);
@@ -90,7 +123,6 @@ function CreatorDetail() {
     }
   };
 
-  // Save entry to database
   const saveEntryToDatabase = async (entryData) => {
     try {
       const method = editingId ? 'PUT' : 'POST';
@@ -100,32 +132,41 @@ function CreatorDetail() {
       
       const response = await fetch(url, {
         method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(entryData),
       });
+      
+      if (response.status === 401) {
+        navigate('/login', { replace: true });
+        return false;
+      }
       
       if (response.ok) {
         const savedEntry = await response.json();
         setLastEntry(savedEntry);
         return true;
       } else {
-        throw new Error('Failed to save entry');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response:', errorData);
+        throw new Error(errorData.message || 'Failed to save entry');
       }
     } catch (error) {
       console.error('Error saving entry:', error);
-      alert(t('Error saving entry. Please try again.', 'பதிவை சேமிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
       return false;
     }
   };
 
-  // Delete entry from database
   const deleteEntryFromDatabase = async (entryId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/creator-details/${entryId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders()
       });
+      
+      if (response.status === 401) {
+        navigate('/login', { replace: true });
+        return false;
+      }
       
       if (response.ok) {
         return true;
@@ -134,7 +175,6 @@ function CreatorDetail() {
       }
     } catch (error) {
       console.error('Error deleting entry:', error);
-      alert(t('Error deleting entry. Please try again.', 'பதிவை அழிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
       return false;
     }
   };
@@ -145,7 +185,6 @@ function CreatorDetail() {
 
   const handleAddOrUpdateEntry = async () => {
     if (!seedDate) {
-      alert(t('Please enter seed date', 'விதை தேதியை உள்ளிடவும்'));
       return;
     }
 
@@ -201,18 +240,18 @@ function CreatorDetail() {
     setPlantingDate(entry.plantingDate || '');
     setWorkers(entry.workers || []);
     setShowForm(true);
-    setEditingId(entry.id);
+    setEditingId(entry._id || entry.id);
   };
 
   const handleDelete = async (entryId) => {
     if (window.confirm(t('Are you sure you want to delete this entry?', 'இந்த பதிவை அழிக்க வேண்டுமா?'))) {
       const success = await deleteEntryFromDatabase(entryId);
       if (success) {
-        if (lastEntry && lastEntry.id === entryId) {
-          fetchLastEntry(); // Refresh last entry
+        if (lastEntry && (lastEntry.id === entryId || lastEntry._id === entryId)) {
+          fetchLastEntry();
         }
         if (showHistory) {
-          fetchHistoryEntries(); // Refresh history if showing
+          fetchHistoryEntries();
         }
       }
     }
@@ -268,7 +307,7 @@ function CreatorDetail() {
   };
 
   const renderEntry = (entry, isLast = false) => (
-    <div key={entry.id} className={`entry-card ${isLast ? 'last-entry' : ''}`}>
+    <div key={entry._id || entry.id} className={`entry-card ${isLast ? 'last-entry' : ''}`}>
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
       <p><strong>{t('Date:', 'நாள்:')}</strong> {formatDate(entry.seedDate)}</p>
@@ -309,7 +348,7 @@ function CreatorDetail() {
         <button onClick={() => handleEdit(entry)} disabled={loading}>
            {t('Edit', 'திருத்த')}
         </button>
-        <button onClick={() => handleDelete(entry.id)} disabled={loading}>
+        <button onClick={() => handleDelete(entry._id || entry.id)} disabled={loading}>
            {t('Delete', 'அழிக்க')}
         </button>
       </div>
@@ -455,7 +494,6 @@ function CreatorDetail() {
         </div>
       )}
 
-      {/* Last Entry Display */}
       <div className="last-entry-section">
         <h2> {t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
         {lastEntry ? (
@@ -465,7 +503,6 @@ function CreatorDetail() {
         )}
       </div>
 
-      {/* History Section */}
       {showHistory && (
         <div className="history-section">
           <div className="filter-controls">
