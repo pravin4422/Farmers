@@ -4,8 +4,7 @@ import '../css/Login.css';
 import api from '../api'; 
 
 function Login({ setUser }) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [language, setLanguage] = useState("tamil");
+  const [language, setLanguage] = useState("english");
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,26 +29,17 @@ function Login({ setUser }) {
     }
   };
 
-  // Load theme & language from memory (not localStorage)
+  // Load language from memory (not localStorage)
   useEffect(() => {
-    const savedTheme = sessionStorage.getItem("theme");
     const savedLanguage = sessionStorage.getItem("language");
-    if (savedTheme) setIsDarkMode(savedTheme === "dark");
     if (savedLanguage) setLanguage(savedLanguage);
   }, []);
-
-  // Apply theme
-  useEffect(() => {
-    document.body.className = isDarkMode ? "dark-theme" : "light-theme";
-    sessionStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
 
   // Save language
   useEffect(() => {
     sessionStorage.setItem("language", language);
   }, [language]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
   const toggleLanguage = () =>
     setLanguage(language === "tamil" ? "english" : "tamil");
 
@@ -109,17 +99,10 @@ function Login({ setUser }) {
   };
 
   return (
-    <div className={`login-container ${isDarkMode ? "dark" : "light"}`}>
+    <div className="login-container">
       {/* Header */}
       <div className="login-header">
         <div className="theme-language-controls">
-          <button
-            onClick={toggleTheme}
-            className="control-btn theme-btn"
-            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {isDarkMode ? "☀️" : "🌙"}
-          </button>
           <button
             onClick={toggleLanguage}
             className="control-btn language-btn"

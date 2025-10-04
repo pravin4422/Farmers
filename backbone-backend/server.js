@@ -9,6 +9,7 @@ const creatorRoutes = require('./routes/creatorRoutes'); // ✅ CreatorDetail ro
 const productRoutes = require('./routes/products'); // ✅ AgromedicalProducts routes
 const tractorRoutes = require('./routes/tractorRoutes'); // ✅ Tractor routes
 const kamittyRoutes = require('./routes/kamittyRoutes'); // ✅ Kamitty routes
+const priceRoutes = require('./routes/priceRoutes'); // ✅ Prices routes
 
 // Load environment variables
 dotenv.config();
@@ -29,20 +30,19 @@ app.use('/api/creator-details', creatorRoutes);
 app.use('/api/products', productRoutes); 
 app.use('/api/tractor', tractorRoutes);
 app.use('/api/tractors', tractorRoutes);
-app.use('/api/kamittys', kamittyRoutes);       // Add this line if frontend calls /kamittys/latest
-
+app.use('/api/kamittys', kamittyRoutes);
 app.use('/api/kamitty', kamittyRoutes);
-
-
 
 app.use('/api/cultivation-activities', require('./routes/cultivationRoutes'));
 
-// Test route
+// ✅ Add Prices routes
+app.use('/api/prices', priceRoutes);
+
+// Test routes
 app.get('/', (req, res) => {
   res.send('Backbone backend is running...');
 });
 
-// Only for testing purpose
 app.get('/test', (req, res) => {
   res.send('Server is working');
 });

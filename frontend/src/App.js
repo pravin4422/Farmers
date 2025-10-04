@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Prices from "./pages/Prices";
-import Forum from "./pages/Forum";
+import Forum from "./pages/Forums/Forum";
 import AboutUs from "./pages/AboutUs";
 
 // Protected Pages
@@ -17,6 +17,9 @@ import CreatorDetail from "./pages/CreatorDetails/CreatorDetails";
 import Tractor from "./pages/CreatorDetails/Tractor";
 import AgromedicalProducts from "./pages/CreatorDetails/AgromedicalProducts";
 import CultivatingField from "./pages/CreatorDetails/CultivatingField";
+import Schemes from "./pages/Schemes/Scheme";
+import Weather from "./pages/weather/weather";
+import Reminder from "./pages/Reminders/reminder";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -83,6 +86,30 @@ function App() {
           element={
             <ProtectedRoute>
               <CultivatingField user={user} />
+            </ProtectedRoute>
+          }
+        />
+           <Route
+          path="/schemes"
+          element={
+            <ProtectedRoute>
+              <Schemes user={user} />
+            </ProtectedRoute>
+          }
+        />
+                <Route
+          path="/weather"
+          element={
+            <ProtectedRoute>
+              <Weather user={user} />
+            </ProtectedRoute>
+          }
+        />
+          <Route
+          path="/reminder"
+          element={
+            <ProtectedRoute>
+              <Reminder user={user} />
             </ProtectedRoute>
           }
         />
