@@ -10,6 +10,9 @@ const productRoutes = require('./routes/products'); // ✅ AgromedicalProducts r
 const tractorRoutes = require('./routes/tractorRoutes'); // ✅ Tractor routes
 const kamittyRoutes = require('./routes/kamittyRoutes'); // ✅ Kamitty routes
 const priceRoutes = require('./routes/priceRoutes'); // ✅ Prices routes
+const postRoutes = require('./routes/posts');
+// ✅ Add Reminder/Task routes
+const taskRoutes = require('./routes/tasks');
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +40,11 @@ app.use('/api/cultivation-activities', require('./routes/cultivationRoutes'));
 
 // ✅ Add Prices routes
 app.use('/api/prices', priceRoutes);
+
+// ✅ Add Reminder/Task routes
+app.use('/api/tasks', taskRoutes);
+app.use('/api/posts', postRoutes);
+
 
 // Test routes
 app.get('/', (req, res) => {

@@ -20,6 +20,8 @@ import CultivatingField from "./pages/CreatorDetails/CultivatingField";
 import Schemes from "./pages/Schemes/Scheme";
 import Weather from "./pages/weather/weather";
 import Reminder from "./pages/Reminders/reminder";
+import AgroChemical from "./pages/Agrochemicals/AgroChemical";
+import Adjuvants from "./pages/Agrochemicals/Adjuvants";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -110,6 +112,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Reminder user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agro-chemicals"
+          element={
+            <ProtectedRoute>
+              <AgroChemical user={user} />
             </ProtectedRoute>
           }
         />

@@ -1,0 +1,385 @@
+/* Insecticides.css */
+
+/* Container Styles */
+.insecticides-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+/* Header Styles - Removed */
+
+/* Grid Layout */
+.insecticides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}
+
+/* Insecticide Card Styles */
+.insecticide-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.insecticide-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.insecticide-card.clickable {
+  cursor: pointer;
+}
+
+.insecticide-card.clickable:hover .click-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image Styles */
+.insecticide-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background: linear-gradient(45deg, #f0f4f8, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 1.1rem;
+  border-bottom: 3px solid #e2e8f0;
+}
+
+/* Card Info Section */
+.insecticide-info {
+  padding: 25px;
+  position: relative;
+}
+
+.insecticide-info h3 {
+  font-size: 1.4rem;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.insecticide-category {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insecticide-info p {
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 15px 0;
+  font-size: 0.95rem;
+}
+
+.click-hint {
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  background: #3b82f6;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 25px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* Detail View Styles */
+.insecticide-detail-view {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin: 20px 0;
+}
+
+.detail-header {
+  display: none;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-5px);
+}
+
+.detail-header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.detail-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  padding: 40px;
+}
+
+.detail-image-section {
+  position: relative;
+}
+
+.detail-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 15px;
+  background: linear-gradient(45deg, #f0f4f8, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 1.2rem;
+  border: 3px solid #e2e8f0;
+}
+
+.category-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.detail-info-section {
+  space-y: 30px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.info-card {
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 5px 20px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+.info-card h3 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3b82f6;
+}
+
+.info-card p {
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.basic-info {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 30px;
+  border-left: 5px solid #3b82f6;
+}
+
+.basic-info h3 {
+  color: #1e293b;
+  font-size: 1.4rem;
+  margin: 0 0 15px 0;
+  font-weight: 600;
+}
+
+.basic-info p {
+  color: #64748b;
+  line-height: 1.7;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .insecticides-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .detail-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 30px;
+  }
+  
+  .insecticides-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .detail-header h1 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .insecticides-container {
+    padding: 15px;
+  }
+  
+  .insecticides-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .detail-content {
+    padding: 20px;
+  }
+  
+  .detail-header {
+    padding: 20px;
+  }
+  
+  .detail-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .insecticide-info {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .back-button {
+    padding: 10px 15px;
+    font-size: 0.8rem;
+  }
+  
+  .insecticide-info h3 {
+    font-size: 1.2rem;
+  }
+  
+  .click-hint {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Animation for loading */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.insecticide-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.insecticide-card:nth-child(even) {
+  animation-delay: 0.1s;
+}
+
+.insecticide-card:nth-child(3n) {
+  animation-delay: 0.2s;
+}
+
+/* Accessibility improvements */
+.insecticide-card:focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.back-button:focus {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .insecticides-container {
+    max-width: none;
+    padding: 0;
+    background: white;
+  }
+  
+  .insecticide-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .click-hint {
+    display: none;
+  }
+  
+  .back-button {
+    display: none;
+  }
+}

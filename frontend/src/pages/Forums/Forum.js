@@ -3,6 +3,8 @@ import ForumForm from '../../components/ForumForm';
 import ForumPost from '../../components/ForumPost';
 import '../../css/Forums/Forum.css';
 
+const BACKEND_URL = 'http://localhost:5000'; // Backend URL
+
 function Forum() {
   const [posts, setPosts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,7 +13,7 @@ function Forum() {
   const [customEndDate, setCustomEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [language, setLanguage] = useState('en'); // 'en' or 'ta'
+  const [language, setLanguage] = useState('en');
 
   // Translations
   const translations = {
@@ -53,17 +55,16 @@ function Forum() {
 
   const t = translations[language];
 
-  // Fetch posts from database on mount
+  // Fetch posts on mount
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  // Fetch posts from backend API
   const fetchPosts = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/posts');
+      const response = await fetch(`${BACKEND_URL}/api/posts`);
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);
@@ -75,7 +76,6 @@ function Forum() {
     }
   };
 
-  // Add post to database
   const addPost = async (newPost) => {
     const postData = {
       ...newPost,
@@ -88,43 +88,34 @@ function Forum() {
     };
 
     try {
-      const response = await fetch('/api/posts', {
+      const response = await fetch(`${BACKEND_URL}/api/posts`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
       });
 
       if (!response.ok) throw new Error('Failed to create post');
-      
       const savedPost = await response.json();
-      setPosts((prevPosts) => [savedPost, ...prevPosts]);
+      setPosts((prev) => [savedPost, ...prev]);
     } catch (err) {
       setError(err.message);
       console.error('Error creating post:', err);
     }
   };
 
-  // Update post in database
   const updatePost = async (id, updatedData) => {
     try {
-      const response = await fetch(`/api/posts/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedData),
       });
 
       if (!response.ok) throw new Error('Failed to update post');
-      
       const updated = await response.json();
-      
+
       setPosts((prev) =>
-        prev.map((post) =>
-          post._id === id ? { ...updated, editable: false } : post
-        )
+        prev.map((post) => (post._id === id ? { ...updated, editable: false } : post))
       );
     } catch (err) {
       setError(err.message);
@@ -132,15 +123,11 @@ function Forum() {
     }
   };
 
-  // Delete post from database
   const deletePost = async (id) => {
     try {
-      const response = await fetch(`/api/posts/${id}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete post');
-      
+
       setPosts((prev) => prev.filter((post) => post._id !== id));
     } catch (err) {
       setError(err.message);
@@ -148,30 +135,20 @@ function Forum() {
     }
   };
 
-  // Toggle edit mode (local state only)
   const toggleEditPost = (id) => {
     setPosts((prev) =>
-      prev.map((post) =>
-        post._id === id ? { ...post, editable: !post.editable } : post
-      )
+      prev.map((post) => (post._id === id ? { ...post, editable: !post.editable } : post))
     );
   };
 
-  // Like post in database
   const likePost = async (id) => {
     try {
-      const response = await fetch(`/api/posts/${id}/like`, {
-        method: 'POST',
-      });
-
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}/like`, { method: 'POST' });
       if (!response.ok) throw new Error('Failed to like post');
-      
+
       const updated = await response.json();
-      
       setPosts((prev) =>
-        prev.map((post) =>
-          post._id === id ? { ...post, likes: updated.likes } : post
-        )
+        prev.map((post) => (post._id === id ? { ...post, likes: updated.likes } : post))
       );
     } catch (err) {
       setError(err.message);
@@ -179,7 +156,6 @@ function Forum() {
     }
   };
 
-  // Filter posts by date range
   const filterByDate = (post) => {
     const postDate = new Date(post.createdAt);
     const now = new Date();
@@ -188,38 +164,26 @@ function Forum() {
       case 'today':
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         return postDate >= today;
-      
       case 'week':
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        return postDate >= weekAgo;
-      
+        return postDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       case 'month':
-        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-        return postDate >= monthAgo;
-      
+        return postDate >= new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
       case 'year':
-        const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        return postDate >= yearAgo;
-      
+        return postDate >= new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
       case 'custom':
-        if (!customStartDate && !customEndDate) return true;
         const start = customStartDate ? new Date(customStartDate) : new Date(0);
         const end = customEndDate ? new Date(customEndDate + 'T23:59:59') : new Date();
         return postDate >= start && postDate <= end;
-      
       default:
         return true;
     }
   };
 
-  // Filter posts by search term and date
   const filteredPosts = posts
     .filter((post) =>
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (post.tags || []).some((tag) =>
-        tag.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      (post.tags || []).some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     )
     .filter(filterByDate);
 
@@ -228,29 +192,15 @@ function Forum() {
       <div className="forum-header">
         <h1 className="forum-title">{t.title}</h1>
         <div className="language-toggle">
-          <button
-            className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-            onClick={() => setLanguage('en')}
-          >
-            English
-          </button>
-          <button
-            className={`lang-btn ${language === 'ta' ? 'active' : ''}`}
-            onClick={() => setLanguage('ta')}
-          >
-            தமிழ்
-          </button>
+          <button className={`lang-btn ${language === 'en' ? 'active' : ''}`} onClick={() => setLanguage('en')}>English</button>
+          <button className={`lang-btn ${language === 'ta' ? 'active' : ''}`} onClick={() => setLanguage('ta')}>தமிழ்</button>
         </div>
       </div>
-      
-      {error && (
-        <div className="error-message">
-          {t.error} {error}
-        </div>
-      )}
-      
+
+      {error && <div className="error-message">{t.error} {error}</div>}
+
       <ForumForm onPost={addPost} language={language} />
-      
+
       <div className="forum-filters">
         <input
           type="text"
@@ -259,14 +209,10 @@ function Forum() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="forum-search"
         />
-        
+
         <div className="date-filter">
           <label>{t.filterByDate}</label>
-          <select 
-            value={dateFilter} 
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="date-filter-select"
-          >
+          <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="date-filter-select">
             <option value="all">{t.allTime}</option>
             <option value="today">{t.today}</option>
             <option value="week">{t.pastWeek}</option>
@@ -274,26 +220,12 @@ function Forum() {
             <option value="year">{t.pastYear}</option>
             <option value="custom">{t.customRange}</option>
           </select>
-          
+
           {dateFilter === 'custom' && (
             <div className="custom-date-range">
-              <input
-                type="date"
-                value={customStartDate}
-                onChange={(e) => setCustomStartDate(e.target.value)}
-                placeholder={t.startDate}
-                className="date-input"
-                aria-label={t.startDate}
-              />
+              <input type="date" value={customStartDate} onChange={(e) => setCustomStartDate(e.target.value)} placeholder={t.startDate} className="date-input" />
               <span className="date-separator">{t.to}</span>
-              <input
-                type="date"
-                value={customEndDate}
-                onChange={(e) => setCustomEndDate(e.target.value)}
-                placeholder={t.endDate}
-                className="date-input"
-                aria-label={t.endDate}
-              />
+              <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} placeholder={t.endDate} className="date-input" />
             </div>
           )}
         </div>

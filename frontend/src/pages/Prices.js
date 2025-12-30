@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import '../css/Prices/Prices.css';
 
 function Prices() {
-  const [apiPrices, setApiPrices] = useState([]);
   const [userPrices, setUserPrices] = useState([]);
+  const [apiPrices, setApiPrices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [filterMinPrice, setFilterMinPrice] = useState('');
+  const [filterMaxPrice, setFilterMaxPrice] = useState('');
   const [formData, setFormData] = useState({
     commodity: '',
     market: '',
@@ -14,204 +18,101 @@ function Prices() {
     max_price: '',
     arrival_date: ''
   });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterDate, setFilterDate] = useState('');
-  const [filterMinPrice, setFilterMinPrice] = useState('');
-  const [filterMaxPrice, setFilterMaxPrice] = useState('');
 
   const today = new Date().toISOString().split('T')[0];
 
-  // Helper function to normalize date to YYYY-MM-DD format
-  const normalizeDate = (dateStr) => {
-    if (!dateStr) return null;
-    try {
-      const date = new Date(dateStr);
-      // Check if date is valid
-      if (isNaN(date.getTime())) return null;
-      return date.toISOString().split('T')[0];
-    } catch (error) {
-      console.error('Error normalizing date:', dateStr, error);
-      return null;
-    }
-  };
+  useEffect(() => {
+    fetchUserPrices();
+    fetchApiPrices();
+  }, []);
 
-  // Check if a date is today
-  const isToday = (dateStr) => {
-    const normalizedDate = normalizeDate(dateStr);
-    return normalizedDate === today;
-  };
-
-  // Fetch user prices from database
   const fetchUserPrices = async () => {
     try {
-      console.log('Making API call to fetch user prices');
-      const response = await fetch('/api/prices/my-prices', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('API response status:', response.status);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('User prices fetched successfully:', data.length, 'items');
-        // Normalize dates when setting user prices
-        const normalizedData = data.map(item => ({
-          ...item,
-          arrival_date: normalizeDate(item.arrival_date) || item.arrival_date
-        }));
-        setUserPrices(normalizedData);
-      } else {
-        console.log('API error:', response.status);
-        setUserPrices([]);
-      }
+      const response = await fetch('http://localhost:5000/api/prices');
+      const data = await response.json();
+      setUserPrices(data);
     } catch (error) {
       console.error('Error fetching user prices:', error);
-      setUserPrices([]);
     }
   };
 
-  useEffect(() => {
-    // API call to fetch prices would go here
-    // For now, just set loading to false
-    setTimeout(() => {
-      setApiPrices([]);
-    }, 1000);
-    
-    // Fetch user prices from database
-    fetchUserPrices().finally(() => setLoading(false));
-  }, []);
+  const fetchApiPrices = async () => {
+    try {
+      const response = await fetch('https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100');
+      const data = await response.json();
+      setApiPrices(data.records || []);
+    } catch (error) {
+      console.error('Error fetching API prices:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/api/prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (response.ok) {
+        fetchUserPrices();
+        setFormData({ commodity: '', market: '', state: '', min_price: '', max_price: '', arrival_date: '' });
+      }
+    } catch (error) {
+      console.error('Error adding price:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/prices/${id}`, { method: 'DELETE' });
+      if (response.ok) fetchUserPrices();
+    } catch (error) {
+      console.error('Error deleting price:', error);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch('/api/prices/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          commodity: formData.commodity,
-          market: formData.market,
-          state: formData.state,
-          min_price: formData.min_price,
-          max_price: formData.max_price,
-          arrival_date: formData.arrival_date
-        })
-      });
-
-      if (response.ok) {
-        const savedPrice = await response.json();
-        // Normalize the date of the newly added price
-        const normalizedPrice = {
-          ...savedPrice,
-          arrival_date: normalizeDate(savedPrice.arrival_date) || savedPrice.arrival_date
-        };
-        setUserPrices(prev => [...prev, normalizedPrice]);
-        setFormData({
-          commodity: '',
-          market: '',
-          state: '',
-          min_price: '',
-          max_price: '',
-          arrival_date: ''
-        });
-        alert("Price added successfully!");
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to add price'}`);
-      }
-    } catch (error) {
-      console.error('Error adding price:', error);
-      alert("Network error. Please try again.");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this price entry?")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/prices/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        setUserPrices(prev => prev.filter(p => p._id !== id));
-        alert("Price deleted successfully!");
-      } else if (response.status === 404) {
-        alert("Price entry not found.");
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || 'Failed to delete price'}`);
-      }
-    } catch (error) {
-      console.error('Error deleting price:', error);
-      alert("Network error. Please try again.");
-    }
-  };
-
   const formatDateWithDay = (dateStr) => {
-    if (!dateStr) return '—';
-    try {
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) return '—';
-      return date.toLocaleDateString('en-IN', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch (error) {
-      console.error('Error formatting date:', dateStr, error);
-      return '—';
-    }
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-IN', { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  const isToday = (dateStr) => {
+    return dateStr === today;
   };
 
   const combinedPrices = [...userPrices, ...apiPrices].filter(item => {
-    const matchQuery =
+    const matchesSearch = !searchQuery || 
       item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.state?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.market?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const normalizedItemDate = normalizeDate(item.arrival_date);
-    const normalizedFilterDate = normalizeDate(filterDate);
+      item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.state?.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchDate = !filterDate || normalizedItemDate === normalizedFilterDate;
-    const matchMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
-    const matchMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
-
-    return matchQuery && matchDate && matchMinPrice && matchMaxPrice;
+    const matchesDate = !filterDate || item.arrival_date === filterDate;
+    const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+    const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+    
+    return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
   });
 
-  // Filter today's prices using the improved isToday function
   const todayPrices = combinedPrices.filter(item => isToday(item.arrival_date));
 
   const handleExportCSV = () => {
-    const csvHeader = ['Commodity', 'Market', 'State', 'Min Price', 'Max Price', 'Date', 'Is Today'];
-    const csvRows = combinedPrices.map(row => [
-      row.commodity,
-      row.market,
-      row.state,
-      row.min_price,
-      row.max_price,
-      row.arrival_date || '—',
-      isToday(row.arrival_date) ? 'Yes' : 'No'
-    ]);
-    const csvContent =
-      [csvHeader, ...csvRows].map(e => e.join(',')).join('\n');
-
+    const headers = ['Commodity', 'Market', 'State', 'Min Price', 'Max Price', 'Date'];
+    const csvContent = [headers, ...combinedPrices.map(item => [
+      item.commodity, item.market, item.state, item.min_price, item.max_price, item.arrival_date
+    ])].map(row => row.join(',')).join('\n');
+    
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
