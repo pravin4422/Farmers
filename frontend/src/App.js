@@ -24,6 +24,7 @@ import Reminder from "./pages/Reminders/reminder.js";
 import AgroChemical from "./pages/Agrochemicals/AgroChemical.js";
 import AiChat from "./pages/AiChat.js";
 import UserProfile from "./pages/UserProfile.js";
+import PublicProfile from "./pages/PublicProfile.js";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -69,6 +70,7 @@ function App() {
           element={user ? <Navigate to="/home" replace /> : <Signup setUser={setUser} />}
         />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/view-profile/:userId" element={<PublicProfile />} />
 
         {/* ✅ Protected Routes */}
         <Route
@@ -145,14 +147,6 @@ function App() {
         />
         <Route
           path="/user-profile"
-          element={
-            <ProtectedRoute>
-              <UserProfile user={user} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/:userId"
           element={
             <ProtectedRoute>
               <UserProfile user={user} />
