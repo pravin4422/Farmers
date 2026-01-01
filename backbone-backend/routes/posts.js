@@ -22,23 +22,26 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST a new post (public - no auth required)
-router.post('/', async (req, res) => {
+// POST a new post (requires authentication)
+router.post('/', protect, async (req, res) => {
   try {
     const postData = req.body;
-    // Ensure user._id is set from userId if missing
-    if (postData.userId && postData.user && !postData.user._id) {
-      postData.user._id = postData.userId;
+    
+    // Get userId from authenticated user (from JWT token)
+    const userId = req.user._id || req.user.id;
+    console.log('Creating post for authenticated user:', userId);
+    
+    // Override any userId sent from frontend with the authenticated user's ID
+    postData.userId = userId;
+    if (postData.user) {
+      postData.user._id = userId;
     }
-    // Ensure userId is set from user._id if missing
-    if (!postData.userId && postData.user?._id) {
-      postData.userId = postData.user._id;
-    }
+    
     const newPost = new Post(postData);
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (err) {
-    console.error(err);
+    console.error('Error creating post:', err);
     res.status(400).json({ message: 'Error creating post' });
   }
 });

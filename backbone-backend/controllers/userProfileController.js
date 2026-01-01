@@ -47,7 +47,12 @@ exports.getProfile = async (req, res) => {
 exports.getProfileByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    console.log('getProfileByUserId called with userId:', userId);
+    console.log('Logged in user:', req.user?._id || req.user?.id);
+    
     const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email');
+    console.log('Found profile:', profile ? 'Yes' : 'No');
+    
     if (!profile) {
       // If no profile exists, still return basic user info
       const User = require('../models/User');
