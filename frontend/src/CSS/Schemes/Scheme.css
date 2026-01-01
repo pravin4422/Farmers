@@ -5,6 +5,30 @@
   padding: 20px;
 }
 
+/* Language Toggle */
+.language-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.language-toggle button {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.language-toggle button:hover {
+  background: #545b62;
+}
+
 /* Header Section */
 .schemes-header-container {
   max-width: 1200px;

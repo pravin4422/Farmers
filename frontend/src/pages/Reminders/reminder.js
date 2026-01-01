@@ -217,20 +217,12 @@ function Reminder() {
         <div className="header-card">
           <div className="header-top">
             <h1 className="main-title">{t.title}</h1>
-            <div className="language-toggle">
-              <button
-                onClick={() => setLanguage('english')}
-                className={`lang-btn ${language === 'english' ? 'active' : ''}`}
-              >
-                English
-              </button>
-              <button
-                onClick={() => setLanguage('tamil')}
-                className={`lang-btn ${language === 'tamil' ? 'active' : ''}`}
-              >
-                தமிழ்
-              </button>
-            </div>
+            <button
+              onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
+              className="lang-btn active"
+            >
+              {language === 'english' ? 'தமிழ்' : 'English'}
+            </button>
           </div>
 
           {/* Add Task Input */}

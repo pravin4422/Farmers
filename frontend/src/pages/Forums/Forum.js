@@ -77,12 +77,34 @@ function Forum() {
   };
 
   const addPost = async (newPost) => {
+    // Get current logged-in user info
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('userEmail');
+    const displayName = localStorage.getItem('displayName');
+    
+    // Try to get user ID from localStorage
+    let userId = localStorage.getItem('userId');
+    
+    // If no userId, try to decode from token
+    if (!userId && token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.userId || payload.id || payload._id;
+        // Save for future use
+        if (userId) localStorage.setItem('userId', userId);
+      } catch (e) {
+        console.error('Error decoding token:', e);
+      }
+    }
+    
     const postData = {
       ...newPost,
       likes: 0,
       createdAt: new Date().toISOString(),
+      userId: userId,
       user: {
-        username: 'Guest User',
+        _id: userId,
+        username: displayName || userEmail || 'Anonymous',
         photoURL: '',
       },
     };
@@ -96,6 +118,18 @@ function Forum() {
 
       if (!response.ok) throw new Error('Failed to create post');
       const savedPost = await response.json();
+      
+      // Ensure userId is preserved in the saved post
+      if (!savedPost.userId && userId) {
+        savedPost.userId = userId;
+      }
+      if (!savedPost.user) {
+        savedPost.user = postData.user;
+      } else if (!savedPost.user._id && userId) {
+        savedPost.user._id = userId;
+      }
+      
+      console.log('Final post with userId:', savedPost);
       setPosts((prev) => [savedPost, ...prev]);
     } catch (err) {
       setError(err.message);
@@ -105,13 +139,20 @@ function Forum() {
 
   const updatePost = async (id, updatedData) => {
     try {
+      const currentUserId = localStorage.getItem('userId');
       const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData),
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-user-id': currentUserId
+        },
+        body: JSON.stringify({ ...updatedData, currentUserId }),
       });
 
-      if (!response.ok) throw new Error('Failed to update post');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update post');
+      }
       const updated = await response.json();
 
       setPosts((prev) =>
@@ -125,8 +166,18 @@ function Forum() {
 
   const deletePost = async (id) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete post');
+      const currentUserId = localStorage.getItem('userId');
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'x-user-id': currentUserId
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete post');
+      }
 
       setPosts((prev) => prev.filter((post) => post._id !== id));
     } catch (err) {
@@ -191,10 +242,15 @@ function Forum() {
     <div className="forum-container">
       <div className="forum-header">
         <h1 className="forum-title">{t.title}</h1>
-        <div className="language-toggle">
-          <button className={`lang-btn ${language === 'en' ? 'active' : ''}`} onClick={() => setLanguage('en')}>English</button>
-          <button className={`lang-btn ${language === 'ta' ? 'active' : ''}`} onClick={() => setLanguage('ta')}>தமிழ்</button>
-        </div>
+      </div>
+      
+      <div className="language-toggle">
+        <button 
+          className="lang-btn active" 
+          onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
+        >
+          {language === 'en' ? 'EN' : 'தமிழ்'}
+        </button>
       </div>
 
       {error && <div className="error-message">{t.error} {error}</div>}

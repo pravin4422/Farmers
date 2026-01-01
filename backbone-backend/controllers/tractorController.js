@@ -6,6 +6,7 @@ exports.addTractor = async (req, res) => {
   try {
     const newTractor = new Tractor({
       ...req.body,
+      user: req.user._id,
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -17,20 +18,20 @@ exports.addTractor = async (req, res) => {
   }
 };
 
-// ✅ Get all entries
+// ✅ Get all entries for logged-in user
 exports.getTractors = async (req, res) => {
   try {
-    const tractors = await Tractor.find().sort({ createdAt: -1 });
+    const tractors = await Tractor.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(tractors);
   } catch (err) {
     res.status(500).json({ message: "Error fetching tractor entries", error: err.message });
   }
 };
 
-// ✅ Get latest entry
+// ✅ Get latest entry for logged-in user
 exports.getLatestTractor = async (req, res) => {
   try {
-    const latestTractor = await Tractor.findOne().sort({ createdAt: -1 });
+    const latestTractor = await Tractor.findOne({ user: req.user._id }).sort({ createdAt: -1 });
     if (!latestTractor) {
       return res.status(404).json({ message: "No tractor entries found" });
     }
@@ -40,11 +41,11 @@ exports.getLatestTractor = async (req, res) => {
   }
 };
 
-// ✅ Get history with filters
+// ✅ Get history with filters for logged-in user
 exports.getTractorHistory = async (req, res) => {
   try {
     const { date, month, year } = req.query;
-    let filter = {};
+    let filter = { user: req.user._id };
 
     if (date) {
       // Specific date
@@ -72,7 +73,7 @@ exports.getTractorHistory = async (req, res) => {
   }
 };
 
-// ✅ Update entry
+// ✅ Update entry (only if belongs to logged-in user)
 exports.updateTractor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -81,8 +82,8 @@ exports.updateTractor = async (req, res) => {
       return res.status(400).json({ message: "Invalid Tractor ID" });
     }
 
-    const updatedTractor = await Tractor.findByIdAndUpdate(
-      id,
+    const updatedTractor = await Tractor.findOneAndUpdate(
+      { _id: id, user: req.user._id },
       { ...req.body, updatedAt: new Date() },
       { new: true }
     );
@@ -97,7 +98,7 @@ exports.updateTractor = async (req, res) => {
   }
 };
 
-// ✅ Delete entry
+// ✅ Delete entry (only if belongs to logged-in user)
 exports.deleteTractor = async (req, res) => {
   try {
     const { id } = req.params;
@@ -106,7 +107,7 @@ exports.deleteTractor = async (req, res) => {
       return res.status(400).json({ message: "Invalid Tractor ID" });
     }
 
-    const deletedTractor = await Tractor.findByIdAndDelete(id);
+    const deletedTractor = await Tractor.findOneAndDelete({ _id: id, user: req.user._id });
 
     if (!deletedTractor) {
       return res.status(404).json({ message: "Tractor entry not found" });

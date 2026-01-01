@@ -15,24 +15,36 @@ const Navbar = ({ user, setUser }) => {
     // Update user state
     setUser(null);
     
-    // Navigate to login
-    navigate("/login");
+    // Navigate to dashboard
+    navigate("/dashboard");
+  };
+
+  const handleHomeClick = () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/home");
+    }
+  };
+
+  const handleProfileClick = () => {
+    console.log('Profile clicked, user:', user);
+    navigate('/user-profile');
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <h2 className="logo">Backbone</h2>
+        <h2 className="logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>Backbone</h2>
         <div className="nav-buttons">
-          <Link to="/"><button className="nav-btn">Home</button></Link>
-          <Link to="/about"><button className="nav-btn">About Us</button></Link>
+          <button className="nav-btn" onClick={handleHomeClick}>Home</button>
 
           {user ? (
             <>
-              {/* After Login: Show username and Logout */}
-              <span className="user-name" style={{ marginRight: '10px', color: 'white', fontWeight: '500' }}>
-                {user.displayName || user.email}
-              </span>
+              {/* After Login: Show profile icon and Logout */}
+              <div className="profile-icon" onClick={handleProfileClick} title="Profile">
+                {(user.displayName || user.email).charAt(0).toUpperCase()}
+              </div>
               <button className="login-btn" onClick={handleLogout}>Logout</button>
             </>
           ) : (

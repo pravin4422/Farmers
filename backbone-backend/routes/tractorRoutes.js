@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const protect = require('../middleware/authMiddleware');
 const { 
   addTractor, 
   getTractors, 
@@ -9,22 +10,12 @@ const {
   deleteTractor 
 } = require("../controllers/tractorController");
 
-// POST /api/tractor
-router.post("/", addTractor);
-
-// GET /api/tractor
-router.get("/", getTractors);
-
-// GET /api/tractors/latest - ✅ Added missing endpoint
-router.get("/latest", getLatestTractor);
-
-// GET /api/tractor/history - ✅ Added missing endpoint
-router.get("/history", getTractorHistory);
-
-// PUT /api/tractor/:id - ✅ Added missing endpoint
-router.put("/:id", updateTractor);
-
-// DELETE /api/tractor/:id - ✅ Added missing endpoint
-router.delete("/:id", deleteTractor);
+// Apply auth middleware to all routes
+router.post("/", protect, addTractor);
+router.get("/", protect, getTractors);
+router.get("/latest", protect, getLatestTractor);
+router.get("/history", protect, getTractorHistory);
+router.put("/:id", protect, updateTractor);
+router.delete("/:id", protect, deleteTractor);
 
 module.exports = router;
