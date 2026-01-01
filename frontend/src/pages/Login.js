@@ -18,14 +18,16 @@ function Login({ setUser }) {
       emailPlaceholder: "மின்னஞ்சல்",
       passwordPlaceholder: "கடவுச்சொல்",
       loginButton: "உள்நுழைவு",
-      forgotPassword: "கடவுச்சொல்லை மறந்தீர்களா?"
+      forgotPassword: "கடவுச்சொல்லை மறந்தீர்களா?",
+      signupText: "கணக்கு இல்லையா? பதிவு செய்யவும்"
     },
     english: {
       title: "Login",
       emailPlaceholder: "Email",
       passwordPlaceholder: "Password",
       loginButton: "Login",
-      forgotPassword: "Forgot Password?"
+      forgotPassword: "Forgot Password?",
+      signupText: "Don't have an account? Sign up"
     }
   };
 
@@ -87,7 +89,7 @@ function Login({ setUser }) {
       });
 
       // Redirect
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Login failed. Please try again.";
@@ -99,7 +101,7 @@ function Login({ setUser }) {
   };
 
   return (
-    <div className="login-container">
+    <div className={`login-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
       {/* Header */}
       <div className="login-header">
         <div className="theme-language-controls">
@@ -150,6 +152,12 @@ function Login({ setUser }) {
         <p className="forgot-password">
           <a href="/forgot-password" className="forgot-password-link">
             {currentContent.forgotPassword}
+          </a>
+        </p>
+
+        <p className="signup-link">
+          <a href="/signup">
+            {currentContent.signupText}
           </a>
         </p>
       </div>

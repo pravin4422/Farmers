@@ -575,11 +575,11 @@ function Tractor() {
   return (
     <div className="tracker-container">
       <div className="language-toggle">
-        <button onClick={() => setLanguage('en')} className={language === 'en' ? 'active' : ''}>
-          English
-        </button>
-        <button onClick={() => setLanguage('ta')} className={language === 'ta' ? 'active' : ''}>
-          தமிழ்
+        <button 
+          onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} 
+          className="language-btn"
+        >
+          {language === 'en' ? 'தமிழ்' : 'EN'}
         </button>
       </div>
 

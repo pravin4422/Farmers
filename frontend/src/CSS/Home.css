@@ -58,6 +58,51 @@ body, html {
   font-weight: 300;
 }
 
+/* Header with controls */
+.home-header {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.theme-language-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.control-btn:hover {
+  background: #545b62;
+}
+
+.language-btn {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.language-btn:hover {
+  background: #545b62;
+}
+
 .home-sections {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

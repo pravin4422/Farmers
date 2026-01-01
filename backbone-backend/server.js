@@ -13,6 +13,7 @@ const priceRoutes = require('./routes/priceRoutes'); // ✅ Prices routes
 const postRoutes = require('./routes/posts');
 // ✅ Add Reminder/Task routes
 const taskRoutes = require('./routes/tasks');
+const userProfileRoutes = require('./routes/userProfileRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +45,7 @@ app.use('/api/prices', priceRoutes);
 // ✅ Add Reminder/Task routes
 app.use('/api/tasks', taskRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/user-profile', userProfileRoutes);
 
 
 // Test routes

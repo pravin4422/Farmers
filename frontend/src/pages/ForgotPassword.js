@@ -4,8 +4,7 @@ import "../css/ForgotPassword.css";
 import api from "../api"; // axios instance
 
 function ForgotPassword() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [language, setLanguage] = useState("tamil");
+  const [language, setLanguage] = useState("english");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
@@ -27,27 +26,17 @@ function ForgotPassword() {
     }
   };
 
-  // Load theme & language from localStorage
+  // Load language from localStorage
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
     const savedLanguage = localStorage.getItem("language");
-
-    if (savedTheme) setIsDarkMode(savedTheme === "dark");
     if (savedLanguage) setLanguage(savedLanguage);
   }, []);
-
-  // Apply theme to document
-  useEffect(() => {
-    document.body.className = isDarkMode ? "dark-theme" : "light-theme";
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
 
   // Save language preference
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
   const toggleLanguage = () =>
     setLanguage(language === "tamil" ? "english" : "tamil");
 
@@ -66,19 +55,10 @@ function ForgotPassword() {
   const currentContent = content[language];
 
   return (
-    <div className={`forgot-container ${isDarkMode ? "dark" : "light"}`}>
+    <div className={`forgot-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
       {/* Header controls */}
       <div className="forgot-header">
         <div className="theme-language-controls">
-          <button
-            onClick={toggleTheme}
-            className="control-btn theme-btn"
-            aria-label={
-              isDarkMode ? "Switch to light mode" : "Switch to dark mode"
-            }
-          >
-            {isDarkMode ? "☀️" : "🌙"}
-          </button>
           <button
             onClick={toggleLanguage}
             className="control-btn language-btn"

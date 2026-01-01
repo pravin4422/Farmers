@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Task = require('../models/Task');
+const protect = require('../middleware/authMiddleware');
 
-// GET all tasks for a user
-router.get('/:userId', async (req, res) => {
+// GET all tasks for logged-in user
+router.get('/', protect, async (req, res) => {
   try {
-    const tasks = await Task.find({ userId: req.params.userId }).sort({ date: 1 });
+    const tasks = await Task.find({ userId: req.user._id }).sort({ date: 1 });
     res.json(tasks);
   } catch (err) {
     console.error(err);
@@ -14,9 +15,12 @@ router.get('/:userId', async (req, res) => {
 });
 
 // POST a new task
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
-    const newTask = new Task(req.body);
+    const newTask = new Task({
+      ...req.body,
+      userId: req.user._id
+    });
     const savedTask = await newTask.save();
     res.status(201).json(savedTask);
   } catch (err) {
@@ -26,13 +30,14 @@ router.post('/', async (req, res) => {
 });
 
 // PUT – toggle completed
-router.put('/:taskId', async (req, res) => {
+router.put('/:taskId', protect, async (req, res) => {
   try {
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.taskId,
+    const updatedTask = await Task.findOneAndUpdate(
+      { _id: req.params.taskId, userId: req.user._id },
       { $set: req.body },
       { new: true }
     );
+    if (!updatedTask) return res.status(404).json({ message: 'Task not found' });
     res.json(updatedTask);
   } catch (err) {
     console.error(err);
@@ -41,9 +46,10 @@ router.put('/:taskId', async (req, res) => {
 });
 
 // DELETE a task
-router.delete('/:taskId', async (req, res) => {
+router.delete('/:taskId', protect, async (req, res) => {
   try {
-    await Task.findByIdAndDelete(req.params.taskId);
+    const deletedTask = await Task.findOneAndDelete({ _id: req.params.taskId, userId: req.user._id });
+    if (!deletedTask) return res.status(404).json({ message: 'Task not found' });
     res.json({ message: 'Task deleted' });
   } catch (err) {
     console.error(err);

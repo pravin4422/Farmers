@@ -23,28 +23,29 @@ body {
 
 /* Language Toggle */
 .language-toggle {
-  text-align: right;
-  margin-bottom: 20px;
+  position: absolute;
+  top: 120px;
+  right: 20px;
 }
 
 .language-toggle button {
-  background: #007bff;
+  background: #6c757d;
   color: white;
   border: none;
   padding: 8px 16px;
-  margin-left: 10px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
   transition: background-color 0.3s ease;
 }
 
 .language-toggle button:hover {
-  background: #0056b3;
+  background: #545b62;
 }
 
 .language-toggle button.active {
-  background: #28a745;
+  background: #6c757d;
 }
 
 /* Main Title */

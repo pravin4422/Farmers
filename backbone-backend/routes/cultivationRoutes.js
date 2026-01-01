@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const CultivationActivity = require('../models/CultivationActivity');
+const protect = require('../middleware/authMiddleware');
 
-// GET all with optional filters
-router.get('/', async (req, res) => {
+// GET all with optional filters for logged-in user
+router.get('/', protect, async (req, res) => {
   try {
     const { month, year, date, search } = req.query;
-    let filter = {};
+    let filter = { user: req.user._id };
 
     if (date) filter.date = date;
     if (month) filter.date = { $regex: `^${month}` }; // YYYY-MM
@@ -20,10 +21,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET latest entry
-router.get('/latest', async (req, res) => {
+// GET latest entry for logged-in user
+router.get('/latest', protect, async (req, res) => {
   try {
-    const latest = await CultivationActivity.findOne().sort({ createdAt: -1 });
+    const latest = await CultivationActivity.findOne({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(latest);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,9 +32,12 @@ router.get('/latest', async (req, res) => {
 });
 
 // POST new activity
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
   try {
-    const activity = new CultivationActivity(req.body);
+    const activity = new CultivationActivity({
+      ...req.body,
+      user: req.user._id
+    });
     const saved = await activity.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -42,9 +46,14 @@ router.post('/', async (req, res) => {
 });
 
 // PUT update activity
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   try {
-    const updated = await CultivationActivity.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await CultivationActivity.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      req.body,
+      { new: true }
+    );
+    if (!updated) return res.status(404).json({ error: 'Activity not found' });
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -52,9 +61,10 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE activity
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
-    await CultivationActivity.findByIdAndDelete(req.params.id);
+    const deleted = await CultivationActivity.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    if (!deleted) return res.status(404).json({ error: 'Activity not found' });
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
     res.status(400).json({ error: err.message });

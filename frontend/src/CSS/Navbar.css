@@ -27,6 +27,27 @@
   align-items: center;        /* Center items vertically - ADDED */
 }
 
+/* Profile icon styling */
+.profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: white;
+  color: #019f01;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-icon:hover {
+  background-color: #cccccc;
+  transform: scale(1.05);
+}
+
 /* Normal buttons (Home, About Us, Signup) */
 .nav-btn {
   background-color: white;    /* White button background */

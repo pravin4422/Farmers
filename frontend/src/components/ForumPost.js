@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../css/Forums/Forum.css';
 
 function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 'en' }) {
+  const navigate = useNavigate();
   const [editedTitle, setEditedTitle] = useState(post.title);
   const [editedContent, setEditedContent] = useState(post.content);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState(post.comments || []);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
   // Translations
   const translations = {
@@ -48,7 +54,14 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
 
   const handleAddComment = () => {
     if (!commentText.trim()) return;
-    const newComments = [...comments, commentText.trim()];
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const newComment = {
+      text: commentText.trim(),
+      userId: currentUser._id || 'guest',
+      username: currentUser.username || 'Guest User',
+      photoURL: currentUser.photoURL || ''
+    };
+    const newComments = [...comments, newComment];
     setComments(newComments);
     setCommentText('');
 
@@ -56,6 +69,40 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
       ...post,
       comments: newComments,
     });
+  };
+
+  const handleUserClick = async (userId, username) => {
+    console.log('handleUserClick called with:', { userId, username });
+    
+    if (!userId || userId === 'guest') {
+      console.log('Skipping - no userId or guest user');
+      return;
+    }
+    
+    console.log('Opening modal...');
+    setShowUserModal(true);
+    setLoadingProfile(true);
+    setUserProfile({ username }); // Set username immediately
+    
+    try {
+      const token = localStorage.getItem('token');
+      console.log('Fetching profile for userId:', userId);
+      const response = await axios.get(`http://localhost:5000/api/user-profile/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log('Profile data received:', response.data);
+      setUserProfile({ 
+        ...response.data, 
+        username: response.data.userId?.name || username,
+        email: response.data.userId?.email,
+        noProfile: response.data.noProfile 
+      });
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setUserProfile({ username, error: true });
+    } finally {
+      setLoadingProfile(false);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -117,6 +164,93 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
 
   return (
     <div className="forum-post">
+      {/* User Profile Modal */}
+      {showUserModal && (
+        <div className="user-modal-overlay" onClick={() => setShowUserModal(false)}>
+          <div className="user-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowUserModal(false)}>×</button>
+            {loadingProfile ? (
+              <p style={{ textAlign: 'center', padding: '20px' }}>Loading...</p>
+            ) : userProfile ? (
+              <div className="user-modal-content">
+                <div className="modal-avatar">
+                  {userProfile.username?.charAt(0).toUpperCase() || '👤'}
+                </div>
+                <h3>{userProfile.username || 'User'}</h3>
+                {userProfile.email && <p style={{ color: '#777', fontSize: '14px', marginTop: '5px' }}>{userProfile.email}</p>}
+                {userProfile.noProfile ? (
+                  <>
+                    <p style={{ textAlign: 'center', padding: '20px', color: '#777' }}>This user hasn't created a profile yet.</p>
+                    <button 
+                      className="view-full-profile-btn" 
+                      onClick={() => {
+                        setShowUserModal(false);
+                        navigate(`/profile/${post.user?._id || post.userId}`);
+                      }}
+                    >
+                      View Full Profile
+                    </button>
+                  </>
+                ) : !userProfile.error ? (
+                  <>
+                    <div className="user-details">
+                      {userProfile.agricultureExperience && (
+                        <div className="detail-item">
+                          <span className="detail-icon">🌾</span>
+                          <span className="detail-label">Experience:</span>
+                          <span className="detail-value">{userProfile.agricultureExperience} years</span>
+                        </div>
+                      )}
+                      {userProfile.age && (
+                        <div className="detail-item">
+                          <span className="detail-icon">👤</span>
+                          <span className="detail-label">Age:</span>
+                          <span className="detail-value">{userProfile.age} years</span>
+                        </div>
+                      )}
+                      {userProfile.mainCrop && (
+                        <div className="detail-item">
+                          <span className="detail-icon">🌱</span>
+                          <span className="detail-label">Main Crop:</span>
+                          <span className="detail-value">{userProfile.mainCrop}</span>
+                        </div>
+                      )}
+                      {userProfile.landSize && (
+                        <div className="detail-item">
+                          <span className="detail-icon">🏞️</span>
+                          <span className="detail-label">Land Size:</span>
+                          <span className="detail-value">{userProfile.landSize} acres</span>
+                        </div>
+                      )}
+                      {userProfile.address && (
+                        <div className="detail-item">
+                          <span className="detail-icon">📍</span>
+                          <span className="detail-label">Address:</span>
+                          <span className="detail-value">{userProfile.address}</span>
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      className="view-full-profile-btn" 
+                      onClick={() => {
+                        setShowUserModal(false);
+                        navigate(`/profile/${post.user?._id || post.userId}`);
+                      }}
+                    >
+                      View Full Profile
+                    </button>
+                  </>
+                ) : (
+                  <p style={{ textAlign: 'center', padding: '20px', color: '#777' }}>No profile information available</p>
+                )}
+              </div>
+            ) : (
+              <p style={{ textAlign: 'center', padding: '20px' }}>No profile information available</p>
+            )}
+          </div>
+        </div>
+      )}
+      
       {post.editable ? (
         <>
           <input
@@ -141,17 +275,36 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
         <>
           {/* Header with user info and date */}
           <div className="forum-post-header">
-            {post.user?.photoURL ? (
-              <img
-                src={post.user.photoURL}
-                alt="User Avatar"
-                className="forum-user-avatar"
-              />
-            ) : (
-              <div className="forum-user-avatar-placeholder">👤</div>
-            )}
+            <div 
+              className="forum-user-avatar-container" 
+              onClick={() => handleUserClick(post.user?._id || post.userId, post.user?.username)}
+              style={{ cursor: 'pointer' }}
+            >
+              {post.user?.photoURL ? (
+                <img
+                  src={post.user.photoURL}
+                  alt="User Avatar"
+                  className="forum-user-avatar"
+                />
+              ) : (
+                <div className="forum-user-avatar-placeholder">👤</div>
+              )}
+            </div>
             <div className="forum-user-info">
-              <strong className="forum-username">{post.user?.username || 'Anonymous'}</strong>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <strong 
+                  className="forum-username" 
+                  onClick={() => handleUserClick(post.user?._id || post.userId, post.user?.username)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  {post.user?.username || 'Anonymous'}
+                </strong>
+                {(() => {
+                  const currentUserId = localStorage.getItem('userId');
+                  const isOwner = currentUserId && (post.userId === currentUserId || post.user?._id === currentUserId);
+                  return isOwner ? <span className="post-owner-indicator">Your Post</span> : null;
+                })()}
+              </div>
               <div className="forum-meta">📅 {formatDate(post.createdAt)}</div>
             </div>
           </div>
@@ -176,12 +329,21 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
             <button onClick={() => onLike(post._id)} className="like-btn">
               👍 {post.likes || 0}
             </button>
-            <button onClick={() => onEditToggle(post._id)} className="edit-btn">
-              {t.edit}
-            </button>
-            <button onClick={() => onDelete(post._id)} className="delete-btn">
-              {t.delete}
-            </button>
+            {/* Only show edit/delete buttons if user owns the post */}
+            {(() => {
+              const currentUserId = localStorage.getItem('userId');
+              const isOwner = currentUserId && (post.userId === currentUserId || post.user?._id === currentUserId);
+              return isOwner ? (
+                <>
+                  <button onClick={() => onEditToggle(post._id)} className="edit-btn">
+                    {t.edit}
+                  </button>
+                  <button onClick={() => onDelete(post._id)} className="delete-btn">
+                    {t.delete}
+                  </button>
+                </>
+              ) : null;
+            })()} 
           </div>
 
           {/* Comments */}
@@ -189,9 +351,36 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
             <h4>{t.comments}</h4>
             {comments.length === 0 && <p className="no-comment">{t.noComments}</p>}
             <ul>
-              {comments.map((comment, index) => (
-                <li key={index}>🗨️ {comment}</li>
-              ))}
+              {comments.map((comment, index) => {
+                const isOldComment = typeof comment === 'string';
+                return (
+                  <li key={index} className="forum-comment-item">
+                    {!isOldComment && (
+                      <div className="comment-user-info">
+                        <div 
+                          className="comment-avatar-container"
+                          onClick={() => handleUserClick(comment.userId, comment.username)}
+                          style={{ cursor: comment.userId !== 'guest' ? 'pointer' : 'default' }}
+                        >
+                          {comment.photoURL ? (
+                            <img src={comment.photoURL} alt="avatar" className="comment-avatar" />
+                          ) : (
+                            <div className="comment-avatar-placeholder">👤</div>
+                          )}
+                        </div>
+                        <strong 
+                          className="comment-username"
+                          onClick={() => handleUserClick(comment.userId, comment.username)}
+                          style={{ cursor: comment.userId !== 'guest' ? 'pointer' : 'default' }}
+                        >
+                          {comment.username}
+                        </strong>
+                      </div>
+                    )}
+                    <span className="comment-text">🗨️ {isOldComment ? comment : comment.text}</span>
+                  </li>
+                );
+              })}
             </ul>
             <div className="comment-form">
               <input

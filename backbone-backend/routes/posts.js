@@ -1,22 +1,40 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const protect = require('../middleware/authMiddleware');
 
-// GET all posts
+// GET all posts (public - no auth required)
 router.get('/', async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 }); // newest first
-    res.json(posts);
+    // Ensure userId is set from user._id if missing
+    const postsWithUserId = posts.map(post => {
+      const postObj = post.toObject();
+      if (!postObj.userId && postObj.user?._id) {
+        postObj.userId = postObj.user._id;
+      }
+      return postObj;
+    });
+    res.json(postsWithUserId);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// POST a new post
+// POST a new post (public - no auth required)
 router.post('/', async (req, res) => {
   try {
-    const newPost = new Post(req.body);
+    const postData = req.body;
+    // Ensure user._id is set from userId if missing
+    if (postData.userId && postData.user && !postData.user._id) {
+      postData.user._id = postData.userId;
+    }
+    // Ensure userId is set from user._id if missing
+    if (!postData.userId && postData.user?._id) {
+      postData.userId = postData.user._id;
+    }
+    const newPost = new Post(postData);
     const savedPost = await newPost.save();
     res.status(201).json(savedPost);
   } catch (err) {
@@ -25,9 +43,22 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT – update post
+// PUT – update post (requires user to be post owner)
 router.put('/:id', async (req, res) => {
   try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    
+    // Check if user is the owner of the post
+    const requestUserId = req.body.currentUserId || req.headers['x-user-id'];
+    if (!requestUserId) {
+      return res.status(401).json({ message: 'User ID required for post modification' });
+    }
+    
+    if (post.userId !== requestUserId && post.user?._id !== requestUserId) {
+      return res.status(403).json({ message: 'You can only edit your own posts' });
+    }
+    
     const updatedPost = await Post.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
@@ -40,10 +71,23 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE post
+// DELETE post (requires user to be post owner)
 router.delete('/:id', async (req, res) => {
   try {
-    await Post.findByIdAndDelete(req.params.id);
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    
+    // Check if user is the owner of the post
+    const requestUserId = req.headers['x-user-id'];
+    if (!requestUserId) {
+      return res.status(401).json({ message: 'User ID required for post deletion' });
+    }
+    
+    if (post.userId !== requestUserId && post.user?._id !== requestUserId) {
+      return res.status(403).json({ message: 'You can only delete your own posts' });
+    }
+    
+    const deleted = await Post.findByIdAndDelete(req.params.id);
     res.json({ message: 'Post deleted' });
   } catch (err) {
     console.error(err);
@@ -51,7 +95,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST – like a post
+// POST – like a post (public - no auth required)
 router.post('/:id/like', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);

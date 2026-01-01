@@ -136,9 +136,9 @@ function Signup({ setUser }) {
   const currentContent = content[language];
 
   return (
-    <div className="login-container">
+    <div className={`signup-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
       {/* Header with controls */}
-      <div className="login-header">
+      <div className="signup-header">
         <div className="theme-language-controls">
           <button 
             onClick={toggleLanguage} 
@@ -151,8 +151,8 @@ function Signup({ setUser }) {
       </div>
 
       {/* Main signup content */}
-      <div className="login-content">
-        <h2 className="login-title">{currentContent.title}</h2>
+      <div className="signup-content">
+        <h2 className="signup-title">{currentContent.title}</h2>
         
         {/* Error message */}
         {error && (
@@ -161,14 +161,14 @@ function Signup({ setUser }) {
           </div>
         )}
 
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form className="signup-form" onSubmit={handleSubmit}>
           <input 
             type="text" 
             name="name"
             value={formData.name}
             onChange={handleInputChange}
             placeholder={currentContent.namePlaceholder} 
-            className="login-input name-input"
+            className="signup-input name-input"
             required
             disabled={loading}
           />
@@ -178,7 +178,7 @@ function Signup({ setUser }) {
             value={formData.email}
             onChange={handleInputChange}
             placeholder={currentContent.emailPlaceholder} 
-            className="login-input email-input"
+            className="signup-input email-input"
             required
             disabled={loading}
           />
@@ -188,7 +188,7 @@ function Signup({ setUser }) {
             value={formData.password}
             onChange={handleInputChange}
             placeholder={currentContent.passwordPlaceholder} 
-            className="login-input password-input"
+            className="signup-input password-input"
             required
             minLength={6}
             disabled={loading}
@@ -199,14 +199,14 @@ function Signup({ setUser }) {
             value={formData.confirmPassword}
             onChange={handleInputChange}
             placeholder={currentContent.confirmPasswordPlaceholder} 
-            className="login-input password-input"
+            className="signup-input password-input"
             required
             minLength={6}
             disabled={loading}
           />
           <button 
             type="submit" 
-            className="login-button"
+            className="signup-button"
             disabled={loading}
           >
             {loading ? currentContent.loading : currentContent.signupButton}
@@ -214,9 +214,9 @@ function Signup({ setUser }) {
         </form>
 
         {/* Login link */}
-        <p className="signup-prompt">
+        <p className="login-link">
           {currentContent.loginPrompt}{' '}
-          <a href="/login" className="signup-link">
+          <a href="/login">
             {currentContent.loginLink}
           </a>
         </p>
