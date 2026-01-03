@@ -66,11 +66,18 @@ function Login({ setUser }) {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userEmail", formData.email);
       
-      // Extract displayName from backend response
+      // Extract displayName and userId from backend response
       let displayName = formData.email; // Default to email
+      let userId = null;
       
       if (response.data.user) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        
+        // Get userId from backend
+        userId = response.data.user.id || response.data.user._id;
+        if (userId) {
+          localStorage.setItem("userId", String(userId));
+        }
         
         // Get name from backend user object
         displayName = response.data.user.name || 

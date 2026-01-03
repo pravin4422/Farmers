@@ -9,6 +9,16 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
   const [editedContent, setEditedContent] = useState(post.content);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState(post.comments || []);
+  const [commentVoiceBlob, setCommentVoiceBlob] = useState(null);
+  const [isCommentRecording, setIsCommentRecording] = useState(false);
+  const [commentRecordingTime, setCommentRecordingTime] = useState(0);
+  const commentMediaRecorderRef = React.useRef(null);
+  const commentTimerRef = React.useRef(null);
+
+  // Update comments when post changes (after refresh)
+  React.useEffect(() => {
+    setComments(post.comments || []);
+  }, [post.comments]);
 
   // Translations
   const translations = {
@@ -22,7 +32,10 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
       writeComment: 'Write a comment...',
       addComment: '➕ Comment',
       attachment: '📎 Attachment:',
-      download: '📄 Download/View'
+      download: '📄 Download/View',
+      voiceMessage: '🎤 Voice Message:',
+      titleVoice: '🎤 Title:',
+      contentVoice: '🎤 Content:'
     },
     ta: {
       save: '✅ சேமி',
@@ -34,7 +47,10 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
       writeComment: 'கருத்து எழுதுங்கள்...',
       addComment: '➕ கருத்து',
       attachment: '📎 இணைப்பு:',
-      download: '📄 பதிவிறக்கு/காண்க'
+      download: '📄 பதிவிறக்கு/காண்க',
+      voiceMessage: '🎤 குரல் செய்தி:',
+      titleVoice: '🎤 தலைப்பு:',
+      contentVoice: '🎤 உள்ளடக்கம்:'
     }
   };
 
@@ -49,21 +65,95 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
     });
   };
 
-  const handleAddComment = () => {
-    if (!commentText.trim()) return;
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const startCommentRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      commentMediaRecorderRef.current = mediaRecorder;
+      const chunks = [];
+
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        setCommentVoiceBlob(blob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsCommentRecording(true);
+      setCommentRecordingTime(0);
+      commentTimerRef.current = setInterval(() => {
+        setCommentRecordingTime(prev => {
+          if (prev >= 179) {
+            stopCommentRecording();
+            return 180;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } catch (err) {
+      console.error('Error accessing microphone:', err);
+      alert('Could not access microphone. Please check permissions.');
+    }
+  };
+
+  const stopCommentRecording = () => {
+    if (commentMediaRecorderRef.current && isCommentRecording) {
+      commentMediaRecorderRef.current.stop();
+      setIsCommentRecording(false);
+      clearInterval(commentTimerRef.current);
+    }
+  };
+
+  const deleteCommentVoice = () => {
+    setCommentVoiceBlob(null);
+    setCommentRecordingTime(0);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleAddComment = async () => {
+    if (!commentText.trim() && !commentVoiceBlob) return;
+    
+    // Get current user info from localStorage
+    const displayName = localStorage.getItem('displayName');
+    const userEmail = localStorage.getItem('userEmail');
+    const userId = localStorage.getItem('userId');
+    
+    let voiceData = null;
+    if (commentVoiceBlob) {
+      const reader = new FileReader();
+      voiceData = await new Promise((resolve) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(commentVoiceBlob);
+      });
+    }
+    
     const newComment = {
-      text: commentText.trim(),
-      userId: currentUser._id || 'guest',
-      username: currentUser.username || 'Guest User',
-      photoURL: currentUser.photoURL || ''
+      text: commentText.trim() || 'Voice Comment',
+      voiceMessage: voiceData,
+      userId: userId || 'guest',
+      username: displayName || userEmail || 'Guest User',
+      photoURL: ''
     };
+    
+    console.log('Adding comment:', newComment);
+    console.log('Current comments:', comments);
+    
     const newComments = [...comments, newComment];
+    console.log('New comments array:', newComments);
+    
     setComments(newComments);
     setCommentText('');
+    setCommentVoiceBlob(null);
+    setCommentRecordingTime(0);
 
-    onUpdate(post._id, {
-      ...post,
+    // Update the post with new comments
+    await onUpdate(post._id, {
       comments: newComments,
     });
   };
@@ -185,8 +275,9 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
                   {post.user?.username || 'Anonymous'}
                 </strong>
                 {(() => {
-                  const currentUserId = localStorage.getItem('userId');
-                  const isOwner = currentUserId && (post.userId === currentUserId || post.user?._id === currentUserId);
+                  const currentUserId = String(localStorage.getItem('userId') || '').trim();
+                  const postOwnerId = String(post.userId || post.user?._id || '').trim();
+                  const isOwner = currentUserId && postOwnerId && currentUserId === postOwnerId;
                   return isOwner ? <span className="post-owner-indicator">Your Post</span> : null;
                 })()}
               </div>
@@ -195,10 +286,24 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
           </div>
 
           <h3 className="forum-post-title">{post.title}</h3>
+          {post.titleVoiceMessage && (
+            <div className="forum-voice-message" style={{ marginTop: '8px', marginBottom: '8px' }}>
+              <p><strong>{t.titleVoice}</strong></p>
+              <audio controls src={post.titleVoiceMessage} style={{ height: '35px' }} />
+            </div>
+          )}
           <p className="forum-post-content">{post.content}</p>
 
           {/* Files */}
           {renderFiles(post.files)}
+
+          {/* Voice Message */}
+          {post.voiceMessage && (
+            <div className="forum-voice-message">
+              <p><strong>{t.contentVoice}</strong></p>
+              <audio controls src={post.voiceMessage} />
+            </div>
+          )}
 
           {/* Tags */}
           {post.tags?.length > 0 && (
@@ -214,21 +319,25 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
             <button onClick={() => onLike(post._id)} className="like-btn">
               👍 {post.likes || 0}
             </button>
-            {/* Only show edit/delete buttons if user owns the post */}
             {(() => {
-              const currentUserId = localStorage.getItem('userId');
-              const isOwner = currentUserId && (post.userId === currentUserId || post.user?._id === currentUserId);
-              return isOwner ? (
-                <>
-                  <button onClick={() => onEditToggle(post._id)} className="edit-btn">
-                    {t.edit}
-                  </button>
-                  <button onClick={() => onDelete(post._id)} className="delete-btn">
-                    {t.delete}
-                  </button>
-                </>
-              ) : null;
-            })()} 
+              const currentUserId = String(localStorage.getItem('userId') || '').trim();
+              const postOwnerId = String(post.userId || post.user?._id || '').trim();
+              const isOwner = currentUserId && postOwnerId && currentUserId === postOwnerId;
+              
+              if (isOwner) {
+                return (
+                  <>
+                    <button onClick={() => onEditToggle(post._id)} className="edit-btn">
+                      {t.edit}
+                    </button>
+                    <button onClick={() => onDelete(post._id)} className="delete-btn">
+                      {t.delete}
+                    </button>
+                  </>
+                );
+              }
+              return null;
+            })()}
           </div>
 
           {/* Comments */}
@@ -240,42 +349,78 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
                 const isOldComment = typeof comment === 'string';
                 return (
                   <li key={index} className="forum-comment-item">
-                    {!isOldComment && (
-                      <div className="comment-user-info">
-                        <div 
-                          className="comment-avatar-container"
-                          onClick={() => handleUserClick(comment.userId)}
-                          style={{ cursor: comment.userId !== 'guest' ? 'pointer' : 'default' }}
-                        >
-                          {comment.photoURL ? (
-                            <img src={comment.photoURL} alt="avatar" className="comment-avatar" />
-                          ) : (
-                            <div className="comment-avatar-placeholder">👤</div>
-                          )}
-                        </div>
-                        <strong 
-                          className="comment-username"
-                          onClick={() => handleUserClick(comment.userId)}
-                          style={{ cursor: comment.userId !== 'guest' ? 'pointer' : 'default' }}
-                        >
-                          {comment.username}
-                        </strong>
+                    <div className="comment-user-info">
+                      <div 
+                        className="comment-avatar-container"
+                        onClick={() => !isOldComment && handleUserClick(comment.userId)}
+                        style={{ cursor: !isOldComment && comment.userId !== 'guest' ? 'pointer' : 'default' }}
+                      >
+                        {!isOldComment && comment.photoURL ? (
+                          <img src={comment.photoURL} alt="avatar" className="comment-avatar" />
+                        ) : (
+                          <div className="comment-avatar-placeholder">👤</div>
+                        )}
+                      </div>
+                      <strong 
+                        className="comment-username"
+                        onClick={() => !isOldComment && handleUserClick(comment.userId)}
+                        style={{ cursor: !isOldComment && comment.userId !== 'guest' ? 'pointer' : 'default' }}
+                      >
+                        {isOldComment ? 'Anonymous' : comment.username}
+                      </strong>
+                    </div>
+                    <span className="comment-text">🗨️ {isOldComment ? comment : comment.text}</span>
+                    {!isOldComment && comment.voiceMessage && (
+                      <div className="comment-voice">
+                        <audio controls src={comment.voiceMessage} />
                       </div>
                     )}
-                    <span className="comment-text">🗨️ {isOldComment ? comment : comment.text}</span>
                   </li>
                 );
               })}
             </ul>
             <div className="comment-form">
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={t.writeComment}
-                className="comment-input"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
-              />
+              <div className="comment-input-wrapper">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t.writeComment}
+                  className="comment-input"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                />
+                <div className="comment-voice-controls">
+                  {!commentVoiceBlob && !isCommentRecording && (
+                    <button
+                      type="button"
+                      onClick={startCommentRecording}
+                      className="voice-record-btn-small"
+                    >
+                      🎤
+                    </button>
+                  )}
+                  {isCommentRecording && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={stopCommentRecording}
+                        className="voice-record-btn-small recording"
+                      >
+                        ⏹️
+                      </button>
+                      <span className="voice-timer-small">{formatTime(commentRecordingTime)}</span>
+                    </>
+                  )}
+                  {commentVoiceBlob && !isCommentRecording && (
+                    <button type="button" onClick={deleteCommentVoice} className="voice-delete-btn-small">
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              </div>
+              {commentVoiceBlob && (
+                <audio controls style={{ width: '100%', height: '30px' }} src={URL.createObjectURL(commentVoiceBlob)} />
+              )}
               <button onClick={handleAddComment} className="comment-btn">
                 {t.addComment}
               </button>

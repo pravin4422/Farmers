@@ -77,21 +77,22 @@ function Forum() {
   };
 
   const addPost = async (newPost) => {
-    // Get current logged-in user info
     const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
     const displayName = localStorage.getItem('displayName');
-    
-    // Try to get user ID from localStorage
     let userId = localStorage.getItem('userId');
     
-    // If no userId, try to decode from token
+    if (!token) {
+      alert('Please login to create a post');
+      window.location.href = '/login';
+      return;
+    }
+    
     if (!userId && token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        userId = payload.userId || payload.id || payload._id;
-        // Save for future use
-        if (userId) localStorage.setItem('userId', userId);
+        userId = payload.userId || payload.id || payload._id || payload.sub;
+        if (userId) localStorage.setItem('userId', String(userId));
       } catch (e) {
         console.error('Error decoding token:', e);
       }
@@ -101,48 +102,68 @@ function Forum() {
       ...newPost,
       likes: 0,
       createdAt: new Date().toISOString(),
-      userId: userId,
+      userId: String(userId),
       user: {
-        _id: userId,
+        _id: String(userId),
         username: displayName || userEmail || 'Anonymous',
         photoURL: '',
       },
     };
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${BACKEND_URL}/api/posts`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(postData),
-      });
+      let response;
+      try {
+        response = await fetch(`${BACKEND_URL}/api/posts`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(postData),
+        });
+      } catch (fetchError) {
+        throw new Error('Cannot connect to server. Please make sure the backend server is running on http://localhost:5000');
+      }
 
-      if (!response.ok) throw new Error('Failed to create post');
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          
+          // Handle token expiration
+          if (errorData.message === 'Token expired' || response.status === 401) {
+            localStorage.clear();
+            alert('Your session has expired. Please login again.');
+            window.location.href = '/login';
+            return;
+          }
+          
+          throw new Error(errorData.message || errorData.error || 'Failed to create post');
+        } else {
+          throw new Error(`Server error: ${response.status}. Please make sure the backend server is running.`);
+        }
+      }
       const savedPost = await response.json();
       
-      // Ensure userId is preserved in the saved post
-      if (!savedPost.userId && userId) {
-        savedPost.userId = userId;
-      }
-      if (!savedPost.user) {
-        savedPost.user = postData.user;
-      } else if (!savedPost.user._id && userId) {
-        savedPost.user._id = userId;
-      }
+      const finalPost = {
+        ...savedPost,
+        userId: String(savedPost.userId || userId),
+        user: savedPost.user || postData.user
+      };
       
-      console.log('Final post with userId:', savedPost);
-      setPosts((prev) => [savedPost, ...prev]);
+      setPosts((prev) => [finalPost, ...prev]);
     } catch (err) {
       setError(err.message);
       console.error('Error creating post:', err);
+      alert(`Failed to create post: ${err.message}`);
     }
   };
 
   const updatePost = async (id, updatedData) => {
     try {
+      console.log('Updating post:', id);
+      console.log('Update data:', updatedData);
+      
       const currentUserId = localStorage.getItem('userId');
       const response = await fetch(`${BACKEND_URL}/api/posts/${id}`, {
         method: 'PUT',
@@ -155,9 +176,11 @@ function Forum() {
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Update failed:', errorData);
         throw new Error(errorData.message || 'Failed to update post');
       }
       const updated = await response.json();
+      console.log('Updated post from server:', updated);
 
       setPosts((prev) =>
         prev.map((post) => (post._id === id ? { ...updated, editable: false } : post))

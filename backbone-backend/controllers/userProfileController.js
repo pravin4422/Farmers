@@ -25,7 +25,6 @@ exports.createProfile = async (req, res) => {
     await profile.save();
     res.status(201).json({ message: 'Profile created successfully', profile });
   } catch (error) {
-    console.error('Create profile error:', error);
     res.status(500).json({ message: 'Error creating profile', error: error.message });
   }
 };
@@ -39,7 +38,6 @@ exports.getProfile = async (req, res) => {
     }
     res.json(profile);
   } catch (error) {
-    console.error('Get profile error:', error);
     res.status(500).json({ message: 'Error fetching profile', error: error.message });
   }
 };
@@ -47,11 +45,8 @@ exports.getProfile = async (req, res) => {
 exports.getProfileByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log('getProfileByUserId called with userId:', userId);
-    console.log('Logged in user:', req.user?._id || req.user?.id);
     
     const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email');
-    console.log('Found profile:', profile ? 'Yes' : 'No');
     
     if (!profile) {
       // If no profile exists, still return basic user info
@@ -67,7 +62,6 @@ exports.getProfileByUserId = async (req, res) => {
     }
     res.json(profile);
   } catch (error) {
-    console.error('Get profile by userId error:', error);
     res.status(500).json({ message: 'Error fetching profile', error: error.message });
   }
 };
@@ -85,7 +79,6 @@ exports.updateProfile = async (req, res) => {
     }
     res.json({ message: 'Profile updated successfully', profile });
   } catch (error) {
-    console.error('Update profile error:', error);
     res.status(500).json({ message: 'Error updating profile', error: error.message });
   }
 };

@@ -9,7 +9,6 @@ router.get('/', protect, async (req, res) => {
     const tasks = await Task.find({ userId: req.user._id }).sort({ date: 1 });
     res.json(tasks);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -24,7 +23,6 @@ router.post('/', protect, async (req, res) => {
     const savedTask = await newTask.save();
     res.status(201).json(savedTask);
   } catch (err) {
-    console.error(err);
     res.status(400).json({ message: 'Error saving task' });
   }
 });
@@ -40,7 +38,6 @@ router.put('/:taskId', protect, async (req, res) => {
     if (!updatedTask) return res.status(404).json({ message: 'Task not found' });
     res.json(updatedTask);
   } catch (err) {
-    console.error(err);
     res.status(400).json({ message: 'Error updating task' });
   }
 });
@@ -52,7 +49,6 @@ router.delete('/:taskId', protect, async (req, res) => {
     if (!deletedTask) return res.status(404).json({ message: 'Task not found' });
     res.json({ message: 'Task deleted' });
   } catch (err) {
-    console.error(err);
     res.status(400).json({ message: 'Error deleting task' });
   }
 });
