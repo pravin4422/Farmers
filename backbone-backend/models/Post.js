@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
 const PostSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  content: { type: String, required: true },
+  title: { type: String, default: 'Voice Message' },
+  content: { type: String, default: 'Voice Message' },
   tags: { type: [String], default: [] },
   likes: { type: Number, default: 0 },
   files: { type: Array, default: [] },
-  comments: { type: [String], default: [] },
+  voiceMessage: { type: String, default: null },
+  titleVoiceMessage: { type: String, default: null },
+  comments: { type: mongoose.Schema.Types.Mixed, default: [] },
   createdAt: { type: Date, default: Date.now },
   userId: { type: String },
   user: {

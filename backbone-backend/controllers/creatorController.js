@@ -11,7 +11,6 @@ exports.createEntry = async (req, res) => {
     const savedEntry = await newEntry.save();
     res.status(201).json(savedEntry);
   } catch (err) {
-    console.error("Create Entry Error:", err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
@@ -23,7 +22,6 @@ exports.getLatestEntry = async (req, res) => {
     if (!latestEntry) return res.status(404).json({ message: 'No entries found' });
     res.status(200).json(latestEntry);
   } catch (err) {
-    console.error("Get Latest Entry Error:", err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
@@ -50,7 +48,6 @@ exports.getHistory = async (req, res) => {
     const entries = await Creator.find(filter).sort({ createdAt: -1 });
     res.status(200).json(entries);
   } catch (err) {
-    console.error("Get History Error:", err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
@@ -68,7 +65,6 @@ exports.updateEntry = async (req, res) => {
 
     res.status(200).json(updatedEntry);
   } catch (err) {
-    console.error("Update Entry Error:", err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
@@ -80,7 +76,6 @@ exports.deleteEntry = async (req, res) => {
     if (!deletedEntry) return res.status(404).json({ message: 'Entry not found' });
     res.status(200).json({ message: 'Entry deleted successfully' });
   } catch (err) {
-    console.error("Delete Entry Error:", err.message);
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
