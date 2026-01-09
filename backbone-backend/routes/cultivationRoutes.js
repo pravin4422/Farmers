@@ -3,6 +3,16 @@ const router = express.Router();
 const CultivationActivity = require('../models/CultivationActivity');
 const protect = require('../middleware/authMiddleware');
 
+// GET latest entry for logged-in user (must be before '/' route)
+router.get('/latest', protect, async (req, res) => {
+  try {
+    const latest = await CultivationActivity.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(latest);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET all with optional filters for logged-in user
 router.get('/', protect, async (req, res) => {
   try {
@@ -16,16 +26,6 @@ router.get('/', protect, async (req, res) => {
 
     const activities = await CultivationActivity.find(filter).sort({ date: -1 });
     res.json(activities);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET latest entry for logged-in user
-router.get('/latest', protect, async (req, res) => {
-  try {
-    const latest = await CultivationActivity.findOne({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(latest);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const protect = require('../middleware/authMiddleware');
 const {
   addKamitty,
   getKamitty,
@@ -9,22 +10,12 @@ const {
   deleteKamitty
 } = require("../controllers/kamittyController");
 
-// POST /api/kamitty
-router.post("/", addKamitty);
+// Apply auth middleware to all routes
+router.post("/", protect, addKamitty);
+router.get("/", protect, getKamitty);
+router.get("/latest", protect, getLatestKamitty);
+router.get("/history", protect, getKamittyHistory);
+router.put("/:id", protect, updateKamitty);
+router.delete("/:id", protect, deleteKamitty);
 
-// GET /api/kamitty
-router.get("/", getKamitty);
-
-// GET /api/kamitty/latest
-router.get("/latest", getLatestKamitty);
-
-// GET /api/kamitty/history
-router.get("/history", getKamittyHistory);
-
-// PUT /api/kamitty/:id
-router.put("/:id", updateKamitty);
-
-// DELETE /api/kamitty/:id
-router.delete("/:id", deleteKamitty);
-
-module.exports = router; // ✅ Must export the router directly
+module.exports = router;

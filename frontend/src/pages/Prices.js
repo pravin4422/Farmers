@@ -28,7 +28,12 @@ function Prices() {
 
   const fetchUserPrices = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/prices');
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/prices', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setUserPrices(data);
     } catch (error) {
@@ -51,9 +56,13 @@ function Prices() {
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/prices', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(formData)
       });
       if (response.ok) {
@@ -67,7 +76,13 @@ function Prices() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/prices/${id}`, { method: 'DELETE' });
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/prices/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (response.ok) fetchUserPrices();
     } catch (error) {
       console.error('Error deleting price:', error);

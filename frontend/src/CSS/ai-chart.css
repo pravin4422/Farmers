@@ -1,0 +1,288 @@
+/* ========== AI CHART CONTAINER ========== */
+.ai-chart-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f7f7f8;
+}
+
+.chart-header {
+  background: white;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+/* ========== VOICE BUTTON ========== */
+.voice-btn {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: #10a37f;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 163, 127, 0.3);
+}
+
+.voice-btn:hover {
+  background: #0d8c6a;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(16, 163, 127, 0.4);
+}
+
+.voice-btn.recording {
+  background: #dc3545;
+  animation: pulse-voice 1.5s infinite;
+}
+
+.voice-btn.recording:hover {
+  background: #c82333;
+}
+
+@keyframes pulse-voice {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  }
+  50% { 
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(220, 53, 69, 0.6);
+  }
+}
+
+/* ========== VOICE INPUT METHOD ========== */
+.voice-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.voice-input-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #10a37f;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voice-input-btn.recording {
+  background: #dc3545;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-input-btn:hover {
+  transform: scale(1.05);
+}
+
+.voice-status {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.voice-waveform {
+  flex: 1;
+  height: 40px;
+  background: linear-gradient(90deg, #10a37f 0%, #0d8c6a 100%);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.voice-waveform::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: wave-animation 2s infinite;
+}
+
+@keyframes wave-animation {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.voice-transcript {
+  flex: 1;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  min-height: 20px;
+}
+
+.voice-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.voice-action-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.voice-save-btn {
+  background: #10a37f;
+  color: white;
+}
+
+.voice-cancel-btn {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.voice-cancel-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.voice-replay-btn {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.voice-replay-btn:hover {
+  background: #17a2b8;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ========== CHART MESSAGES ========== */
+.chart-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chart-input-container {
+  background: white;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.chart-input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.chart-input-container textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 120px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: none;
+  max-height: 150px;
+  outline: none;
+}
+
+.chart-input-container textarea:focus {
+  border-color: #10a37f;
+  box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
+}
+
+.input-voice-controls {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.voice-record-btn-small {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.voice-record-btn-small.recording {
+  background: #dc3545;
+  color: white;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-record-btn-small:not(.recording) {
+  background: #10a37f;
+  color: white;
+}
+
+.chart-input-container button {
+  padding: 0.75rem 2rem;
+  background: #10a37f;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chart-input-container button:hover:not(:disabled) {
+  background: #0d8c6a;
+}
+
+.chart-input-container button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}

@@ -14,6 +14,8 @@ function Forum() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [language, setLanguage] = useState('en');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   // Translations
   const translations = {
@@ -213,6 +215,36 @@ function Forum() {
     }
   };
 
+  const deletePostsByDate = async (dateKey) => {
+    if (!window.confirm(`Are you sure you want to delete all posts from ${dateKey}?`)) {
+      return;
+    }
+
+    const postsToDelete = postsByDate[dateKey];
+    const currentUserId = localStorage.getItem('userId');
+
+    try {
+      await Promise.all(
+        postsToDelete.map(post =>
+          fetch(`${BACKEND_URL}/api/posts/${post._id}`, {
+            method: 'DELETE',
+            headers: { 'x-user-id': currentUserId }
+          })
+        )
+      );
+
+      setPosts((prev) => prev.filter((post) => getDateString(post.createdAt) !== dateKey));
+      
+      if (selectedDate === dateKey) {
+        const remainingDates = dateKeys.filter(d => d !== dateKey);
+        setSelectedDate(remainingDates.length > 0 ? remainingDates[0] : null);
+      }
+    } catch (err) {
+      setError('Failed to delete posts');
+      console.error('Error deleting posts by date:', err);
+    }
+  };
+
   const toggleEditPost = (id) => {
     setPosts((prev) =>
       prev.map((post) => (post._id === id ? { ...post, editable: !post.editable } : post))
@@ -257,20 +289,59 @@ function Forum() {
     }
   };
 
-  const filteredPosts = posts
-    .filter((post) =>
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (post.tags || []).some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    .filter(filterByDate);
+  const scrollToPost = (postId) => {
+    const element = document.getElementById(`post-${postId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.style.backgroundColor = 'var(--tag-bg)';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 2000);
+    }
+  };
+
+  // Get date string from post
+  const getDateString = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Group posts by exact date
+  const groupPostsByDate = () => {
+    const groups = {};
+    posts.forEach(post => {
+      const dateKey = getDateString(post.createdAt);
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(post);
+    });
+    return groups;
+  };
+
+  const postsByDate = groupPostsByDate();
+  const dateKeys = Object.keys(postsByDate).sort((a, b) => new Date(b) - new Date(a));
+
+  // Set initial selected date
+  useEffect(() => {
+    if (!selectedDate && dateKeys.length > 0) {
+      setSelectedDate(dateKeys[0]);
+    }
+  }, [dateKeys, selectedDate]);
+
+  // Filter posts by selected date
+  const filteredPosts = selectedDate
+    ? posts
+        .filter((post) => getDateString(post.createdAt) === selectedDate)
+        .filter((post) =>
+          post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (post.tags || []).some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+        .filter(filterByDate)
+    : [];
 
   return (
-    <div className="forum-container">
-      <div className="forum-header">
-        <h1 className="forum-title">{t.title}</h1>
-      </div>
-      
+    <>
+      {/* Language Toggle - Fixed Position */}
       <div className="language-toggle">
         <button 
           className="lang-btn active" 
@@ -278,6 +349,71 @@ function Forum() {
         >
           {language === 'en' ? 'EN' : 'தமிழ்'}
         </button>
+      </div>
+
+      <div className="forum-wrapper">
+      {/* Toggle Button */}
+      <button 
+        className={`sidebar-toggle-btn ${sidebarOpen ? 'hidden' : ''}`}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle Sidebar"
+      >
+        {sidebarOpen ? '✕' : '☰'}
+      </button>
+
+      {/* Sidebar */}
+      <aside className={`forum-sidebar ${!sidebarOpen ? 'closed' : ''}`}>
+        <button 
+          className="sidebar-close-btn" 
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Close Sidebar"
+        >
+          ✕
+        </button>
+        {/* Date List */}
+        {dateKeys.map(dateKey => (
+          <div key={dateKey} className="sidebar-section">
+            <div 
+              className="section-title" 
+              style={{ 
+                cursor: 'pointer', 
+                color: selectedDate === dateKey ? 'var(--primary)' : 'var(--text-muted)',
+                fontSize: '13px'
+              }}
+            >
+              <span onClick={() => setSelectedDate(dateKey)}>
+                📅 {dateKey} ({postsByDate[dateKey].length})
+              </span>
+              <button 
+                className="date-delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deletePostsByDate(dateKey);
+                }}
+                title="Delete all posts from this date"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* User Info */}
+        <div className="sidebar-footer">
+          <div className="user-info">
+            <div className="user-avatar">👤</div>
+            <div className="user-details">
+              <div className="user-name">{localStorage.getItem('displayName') || 'User'}</div>
+              <div className="user-plan">Farmer</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className={`forum-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className="forum-header">
+        <h1 className="forum-title">{t.title}</h1>
       </div>
 
       {error && <div className="error-message">{t.error} {error}</div>}
@@ -336,6 +472,8 @@ function Forum() {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 }
 

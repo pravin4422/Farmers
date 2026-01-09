@@ -1,0 +1,264 @@
+.creator-history-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.history-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #4CAF50;
+  position: relative;
+}
+
+.history-header h1 {
+  font-size: 28px;
+  color: #2d7a36;
+  margin: 0;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  background: #f5f5f5;
+  color: #333;
+}
+
+.back-btn:hover {
+  background: #e0e0e0;
+}
+
+.lang-toggle {
+  position: absolute;
+  right: 0;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+  background: #4CAF50;
+  color: white;
+}
+
+.lang-toggle:hover {
+  background: #45a049;
+}
+
+.filter-section {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filter-section h3 {
+  margin-top: 0;
+  color: #2d7a36;
+  font-size: 20px;
+}
+
+.filter-options {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.filter-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.filter-options input[type="radio"] {
+  cursor: pointer;
+}
+
+.filter-inputs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.filter-inputs input {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  flex: 1;
+  max-width: 250px;
+}
+
+.filter-inputs input:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.filter-inputs button {
+  padding: 10px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.filter-inputs button:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+}
+
+.filter-inputs button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.results-section h3 {
+  color: #2d7a36;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.loading, .no-results {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.entry-card {
+  background: white;
+  
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.entry-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(45, 122, 54, 0.15);
+}
+
+.entry-header {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e8f5e9;
+}
+
+.entry-date {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d7a36;
+}
+
+.entry-details p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.sub-section {
+  margin-top: 12px;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.sub-section strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #2d7a36;
+}
+
+.mini-card {
+  padding: 6px 10px;
+  background: white;
+  border-radius: 6px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e8f5e9;
+}
+
+.entry-actions button {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.entry-actions button:first-child {
+  background: #4CAF50;
+  color: white;
+}
+
+.entry-actions button:first-child:hover {
+  background: #45a049;
+}
+
+.entry-actions button:last-child {
+  background: #f44336;
+  color: white;
+}
+
+.entry-actions button:last-child:hover {
+  background: #da190b;
+}
+
+@media (max-width: 768px) {
+  .entries-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .history-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .filter-options {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-inputs {
+    flex-direction: column;
+  }
+  
+  .filter-inputs input {
+    max-width: 100%;
+  }
+}
+
