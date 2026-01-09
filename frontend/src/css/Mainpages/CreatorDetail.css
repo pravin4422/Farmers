@@ -1,4 +1,4 @@
-/* CreatorDetail/* Entry Form Styles */
+/* CreatorDetail - Entry Form Styles */
 .entry-form {
   background: white;
   padding: 30px;
@@ -524,7 +524,9 @@
   border-radius: 8px;
   margin: 15px 0;
   
-}css */
+}
+
+/* CreatorDetail Main Styles */
 
 .creator-detail-container {
   max-width: 1200px;

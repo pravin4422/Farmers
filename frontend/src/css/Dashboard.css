@@ -1,7 +1,7 @@
 .landing-container {
   min-height: 100vh;
   padding: 20px;
-  background: url('../../public/Mainfolder/one (11).jpg') center/cover no-repeat fixed;
+  background: url('../../public/Mainfolder/one%20(11).jpg') center/cover no-repeat fixed;
   position: relative;
   overflow-x: hidden;
 }
