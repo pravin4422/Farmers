@@ -19,20 +19,20 @@
 }
 
 .language-toggle {
-  position: absolute;
-  top: 20px;
+  position: fixed;
+  top: 80px;
   right: 20px;
   width: 80px;
   height: 40px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #6b6d6b;
   color: white;
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 1000;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   letter-spacing: 1px;
   display: flex;
@@ -43,9 +43,9 @@
 }
 
 .language-toggle:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: #eef1ee;
   transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(92, 95, 92, 0.4);
 }
 
 .hero-section {
@@ -227,7 +227,7 @@
   }
   
   .language-toggle {
-    top: 10px;
+    top: 75px;
     right: 10px;
     width: 70px;
     height: 35px;

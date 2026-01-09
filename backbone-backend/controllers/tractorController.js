@@ -48,22 +48,11 @@ exports.getTractorHistory = async (req, res) => {
     let filter = { user: req.user._id };
 
     if (date) {
-      // Specific date
-      const startDate = new Date(date);
-      const endDate = new Date(date);
-      endDate.setDate(endDate.getDate() + 1);
-      filter.date = { $gte: startDate, $lt: endDate };
+      filter.date = date;
     } else if (month) {
-      // Month filter YYYY-MM
-      const [yearPart, monthPart] = month.split("-");
-      const startDate = new Date(yearPart, monthPart - 1, 1);
-      const endDate = new Date(yearPart, monthPart, 1);
-      filter.date = { $gte: startDate, $lt: endDate };
+      filter.date = { $regex: `^${month}` };
     } else if (year) {
-      // Year filter
-      const startDate = new Date(year, 0, 1);
-      const endDate = new Date(parseInt(year) + 1, 0, 1);
-      filter.date = { $gte: startDate, $lt: endDate };
+      filter.date = { $regex: `^${year}` };
     }
 
     const tractors = await Tractor.find(filter).sort({ createdAt: -1 });

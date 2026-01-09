@@ -48,8 +48,14 @@ function Tractor() {
   const [kamittySelectedMonth, setKamittySelectedMonth] = useState('');
   const [kamittySelectedYear, setKamittySelectedYear] = useState('');
 
-  const recognitionRef = useRef(null);
   const [listeningField, setListeningField] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedText, setRecordedText] = useState('');
+  const [audioRecording, setAudioRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioField, setAudioField] = useState(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   // Database API endpoints - Replace with your actual API endpoints
   const API_BASE_URL = 'http://localhost:5000/api';
@@ -64,31 +70,60 @@ function Tractor() {
     setKamittyCost(bagTotal + other);
   }, [numBags, costPerBag, otherCost]);
 
+  const recognitionRef = useRef(null);
+
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
       recognition.lang = language === 'ta' ? 'ta-IN' : 'en-US';
+      recognition.continuous = true;
       recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+      
       recognition.onresult = event => {
-        const transcript = event.results[0][0].transcript;
-        if (listeningField === 'day') setDay(transcript);
-        else if (listeningField === 'work') setWork(transcript);
-        else if (listeningField === 'tractorName') setTractorName(transcript);
-        else if (listeningField === 'kamittyDescription') setKamittyDescription(transcript);
-        setListeningField(null);
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join(' ');
+        setRecordedText(transcript);
       };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        if (event.error !== 'aborted') {
+          setIsRecording(false);
+          setListeningField(null);
+        }
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+      
       recognitionRef.current = recognition;
     }
-  }, [language, listeningField]);
+    
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          // Ignore errors on cleanup
+        }
+      }
+    };
+  }, [language]);
 
   // Fetch last entries from database
   const fetchLastEntries = async () => {
     try {
+      const token = localStorage.getItem('token');
       const [tractorResponse, kamittyResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/tractors/latest`),
-        fetch(`${API_BASE_URL}/kamitty/latest`)
+        fetch(`${API_BASE_URL}/tractors/latest`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/kamitty/latest`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ]);
 
       if (tractorResponse.ok) {
@@ -109,6 +144,7 @@ function Tractor() {
   const fetchHistoryEntries = async (type) => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
       let url = `${API_BASE_URL}/${type}/history?`;
       
       if (type === 'tractor') {
@@ -129,7 +165,9 @@ function Tractor() {
         }
       }
       
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (response.ok) {
         const data = await response.json();
         if (type === 'tractor') {
@@ -148,6 +186,7 @@ function Tractor() {
   // Save tractor entry to database
   const saveTractorEntryToDatabase = async (entryData) => {
     try {
+      const token = localStorage.getItem('token');
       const method = editingId ? 'PUT' : 'POST';
       const url = editingId 
         ? `${API_BASE_URL}/tractor/${editingId}` 
@@ -157,6 +196,7 @@ function Tractor() {
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(entryData),
       });
@@ -178,6 +218,7 @@ function Tractor() {
   // Save kamitty entry to database
   const saveKamittyEntryToDatabase = async (entryData) => {
     try {
+      const token = localStorage.getItem('token');
       const method = editingKamittyId ? 'PUT' : 'POST';
       const url = editingKamittyId 
         ? `${API_BASE_URL}/kamitty/${editingKamittyId}` 
@@ -187,6 +228,7 @@ function Tractor() {
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(entryData),
       });
@@ -208,8 +250,10 @@ function Tractor() {
   // Delete entry from database
   const deleteEntryFromDatabase = async (type, entryId) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/${type}/${entryId}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
       });
       
       if (response.ok) {
@@ -225,12 +269,127 @@ function Tractor() {
   };
 
   const startListening = (field) => {
-    if (recognitionRef.current) {
-      setListeningField(field);
-      recognitionRef.current.start();
-    } else {
-      alert('Voice input not supported in this browser.');
+    if (!recognitionRef.current) {
+      alert(t('Voice input not supported in this browser.', 'இந்த உலாவியில் குரல் உள்ளீடு ஆதரிக்கப்படவில்லை.'));
+      return;
     }
+    
+    if (isRecording && listeningField === field) {
+      // Stop recording
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
+      setIsRecording(false);
+    } else {
+      // Stop any existing recording first
+      if (isRecording) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {
+          console.error('Error stopping previous recognition:', e);
+        }
+      }
+      
+      // Start new recording
+      setListeningField(field);
+      setRecordedText('');
+      setIsRecording(true);
+      
+      try {
+        recognitionRef.current.start();
+      } catch (e) {
+        console.error('Error starting recognition:', e);
+        setIsRecording(false);
+        setListeningField(null);
+      }
+    }
+  };
+  
+  const addRecordedText = () => {
+    if (!recordedText) return;
+    
+    if (listeningField === 'day') setDay(recordedText);
+    else if (listeningField === 'work') setWork(recordedText);
+    else if (listeningField === 'tractorName') setTractorName(recordedText);
+    else if (listeningField === 'kamittyDescription') setKamittyDescription(recordedText);
+    else if (listeningField === 'date') setDate(recordedText);
+    else if (listeningField === 'rate') setRate(recordedText);
+    else if (listeningField === 'numBags') setNumBags(recordedText);
+    else if (listeningField === 'costPerBag') setCostPerBag(recordedText);
+    else if (listeningField === 'otherCost') setOtherCost(recordedText);
+    else if (listeningField === 'kamittyDate') setKamittyDate(recordedText);
+    
+    setRecordedText('');
+    setListeningField(null);
+  };
+  
+  const cancelRecording = () => {
+    if (isRecording) {
+      recognitionRef.current.stop();
+    }
+    setIsRecording(false);
+    setRecordedText('');
+    setListeningField(null);
+  };
+
+  const startAudioRecording = async (field) => {
+    if (audioRecording && audioField === field) {
+      // Stop recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+        setAudioRecording(false);
+      };
+
+      mediaRecorder.start();
+      setAudioRecording(true);
+      setAudioField(field);
+    } catch (error) {
+      alert(t('Microphone access denied', 'மைக்ரோஃபோன் அணுகல் மறுக்கப்பட்டது'));
+    }
+  };
+
+  const saveAudioRecording = () => {
+    if (!audioBlob) return;
+    
+    // Convert blob to base64 or URL for storage
+    const audioUrl = URL.createObjectURL(audioBlob);
+    
+    if (audioField === 'day') setDay(audioUrl);
+    else if (audioField === 'work') setWork(audioUrl);
+    else if (audioField === 'tractorName') setTractorName(audioUrl);
+    else if (audioField === 'kamittyDescription') setKamittyDescription(audioUrl);
+    
+    setAudioBlob(null);
+    setAudioField(null);
+  };
+
+  const cancelAudioRecording = () => {
+    if (audioRecording && mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+    setAudioRecording(false);
+    setAudioBlob(null);
+    setAudioField(null);
   };
 
   const handleSegmentChange = (index, key, value) => {
@@ -342,14 +501,14 @@ function Tractor() {
       setTimeSegments(entry.timeSegments);
       setRate(entry.rate.toString()); // Ensure string for input
       setMoneyGiven(entry.moneyGiven);
-      setEditingId(entry.id);
+      setEditingId(entry._id || entry.id);
     } else {
       setKamittyDate(entry.date);
       setKamittyDescription(entry.description);
       setNumBags(entry.numBags);
       setCostPerBag(entry.costPerBag);
       setOtherCost(entry.otherCost);
-      setEditingKamittyId(entry.id);
+      setEditingKamittyId(entry._id || entry.id);
     }
   };
 
@@ -358,14 +517,14 @@ function Tractor() {
       const success = await deleteEntryFromDatabase(type, entryId);
       if (success) {
         if (type === 'tractor') {
-          if (lastTractorEntry && lastTractorEntry.id === entryId) {
+          if (lastTractorEntry && (lastTractorEntry._id === entryId || lastTractorEntry.id === entryId)) {
             fetchLastEntries();
           }
           if (showTractorHistory) {
             fetchHistoryEntries('tractor');
           }
         } else {
-          if (lastKamittyEntry && lastKamittyEntry.id === entryId) {
+          if (lastKamittyEntry && (lastKamittyEntry._id === entryId || lastKamittyEntry.id === entryId)) {
             fetchLastEntries();
           }
           if (showKamittyHistory) {
@@ -377,6 +536,7 @@ function Tractor() {
   };
 
   const toggleMoneyGiven = async (entry) => {
+    const entryId = entry._id || entry.id;
     const updatedEntry = {
       ...entry,
       moneyGiven: entry.moneyGiven === 'Okay' ? 'Not' : 'Okay',
@@ -385,19 +545,31 @@ function Tractor() {
 
     setLoading(true);
     
-    // Temporarily set the editingId to make the API call work correctly
-    const originalEditingId = editingId;
-    setEditingId(entry.id);
-    
-    const success = await saveTractorEntryToDatabase(updatedEntry);
-    
-    // Restore original editing state
-    setEditingId(originalEditingId);
-    
-    if (success && showTractorHistory) {
-      fetchHistoryEntries('tractor');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/tractor/${entryId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedEntry),
+      });
+      
+      if (response.ok) {
+        await fetchLastEntries();
+        if (showTractorHistory) {
+          await fetchHistoryEntries('tractor');
+        }
+      } else {
+        throw new Error('Failed to update');
+      }
+    } catch (error) {
+      console.error('Error toggling payment:', error);
+      alert(t('Error updating payment status. Please try again.', 'பணம் நிலையை புதுப்பிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleViewHistory = (type) => {
@@ -492,7 +664,7 @@ function Tractor() {
   const { totalTractorCost, totalKamittyCost, grandTotal } = calculateTotals();
 
   const renderTractorEntry = (entry, isLast = false) => (
-    <div key={entry.id} className={`entry-card ${isLast ? 'last-entry' : ''}`}>
+    <div key={entry._id || entry.id} className={`entry-card ${isLast ? 'last-entry' : ''}`}>
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
       <div className="entry-header">
@@ -504,11 +676,41 @@ function Tractor() {
       
       <div className="entry-details">
         <p><strong>{t('Date:', 'தேதி:')}</strong> {formatDate(entry.date)}</p>
+        {entry.date && entry.date.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.date} controls />
+          </div>
+        )}
+        
         <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
+        {entry.day && entry.day.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.day} controls />
+          </div>
+        )}
+        
         <p><strong>{t('Work:', 'பணி:')}</strong> {entry.work}</p>
+        {entry.work && entry.work.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.work} controls />
+          </div>
+        )}
+        
+        {entry.tractorName && entry.tractorName.startsWith('blob:') && (
+          <div className="audio-playback">
+            <strong>{t('Tractor Name Audio:', 'டிராக்டர் பெயர் ஆடியோ:')}</strong>
+            <audio src={entry.tractorName} controls />
+          </div>
+        )}
+        
         <p><strong>{t('Time Slots:', 'நேரங்கள்:')}</strong> {entry.timeSegments.map(s => `${s.period}: ${s.hours}h`).join(', ')}</p>
         <p><strong>{t('Total Hours:', 'மொத்த மணி:')}</strong> {entry.totalHours}</p>
         <p><strong>{t('Rate/hr:', 'ஒருமணி விலை:')}</strong> ₹{entry.rate}</p>
+        {entry.rate && typeof entry.rate === 'string' && entry.rate.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.rate} controls />
+          </div>
+        )}
         <p><strong>{t('Total:', 'மொத்தம்:')}</strong> ₹{entry.total}</p>
       </div>
 
@@ -519,7 +721,7 @@ function Tractor() {
         <button onClick={() => toggleMoneyGiven(entry)} disabled={loading} className="toggle-money-btn">
           💰 {t('Toggle Payment', 'பணம் மாற்று')}
         </button>
-        <button onClick={() => handleDelete(entry.id, 'tractor')} disabled={loading}>
+        <button onClick={() => handleDelete(entry._id || entry.id, 'tractor')} disabled={loading}>
           🗑️ {t('Delete', 'அழிக்க')}
         </button>
       </div>
@@ -536,7 +738,7 @@ function Tractor() {
   );
 
   const renderKamittyEntry = (entry, isLast = false) => (
-    <div key={entry.id} className={`entry-card kamitty-entry ${isLast ? 'last-entry' : ''}`}>
+    <div key={entry._id || entry.id} className={`entry-card kamitty-entry ${isLast ? 'last-entry' : ''}`}>
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
       <div className="entry-header">
@@ -546,6 +748,19 @@ function Tractor() {
       
       <div className="entry-details">
         <p><strong>{t('Date:', 'தேதி:')}</strong> {formatDate(entry.date)}</p>
+        {entry.date && entry.date.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.date} controls />
+          </div>
+        )}
+        
+        <p><strong>{t('Description:', 'விவரம்:')}</strong> {entry.description}</p>
+        {entry.description && entry.description.startsWith('blob:') && (
+          <div className="audio-playback">
+            <audio src={entry.description} controls />
+          </div>
+        )}
+        
         <p><strong>{t('Number of Bags:', 'பைகளின் எண்ணிக்கை:')}</strong> {entry.numBags}</p>
         <p><strong>{t('Cost per Bag:', 'ஒரு பையின் விலை:')}</strong> ₹{entry.costPerBag}</p>
         <p><strong>{t('Other Cost:', 'பிற செலவு:')}</strong> ₹{entry.otherCost}</p>
@@ -556,7 +771,7 @@ function Tractor() {
         <button onClick={() => handleEdit(entry, 'kamitty')} disabled={loading}>
           ✏️ {t('Edit', 'திருத்த')}
         </button>
-        <button onClick={() => handleDelete(entry.id, 'kamitty')} disabled={loading}>
+        <button onClick={() => handleDelete(entry._id || entry.id, 'kamitty')} disabled={loading}>
           🗑️ {t('Delete', 'அழிக்க')}
         </button>
       </div>
@@ -591,31 +806,150 @@ function Tractor() {
         <div className="form-grid">
           <label>
             {t('Date:', 'தேதி:')} 
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <div className="input-with-voice">
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <button 
+                type="button" 
+                onClick={() => startListening('date')} 
+                className={`voice-btn ${isRecording && listeningField === 'date' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'date' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('date')} 
+                className={`voice-btn ${audioRecording && audioField === 'date' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'date' ? '⏹️' : '🎙️'}
+              </button>
+            </div>
+            {listeningField === 'date' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'date' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
           
           <label>
             {t('Day:', 'நாள்:')} 
             <div className="input-with-voice">
               <input type="text" value={day} onChange={e => setDay(e.target.value)} />
-              <button type="button" onClick={() => startListening('day')} className="voice-btn">🎤</button>
+              <button 
+                type="button" 
+                onClick={() => startListening('day')} 
+                className={`voice-btn ${isRecording && listeningField === 'day' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'day' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('day')} 
+                className={`voice-btn ${audioRecording && audioField === 'day' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'day' ? '⏹️' : '🎙️'}
+              </button>
             </div>
+            {listeningField === 'day' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'day' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
           
           <label>
             {t('Work Name:', 'பணியின் பெயர்:')} 
             <div className="input-with-voice">
               <input type="text" value={work} onChange={e => setWork(e.target.value)} />
-              <button type="button" onClick={() => startListening('work')} className="voice-btn">🎤</button>
+              <button 
+                type="button" 
+                onClick={() => startListening('work')} 
+                className={`voice-btn ${isRecording && listeningField === 'work' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'work' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('work')} 
+                className={`voice-btn ${audioRecording && audioField === 'work' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'work' ? '⏹️' : '🎙️'}
+              </button>
             </div>
+            {listeningField === 'work' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'work' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
           
           <label>
             {t('Tractor Name:', 'டிராக்டர் பெயர்:')} 
             <div className="input-with-voice">
               <input type="text" value={tractorName} onChange={e => setTractorName(e.target.value)} />
-              <button type="button" onClick={() => startListening('tractorName')} className="voice-btn">🎤</button>
+              <button 
+                type="button" 
+                onClick={() => startListening('tractorName')} 
+                className={`voice-btn ${isRecording && listeningField === 'tractorName' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'tractorName' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('tractorName')} 
+                className={`voice-btn ${audioRecording && audioField === 'tractorName' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'tractorName' ? '⏹️' : '🎙️'}
+              </button>
             </div>
+            {listeningField === 'tractorName' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'tractorName' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
         </div>
 
@@ -646,7 +980,39 @@ function Tractor() {
         <div className="form-grid">
           <label>
             {t('Price per Hour (₹):', 'ஒருமணி விலை (₹):')} 
-            <input type="number" value={rate} onChange={e => setRate(e.target.value)} />
+            <div className="input-with-voice">
+              <input type="number" value={rate} onChange={e => setRate(e.target.value)} />
+              <button 
+                type="button" 
+                onClick={() => startListening('rate')} 
+                className={`voice-btn ${isRecording && listeningField === 'rate' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'rate' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('rate')} 
+                className={`voice-btn ${audioRecording && audioField === 'rate' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'rate' ? '⏹️' : '🎙️'}
+              </button>
+            </div>
+            {listeningField === 'rate' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'rate' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
           
           <label>
@@ -673,7 +1039,39 @@ function Tractor() {
         <div className="form-grid">
           <label>
             {t('Date:', 'தேதி:')} 
-            <input type="date" value={kamittyDate} onChange={e => setKamittyDate(e.target.value)} />
+            <div className="input-with-voice">
+              <input type="date" value={kamittyDate} onChange={e => setKamittyDate(e.target.value)} />
+              <button 
+                type="button" 
+                onClick={() => startListening('kamittyDate')} 
+                className={`voice-btn ${isRecording && listeningField === 'kamittyDate' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'kamittyDate' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('kamittyDate')} 
+                className={`voice-btn ${audioRecording && audioField === 'kamittyDate' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'kamittyDate' ? '⏹️' : '🎙️'}
+              </button>
+            </div>
+            {listeningField === 'kamittyDate' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'kamittyDate' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
           
           <label>
@@ -685,8 +1083,37 @@ function Tractor() {
                 onChange={e => setKamittyDescription(e.target.value)} 
                 placeholder={t('Optional description', 'விருப்ப விவரம்')} 
               />
-              <button type="button" onClick={() => startListening('kamittyDescription')} className="voice-btn">🎤</button>
+              <button 
+                type="button" 
+                onClick={() => startListening('kamittyDescription')} 
+                className={`voice-btn ${isRecording && listeningField === 'kamittyDescription' ? 'recording' : ''}`}
+                title={t('Speech to text', 'பேச்சு உரையாக')}
+              >
+                {isRecording && listeningField === 'kamittyDescription' ? '⏹️' : '🎤'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => startAudioRecording('kamittyDescription')} 
+                className={`voice-btn ${audioRecording && audioField === 'kamittyDescription' ? 'recording' : ''}`}
+                title={t('Record audio', 'ஆடியோ பதிவு')}
+              >
+                {audioRecording && audioField === 'kamittyDescription' ? '⏹️' : '🎙️'}
+              </button>
             </div>
+            {listeningField === 'kamittyDescription' && recordedText && (
+              <div className="recorded-text-preview">
+                <span>{recordedText}</span>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
+            {audioField === 'kamittyDescription' && audioBlob && (
+              <div className="recorded-text-preview">
+                <audio src={URL.createObjectURL(audioBlob)} controls />
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+              </div>
+            )}
           </label>
         </div>
         
@@ -694,17 +1121,68 @@ function Tractor() {
           <div className="form-grid">
             <label>
               {t('Number of Bags', 'பைகளின் எண்ணிக்கை')}: 
-              <input type="number" value={numBags} onChange={e => setNumBags(e.target.value)} />
+              <div className="input-with-voice">
+                <input type="number" value={numBags} onChange={e => setNumBags(e.target.value)} />
+                <button 
+                  type="button" 
+                  onClick={() => startListening('numBags')} 
+                  className={`voice-btn ${isRecording && listeningField === 'numBags' ? 'recording' : ''}`}
+                  title={t('Speech to text', 'பேச்சு உரையாக')}
+                >
+                  {isRecording && listeningField === 'numBags' ? '⏹️' : '🎤'}
+                </button>
+              </div>
+              {listeningField === 'numBags' && recordedText && (
+                <div className="recorded-text-preview">
+                  <span>{recordedText}</span>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                </div>
+              )}
             </label>
             
             <label>
               {t('Cost per Bag (₹)', 'ஒரு பையின் விலை (₹)')}: 
-              <input type="number" value={costPerBag} onChange={e => setCostPerBag(e.target.value)} />
+              <div className="input-with-voice">
+                <input type="number" value={costPerBag} onChange={e => setCostPerBag(e.target.value)} />
+                <button 
+                  type="button" 
+                  onClick={() => startListening('costPerBag')} 
+                  className={`voice-btn ${isRecording && listeningField === 'costPerBag' ? 'recording' : ''}`}
+                  title={t('Speech to text', 'பேச்சு உரையாக')}
+                >
+                  {isRecording && listeningField === 'costPerBag' ? '⏹️' : '🎤'}
+                </button>
+              </div>
+              {listeningField === 'costPerBag' && recordedText && (
+                <div className="recorded-text-preview">
+                  <span>{recordedText}</span>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                </div>
+              )}
             </label>
             
             <label>
               {t('Other Cost (₹)', 'பிற செலவுகள் (₹)')}: 
-              <input type="number" value={otherCost} onChange={e => setOtherCost(e.target.value)} />
+              <div className="input-with-voice">
+                <input type="number" value={otherCost} onChange={e => setOtherCost(e.target.value)} />
+                <button 
+                  type="button" 
+                  onClick={() => startListening('otherCost')} 
+                  className={`voice-btn ${isRecording && listeningField === 'otherCost' ? 'recording' : ''}`}
+                  title={t('Speech to text', 'பேச்சு உரையாக')}
+                >
+                  {isRecording && listeningField === 'otherCost' ? '⏹️' : '🎤'}
+                </button>
+              </div>
+              {listeningField === 'otherCost' && recordedText && (
+                <div className="recorded-text-preview">
+                  <span>{recordedText}</span>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                </div>
+              )}
             </label>
           </div>
           

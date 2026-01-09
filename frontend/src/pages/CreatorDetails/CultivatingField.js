@@ -28,6 +28,7 @@ function CultivatingField() {
   const [filterDate, setFilterDate] = useState('');
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState('');
   const entriesPerPage = 5;
 
@@ -38,10 +39,12 @@ function CultivatingField() {
   const saveToDatabase = async (activityData) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/cultivation-activities`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(activityData),
       });
@@ -63,10 +66,12 @@ function CultivatingField() {
   const updateInDatabase = async (id, activityData) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/cultivation-activities/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(activityData),
       });
@@ -88,8 +93,12 @@ function CultivatingField() {
   const deleteFromDatabase = async (id) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/cultivation-activities/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       
       if (!response.ok) throw new Error('Failed to delete');
@@ -107,6 +116,7 @@ function CultivatingField() {
   const fetchFromDatabase = async (filters = {}) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       
       if (filters.month) params.append('month', filters.month);
@@ -114,7 +124,11 @@ function CultivatingField() {
       if (filters.date) params.append('date', filters.date);
       if (filters.search) params.append('search', filters.search);
       
-      const response = await fetch(`${API_BASE_URL}/cultivation-activities?${params}`);
+      const response = await fetch(`${API_BASE_URL}/cultivation-activities?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
       if (!response.ok) throw new Error('Failed to fetch');
       
@@ -131,14 +145,18 @@ function CultivatingField() {
 
   const fetchLatestEntry = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/cultivation-activities/latest`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/cultivation-activities/latest`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
       if (!response.ok) throw new Error('Failed to fetch latest');
       
       const result = await response.json();
       return result;
     } catch (err) {
-      console.error('Error fetching latest entry:', err);
       return null;
     }
   };
@@ -227,26 +245,24 @@ function CultivatingField() {
       total: total.toFixed(2),
     };
 
+    setButtonLoading(true);
     try {
       if (editingId) {
-        // Update existing record
         await updateInDatabase(editingId, newEntry);
       } else {
-        // Add new record
         await saveToDatabase(newEntry);
       }
 
       resetForm();
-      
-      // Refresh the latest entry
       await loadLatestEntry();
       
-      // If in history view, refresh the history data
       if (showHistoryView) {
         await loadHistoryData();
       }
     } catch (error) {
-      console.error('Error saving activity:', error);
+      // Error already handled in API functions
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -279,7 +295,7 @@ function CultivatingField() {
           await loadLatestEntry();
         }
       } catch (error) {
-        console.error('Error deleting activity:', error);
+        // Error already handled in API functions
       }
     }
   };
@@ -481,8 +497,8 @@ function CultivatingField() {
         </div>
 
         <input type="number" placeholder={t("Price per hour", "மணிக்கு விலை")} value={rate} onChange={e => setRate(e.target.value)} />
-        <button onClick={handleAddActivity} disabled={loading}>
-          {editingId ? t("Update Activity", "செயலை புதுப்பி") : t("Add Activity", "செயலை சேர்")}
+        <button onClick={handleAddActivity} disabled={buttonLoading} className={buttonLoading ? 'loading' : ''}>
+          {buttonLoading ? (editingId ? t("Updating...", "புதுப்பிக்கிறது...") : t("Adding...", "சேர்க்கிறது...")) : (editingId ? t("Update Activity", "செயலை புதுப்பி") : t("Add Activity", "செயலை சேர்"))}
         </button>
       </div>
 

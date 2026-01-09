@@ -53,10 +53,12 @@ const Dashboard = () => {
   const currentContent = content[language];
 
   return (
-    <div className="landing-container">
+    <>
       <button onClick={toggleLanguage} className="language-toggle">
         {language === 'tamil' ? 'EN' : 'தமிழ்'}
       </button>
+      
+      <div className="landing-container">
 
       <div className="hero-section">
         <h1>{currentContent.title}</h1>
@@ -78,7 +80,8 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -15,6 +15,7 @@ import Forum from "./pages/Forums/Forum.js";
 
 // Protected Pages
 import CreatorDetail from "./pages/CreatorDetails/CreatorDetails.js";
+import CreatorHistory from "./pages/CreatorDetails/CreatorHistory.js";
 import Tractor from "./pages/CreatorDetails/Tractor.js";
 import AgromedicalProducts from "./pages/CreatorDetails/AgromedicalProducts.js";
 import CultivatingField from "./pages/CreatorDetails/CultivatingField.js";
@@ -78,6 +79,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CreatorDetail user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/CreatorHistory"
+          element={
+            <ProtectedRoute>
+              <CreatorHistory user={user} />
             </ProtectedRoute>
           }
         />

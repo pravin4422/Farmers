@@ -59,6 +59,12 @@ function CreatorDetail() {
   useEffect(() => {
     checkAuthentication();
     fetchLastEntry();
+    
+    // Handle edit from history page
+    if (window.history.state?.usr?.editEntry) {
+      const entry = window.history.state.usr.editEntry;
+      handleEdit(entry);
+    }
   }, []);
 
   // ✅ Silent authentication check - no alert
@@ -288,10 +294,7 @@ function CreatorDetail() {
   };
 
   const handleViewHistory = () => {
-    setShowHistory(!showHistory);
-    if (!showHistory) {
-      fetchHistoryEntries();
-    }
+    navigate('/CreatorHistory');
   };
 
   const handleFilterChange = () => {
@@ -375,13 +378,13 @@ function CreatorDetail() {
           <button className="print-btn" onClick={() => window.print()}>
              {t('Print', 'அச்சிடுக')}
           </button>
-          <button className="tracker-btn" onClick={() => navigate('/Tractor')}>
+          <button className="tracker-btn" onClick={() => navigate('/tractor')}>
              {t('Tracker', 'டிராக்டர்')}
           </button>
-          <button className="agromedical-btn" onClick={() => navigate('/AgromedicalProducts')}>
+          <button className="agromedical-btn" onClick={() => navigate('/agromedicalproducts')}>
              {t('Agromedical Products', 'வேளாண் மருத்துவ பொருட்கள்')}
           </button>
-          <button className="cultivating-btn" onClick={() => navigate('/CultivatingField')}>
+          <button className="cultivating-btn" onClick={() => navigate('/cultivatingfield')}>
              {t('Cultivating Field', 'வயல் உழுது')}
           </button>
         </div>

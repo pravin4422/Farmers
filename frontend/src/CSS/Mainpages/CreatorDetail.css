@@ -5,7 +5,9 @@
   border-radius: 15px;
   margin-bottom: 30px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  border-left: 5px solid #3498db;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .entry-form h2 {
@@ -44,13 +46,33 @@
   padding: 20px;
   border-radius: 10px;
   margin: 20px 0;
-  border-left: 4px solid #e74c3c;
 }
 
 .taking-seeding-inline h4 {
   color: #e74c3c;
   margin-bottom: 15px;
   font-size: 18px;
+}
+
+.taking-seeding-inline button,
+.planting-section button {
+  padding: 10px 20px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.taking-seeding-inline button:hover,
+.planting-section button:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .seeding-takers-list {
@@ -84,7 +106,6 @@
   padding: 15px;
   border-radius: 8px;
   margin-top: 15px;
-  border-left: 4px solid #27ae60;
 }
 
 .seeding-summary p, .planting-summary p {
@@ -99,7 +120,6 @@
   padding: 20px;
   border-radius: 10px;
   margin: 20px 0;
-  border-left: 4px solid #27ae60;
 }
 
 .planting-section h4 {
@@ -117,7 +137,9 @@
 
 /* Save Button */
 .save-button {
-  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 15px;
   background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
   color: white;
@@ -128,6 +150,7 @@
   cursor: pointer;
   margin-top: 20px;
   transition: all 0.3s ease;
+  display: block;
 }
 
 .save-button:hover:not(:disabled) {
@@ -143,6 +166,9 @@
 /* Last Entry Section */
 .last-entry-section {
   margin-bottom: 30px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .last-entry-section h2 {
@@ -153,21 +179,20 @@
 }
 
 .last-entry {
-  border-left: 5px solid #f39c12;
   position: relative;
 }
 
 .last-entry-badge {
   position: absolute;
-  top: -10px;
-  right: -5px;
-  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  top: 10px;
+  right: 10px;
+  background: #4CAF50;
   color: white;
-  padding: 5px 12px;
-  border-radius: 15px;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 /* Entry Cards */
@@ -177,7 +202,6 @@
   border-radius: 12px;
   margin-bottom: 20px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #3498db;
   transition: all 0.3s ease;
   position: relative;
 }
@@ -263,7 +287,6 @@
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 25px;
-  border-left: 4px solid #9b59b6;
 }
 
 .filter-controls h3 {
@@ -443,7 +466,7 @@
   .entry-card,
   .entry-form {
     box-shadow: none;
-    border: 1px solid #ddd;
+    
   }
 
   .last-entry-badge {
@@ -491,7 +514,7 @@
   padding: 12px 20px;
   border-radius: 8px;
   margin: 15px 0;
-  border-left: 4px solid #28a745;
+  
 }
 
 .error-message {
@@ -500,7 +523,7 @@
   padding: 12px 20px;
   border-radius: 8px;
   margin: 15px 0;
-  border-left: 4px solid #dc3545;
+  
 }css */
 
 .creator-detail-container {
@@ -639,3 +662,5 @@
   cursor: not-allowed;
   transform: none;
 }
+
+

@@ -22,8 +22,10 @@ router.get('/', protect, async (req, res) => {
     try {
         const { month, year, date } = req.query;
         let query = { user: req.user._id };
+        
         if (month) query.date = new RegExp(`^${year ? year : '\\d{4}'}-${month}`);
         if (date) query.date = date;
+        
         const products = await Product.find(query).sort({ date: -1 });
         res.json(products);
     } catch (err) {
@@ -35,6 +37,9 @@ router.get('/', protect, async (req, res) => {
 router.get('/latest', protect, async (req, res) => {
     try {
         const latest = await Product.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+        if (!latest) {
+            return res.status(200).json(null);
+        }
         res.json(latest);
     } catch (err) {
         res.status(500).json({ message: err.message });

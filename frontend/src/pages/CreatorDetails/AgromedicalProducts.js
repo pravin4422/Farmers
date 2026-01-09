@@ -20,6 +20,7 @@ function AgromedicalProducts() {
   const [showHistoryView, setShowHistoryView] = useState(false);
   const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Replace with your actual API base URL
@@ -98,19 +99,24 @@ function AgromedicalProducts() {
   const saveToDatabase = async (productData) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
+      
       const response = await fetch(`${API_BASE_URL}/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(productData),
       });
       
-      if (!response.ok) throw new Error('Failed to save');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save');
+      }
       
       const result = await response.json();
       setError('');
-      showMessage(t.saveSuccess);
       return result;
     } catch (err) {
       setError(t.error + ': ' + err.message);
@@ -123,10 +129,12 @@ function AgromedicalProducts() {
   const updateInDatabase = async (id, productData) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(productData),
       });
@@ -148,8 +156,12 @@ function AgromedicalProducts() {
   const deleteFromDatabase = async (id) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE_URL}/products/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       
       if (!response.ok) throw new Error('Failed to delete');
@@ -167,13 +179,20 @@ function AgromedicalProducts() {
   const fetchFromDatabase = async (filters = {}) => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       
       if (filters.month) params.append('month', filters.month);
       if (filters.year) params.append('year', filters.year);
       if (filters.date) params.append('date', filters.date);
       
-      const response = await fetch(`${API_BASE_URL}/products?${params}`);
+      const url = `${API_BASE_URL}/products?${params}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
       if (!response.ok) throw new Error('Failed to fetch');
       
@@ -190,14 +209,24 @@ function AgromedicalProducts() {
 
   const fetchLatestEntry = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/products/latest`);
+      const token = localStorage.getItem('token');
+      const url = `${API_BASE_URL}/products/latest`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (response.status === 404) {
+        return null;
+      }
       
       if (!response.ok) throw new Error('Failed to fetch latest');
       
       const result = await response.json();
       return result;
     } catch (err) {
-      console.error('Error fetching latest entry:', err);
       return null;
     }
   };
@@ -229,8 +258,7 @@ function AgromedicalProducts() {
   }, [showHistoryView, filterMonth, filterYear, filterDate]);
 
   const showMessage = (message) => {
-    // You can implement a toast notification here
-    alert(message); // Simple alert for now
+    // Silent - no alert
   };
 
   const resetForm = () => {
@@ -255,26 +283,27 @@ function AgromedicalProducts() {
       total: parseFloat(quantity) * parseFloat(cost),
     };
 
+    setButtonLoading(true);
     try {
       if (editingId) {
-        // Update existing record
-        await updateInDatabase(editingId, newEntry);
+        const updated = await updateInDatabase(editingId, newEntry);
+        setLastEntry(updated);
+        if (showHistoryView) {
+          setProducts(prev => prev.map(p => (p._id === editingId || p.id === editingId) ? updated : p));
+        }
       } else {
-        // Add new record
-        await saveToDatabase(newEntry);
+        const saved = await saveToDatabase(newEntry);
+        setLastEntry(saved);
+        if (showHistoryView) {
+          setProducts(prev => [saved, ...prev]);
+        }
       }
 
       resetForm();
-      
-      // Refresh the latest entry
-      await loadLatestEntry();
-      
-      // If in history view, refresh the history data
-      if (showHistoryView) {
-        await loadHistoryData();
-      }
     } catch (error) {
-      console.error('Error saving product:', error);
+      // Error already handled in API functions
+    } finally {
+      setButtonLoading(false);
     }
   };
 
@@ -300,7 +329,7 @@ function AgromedicalProducts() {
           await loadLatestEntry();
         }
       } catch (error) {
-        console.error('Error deleting product:', error);
+        // Error already handled in API functions
       }
     }
   };
@@ -416,8 +445,8 @@ function AgromedicalProducts() {
         <input type="text" placeholder={t.name} value={name} onChange={(e) => setName(e.target.value)} />
         <input type="number" placeholder={t.quantity} value={quantity} onChange={(e) => setQuantity(e.target.value)} />
         <input type="number" placeholder={t.cost} value={cost} onChange={(e) => setCost(e.target.value)} />
-        <button onClick={addProduct} disabled={loading}>
-          {editingId ? t.updateProduct : t.addProduct}
+        <button onClick={addProduct} disabled={buttonLoading} className={buttonLoading ? 'loading' : ''}>
+          {buttonLoading ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? t.updateProduct : t.addProduct)}
         </button>
       </div>
 

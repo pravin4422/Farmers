@@ -88,7 +88,12 @@ function Reminder() {
 
   const fetchTasks = async (uid) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/${uid}`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/tasks/${uid}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
@@ -103,6 +108,7 @@ function Reminder() {
     if (!newTask.trim()) return;
     
     try {
+      const token = localStorage.getItem('token');
       const taskData = {
         userId,
         text: newTask,
@@ -112,7 +118,10 @@ function Reminder() {
       
       const response = await fetch('http://localhost:5000/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(taskData)
       });
       
@@ -128,10 +137,14 @@ function Reminder() {
 
   const toggleComplete = async (taskId) => {
     try {
+      const token = localStorage.getItem('token');
       const task = tasks.find(t => t._id === taskId);
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ completed: !task.completed })
       });
       
@@ -146,8 +159,12 @@ function Reminder() {
 
   const deleteTask = async (taskId) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
       
       if (response.ok) {
