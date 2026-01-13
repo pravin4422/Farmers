@@ -78,7 +78,6 @@ const AiChat = () => {
         try {
           recognitionRef.current.stop();
         } catch (e) {
-          // Ignore errors on cleanup
         }
       }
     };

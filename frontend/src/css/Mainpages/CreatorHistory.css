@@ -7,23 +7,22 @@
 
 .history-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  padding-bottom: 15px;
+  padding: 15px 20px;
   border-bottom: 3px solid #4CAF50;
-  position: relative;
 }
 
 .history-header h1 {
   font-size: 28px;
   color: #2d7a36;
   margin: 0;
+  flex: 1;
+  text-align: center;
 }
 
 .back-btn {
-  position: absolute;
-  left: 0;
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -39,8 +38,6 @@
 }
 
 .lang-toggle {
-  position: absolute;
-  right: 0;
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -89,19 +86,22 @@
 
 .filter-inputs {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
+.filter-inputs select,
 .filter-inputs input {
-  padding: 10px;
+  padding: 12px;
   border: 2px solid #ddd;
   border-radius: 8px;
   font-size: 14px;
-  flex: 1;
-  max-width: 250px;
+  min-width: 150px;
+  background: white;
 }
 
+.filter-inputs select:focus,
 .filter-inputs input:focus {
   outline: none;
   border-color: #4CAF50;
@@ -135,6 +135,38 @@
   margin-bottom: 20px;
 }
 
+.tabs-section {
+  margin-bottom: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e8f5e9;
+}
+
+.tab {
+  padding: 12px 20px;
+  border: none;
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.tab:hover {
+  background: #e8f5e9;
+  color: #2d7a36;
+}
+
+.tab.active {
+  background: #4CAF50;
+  color: white;
+}
+
 .loading, .no-results {
   text-align: center;
   padding: 40px;
@@ -150,28 +182,43 @@
 
 .entry-card {
   background: white;
-  
   border-radius: 12px;
   padding: 20px;
   transition: all 0.3s;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: none !important;
 }
 
 .entry-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 16px rgba(45, 122, 54, 0.15);
+  border: none !important;
 }
 
 .entry-header {
   margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid #e8f5e9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.entry-season {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2d7a36;
+  background: #e8f5e9;
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
 .entry-date {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: #2d7a36;
+  color: #666;
 }
 
 .entry-details p {
@@ -248,17 +295,69 @@
     gap: 15px;
   }
   
-  .filter-options {
+  .filter-inputs {
     flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-inputs select,
+  .filter-inputs input {
+    min-width: 100%;
+  }
+  
+  .entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .tabs {
+    flex-wrap: wrap;
     gap: 10px;
   }
   
-  .filter-inputs {
-    flex-direction: column;
-  }
-  
-  .filter-inputs input {
-    max-width: 100%;
+  .tab {
+    flex: 1;
+    min-width: 120px;
   }
 }
 
+
+.review-history {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+.review-history strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #1976D2;
+  font-size: 14px;
+}
+
+.review-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.review-history li {
+  padding: 6px 0;
+  font-size: 13px;
+  color: #555;
+  border-bottom: 1px solid #e3f2fd;
+}
+
+.review-history li:last-child {
+  border-bottom: none;
+}
+
+.problem-card {
+  border-left: 4px solid #f44336;
+}
+
+.problem-card .entry-header {
+  background: #ffebee;
+}

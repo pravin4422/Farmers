@@ -16,20 +16,34 @@ exports.addKamitty = async (req, res) => {
   }
 };
 
-// Get all entries for logged-in user
+// Get all entries for logged-in user with season/year filtering
 exports.getKamitty = async (req, res) => {
   try {
-    const kamitty = await Kamitty.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const { season, year } = req.query;
+    let filter = { user: req.user._id };
+    
+    if (season) filter.season = season;
+    if (year) filter.year = parseInt(year);
+    
+    const kamitty = await Kamitty.find(filter).sort({ createdAt: -1 });
     res.json(kamitty);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching kamitty entries', error: err.message });
   }
 };
 
-// Get latest entry for logged-in user
+// Get latest entry for logged-in user with season/year filtering
 exports.getLatestKamitty = async (req, res) => {
   try {
-    const latestKamitty = await Kamitty.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+    const { season, year } = req.query;
+    let filter = { user: req.user._id };
+    
+    if (season && year) {
+      filter.season = season;
+      filter.year = parseInt(year);
+    }
+    
+    const latestKamitty = await Kamitty.findOne(filter).sort({ createdAt: -1 });
     if (!latestKamitty) {
       return res.status(404).json({ message: 'No kamitty entries found' });
     }

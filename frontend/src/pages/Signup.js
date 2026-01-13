@@ -16,7 +16,6 @@ function Signup({ setUser }) {
   
   const navigate = useNavigate();
 
-  // Language content
   const content = {
     tamil: {
       title: "பதிவு செய்யவும்",
@@ -46,7 +45,6 @@ function Signup({ setUser }) {
     }
   };
 
-  // Load language preference
   useEffect(() => {
     const savedLanguage = sessionStorage.getItem('language');
     
@@ -55,7 +53,6 @@ function Signup({ setUser }) {
     }
   }, []);
 
-  // Save language preference
   useEffect(() => {
     sessionStorage.setItem('language', language);
   }, [language]);
@@ -64,7 +61,6 @@ function Signup({ setUser }) {
     setLanguage(language === 'tamil' ? 'english' : 'tamil');
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -74,18 +70,15 @@ function Signup({ setUser }) {
     if (error) setError('');
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError(currentContent.passwordMismatch);
       return;
     }
 
-    // Validate password length
     if (formData.password.length < 6) {
       setError(currentContent.passwordMinLength);
       return;
@@ -94,37 +87,30 @@ function Signup({ setUser }) {
     setLoading(true);
 
     try {
-      // Make API call to backend signup endpoint
       const response = await api.post('/auth/signup', {
         name: formData.name,
         email: formData.email,
         password: formData.password
       });
 
-      // Store token with CONSISTENT key name (token not authToken)
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userEmail', formData.email);
       
-      // Store the user's NAME (this is the key part!)
       localStorage.setItem('displayName', formData.name);
       
-      // Store full user object if backend returns it
       if (response.data.user) {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
 
-      // Update App.js user state
       setUser({
         token: response.data.token,
         email: formData.email,
         displayName: formData.name
       });
 
-      // Redirect to home page (not login)
       navigate('/');
       
     } catch (err) {
-      // Handle error from backend
       const errorMessage = err.response?.data?.message || 'Signup failed. Please try again.';
       setError(errorMessage);
       console.error('Signup error:', err);
@@ -137,7 +123,6 @@ function Signup({ setUser }) {
 
   return (
     <div className={`signup-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
-      {/* Header with controls */}
       <div className="signup-header">
         <div className="theme-language-controls">
           <button 
@@ -150,11 +135,9 @@ function Signup({ setUser }) {
         </div>
       </div>
 
-      {/* Main signup content */}
       <div className="signup-content">
         <h2 className="signup-title">{currentContent.title}</h2>
         
-        {/* Error message */}
         {error && (
           <div className="error-message" role="alert">
             {error}
@@ -213,7 +196,6 @@ function Signup({ setUser }) {
           </button>
         </form>
 
-        {/* Login link */}
         <p className="login-link">
           {currentContent.loginPrompt}{' '}
           <a href="/login">

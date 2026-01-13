@@ -20,9 +20,11 @@ router.post('/', protect, async (req, res) => {
 // GET: Get all products or filtered for logged-in user
 router.get('/', protect, async (req, res) => {
     try {
-        const { month, year, date } = req.query;
+        const { month, year, date, season } = req.query;
         let query = { user: req.user._id };
         
+        if (season) query.season = season;
+        if (year) query.year = parseInt(year);
         if (month) query.date = new RegExp(`^${year ? year : '\\d{4}'}-${month}`);
         if (date) query.date = date;
         
@@ -33,10 +35,18 @@ router.get('/', protect, async (req, res) => {
     }
 });
 
-// GET: Latest product for logged-in user
+// GET: Latest product for logged-in user with season/year filtering
 router.get('/latest', protect, async (req, res) => {
     try {
-        const latest = await Product.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+        const { season, year } = req.query;
+        let query = { user: req.user._id };
+        
+        if (season && year) {
+            query.season = season;
+            query.year = parseInt(year);
+        }
+        
+        const latest = await Product.findOne(query).sort({ createdAt: -1 });
         if (!latest) {
             return res.status(200).json(null);
         }

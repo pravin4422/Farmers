@@ -8,7 +8,7 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
 
-  // Language content
+ 
   const content = {
     tamil: {
       title: "கடவுச்சொல்லை மறந்தீர்களா?",
@@ -26,13 +26,11 @@ function ForgotPassword() {
     }
   };
 
-  // Load language from localStorage
   useEffect(() => {
     const savedLanguage = localStorage.getItem("language");
     if (savedLanguage) setLanguage(savedLanguage);
   }, []);
 
-  // Save language preference
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
@@ -46,7 +44,7 @@ function ForgotPassword() {
       const res = await api.post("/auth/forgot-password", { email });
       alert(res.data.message || content[language].success);
       setEmail("");
-      navigate("/login"); // ✅ redirect after success
+      navigate("/login"); 
     } catch (err) {
       alert(err.response?.data?.error || content[language].error);
     }
@@ -56,7 +54,6 @@ function ForgotPassword() {
 
   return (
     <div className={`forgot-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
-      {/* Header controls */}
       <div className="forgot-header">
         <div className="theme-language-controls">
           <button

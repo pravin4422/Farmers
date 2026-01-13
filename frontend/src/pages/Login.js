@@ -11,7 +11,6 @@ function Login({ setUser }) {
 
   const navigate = useNavigate();
 
-  // Language content
   const content = {
     tamil: {
       title: "உள்நுழைவு",
@@ -31,13 +30,11 @@ function Login({ setUser }) {
     }
   };
 
-  // Load language from memory (not localStorage)
   useEffect(() => {
     const savedLanguage = sessionStorage.getItem("language");
     if (savedLanguage) setLanguage(savedLanguage);
   }, []);
 
-  // Save language
   useEffect(() => {
     sessionStorage.setItem("language", language);
   }, [language]);
@@ -47,13 +44,11 @@ function Login({ setUser }) {
 
   const currentContent = content[language];
 
-  // Handle input
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
   };
 
-  // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -62,24 +57,20 @@ function Login({ setUser }) {
     try {
       const response = await api.post("/auth/login", formData);
 
-      // Store token & user with CONSISTENT key names
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userEmail", formData.email);
       
-      // Extract displayName and userId from backend response
-      let displayName = formData.email; // Default to email
+      let displayName = formData.email; 
       let userId = null;
       
       if (response.data.user) {
         localStorage.setItem("user", JSON.stringify(response.data.user));
         
-        // Get userId from backend
         userId = response.data.user.id || response.data.user._id;
         if (userId) {
           localStorage.setItem("userId", String(userId));
         }
         
-        // Get name from backend user object
         displayName = response.data.user.name || 
                      response.data.user.displayName || 
                      response.data.user.username || 
@@ -88,14 +79,12 @@ function Login({ setUser }) {
         localStorage.setItem("displayName", displayName);
       }
 
-      // Update user state in App.js
       setUser({
         token: response.data.token,
         email: formData.email,
         displayName: displayName
       });
 
-      // Redirect
       navigate("/home");
     } catch (err) {
       const errorMessage =
@@ -109,7 +98,6 @@ function Login({ setUser }) {
 
   return (
     <div className={`login-container ${language === 'tamil' ? 'tamil-lang' : ''}`}>
-      {/* Header */}
       <div className="login-header">
         <div className="theme-language-controls">
           <button
@@ -124,7 +112,6 @@ function Login({ setUser }) {
         </div>
       </div>
 
-      {/* Login form */}
       <div className="login-content">
         <h2 className="login-title">{currentContent.title}</h2>
 

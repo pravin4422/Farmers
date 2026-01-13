@@ -16,7 +16,9 @@ const CreatorSchema = new mongoose.Schema({
   // ✅ Link every entry to a user
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-  seedDate: { type: Date, required: true },
+  season: { type: String, required: true },
+  year: { type: Number, required: true },
+  seedDate: { type: Date },
   seedWeight: { type: Number },
   seedCost: { type: Number },
   seedingCount: { type: Number },

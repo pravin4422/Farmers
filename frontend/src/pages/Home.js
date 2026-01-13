@@ -6,11 +6,10 @@ import '../css/Home.css';
 function Home() {
   const { language, toggleLanguage } = useLanguage();
 
-  // Language content
   const content = {
     tamil: {
-      title: "பாக்போனில் வரவேற்கிறோம்",
-      subtitle: "விவசாயத்திற்கான உங்கள் நம்பகமான துணையாளர்",
+      title: "ஸ்மார்ட் விவசாயி வரவேற்கிறோம்",
+      
       cards: [
         {
           title: "உருவாக்குனர் விவரங்கள்",
@@ -51,8 +50,8 @@ function Home() {
       ]
     },
     english: {
-      title: "Welcome to Backbone",
-      subtitle: "Your trusted companion for all things agriculture.",
+      title: "Welcome to Smart Farmer",
+      
       cards: [
         {
           title: "Creator Details",
@@ -103,7 +102,6 @@ function Home() {
 
   return (
     <div className="home-container">
-      {/* Header with controls */}
       <div className="home-header">
         <div className="theme-language-controls">
           <button 
@@ -116,11 +114,8 @@ function Home() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="home-content">
-        <h1 className="home-title">{currentContent.title}</h1>
-        <p className="home-subtitle">{currentContent.subtitle}</p>
-        
+        <h1 className="home-title">{currentContent.title}</h1>         
         <div className="home-sections">
           {currentContent.cards.map((card, index) => (
             <Link 

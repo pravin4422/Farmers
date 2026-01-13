@@ -1,0 +1,525 @@
+body {
+  background: white;
+  margin: 0;
+  padding: 0;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+  padding: 25px 35px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.top-bar h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #1a202c;
+  font-weight: 800;
+  flex: 1;
+  min-width: 250px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.toggle-btn, .back-btn {
+  padding: 8px 16px;
+  border: 2px solid #1a202c;
+  border-radius: 8px;
+  background: white;
+  color: #1a202c;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+  min-width: 90px;
+  height: 36px;
+}
+
+.toggle-btn:hover, .back-btn:hover {
+  background: #1a202c;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 35px;
+}
+
+.add-button, .problem-button {
+  padding: 14px 28px;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.add-button {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  box-shadow: 0 5px 20px rgba(72, 187, 120, 0.4);
+}
+
+.problem-button {
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  box-shadow: 0 5px 20px rgba(245, 101, 101, 0.4);
+}
+
+.add-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(72, 187, 120, 0.5);
+}
+
+.problem-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(245, 101, 101, 0.5);
+}
+
+.add-button:disabled, .problem-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.expiry-form {
+  background: white;
+  padding: 35px;
+  border-radius: 20px;
+  margin-bottom: 40px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.expiry-form h2 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  color: #1a202c;
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: 800;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.expiry-form h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  border-radius: 2px;
+}
+
+.expiry-form label {
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.expiry-form input,
+.expiry-form select,
+.expiry-form textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background: #f7fafc;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.expiry-form input:focus,
+.expiry-form select:focus,
+.expiry-form textarea:focus {
+  outline: none;
+  border-color: #48bb78;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(72, 187, 120, 0.1);
+  transform: translateY(-1px);
+}
+
+.save-button {
+  margin-top: 25px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(72, 187, 120, 0.4);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.save-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(72, 187, 120, 0.5);
+}
+
+.save-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.voice-input-wrapper {
+  position: relative;
+  margin-top: 5px;
+}
+
+.problem-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.voice-button-container {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.voice-record-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-record-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.voice-record-btn.recording {
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  animation: pulse 1.5s infinite;
+}
+
+.mic-icon,
+.stop-icon {
+  font-size: 18px;
+}
+
+.audio-player-container {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f7fafc, #edf2f7);
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+}
+
+.audio-label {
+  margin: 0 0 12px 0;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.audio-player {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.remove-audio-btn {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(245, 101, 101, 0.3);
+}
+
+.remove-audio-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 3px 12px rgba(245, 101, 101, 0.4); }
+  50% { box-shadow: 0 5px 25px rgba(245, 101, 101, 0.7); }
+  100% { box-shadow: 0 3px 12px rgba(245, 101, 101, 0.4); }
+}
+
+.expiries-section {
+  background: white;
+  padding: 35px;
+  border-radius: 20px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.expiries-section h2 {
+  color: #1a202c;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: 800;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.expiries-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  border-radius: 2px;
+}
+
+.no-expiries {
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+  padding: 60px 40px;
+  background: #f7fafc;
+  border-radius: 15px;
+  font-size: 17px;
+}
+
+.expiries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.expiry-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.expiry-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.expiry-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  border-color: #48bb78;
+}
+
+.expiry-card.expired::before {
+  background: linear-gradient(135deg, #fc8181, #f56565);
+}
+
+.expiry-card.expiring-soon::before {
+  background: linear-gradient(135deg, #f6ad55, #ed8936);
+}
+
+.expiry-card.expired {
+  background: linear-gradient(135deg, #fff5f5, #fed7d7);
+  border-color: #fc8181;
+}
+
+.expiry-card.expiring-soon {
+  background: linear-gradient(135deg, #fffaf0, #feebc8);
+  border-color: #f6ad55;
+}
+
+.expiry-card.problem-card {
+  background: linear-gradient(135deg, #fff8f0, #ffe8d6);
+  border-color: #ff6b35;
+}
+
+.expiry-card.problem-card::before {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+}
+
+.expiry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.expiry-header h3 {
+  margin: 0;
+  color: #1a202c;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.expired {
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  color: white;
+  box-shadow: 0 3px 10px rgba(245, 101, 101, 0.4);
+}
+
+.status-badge.expiring {
+  background: linear-gradient(135deg, #f6ad55, #ed8936);
+  color: white;
+  box-shadow: 0 3px 10px rgba(237, 137, 54, 0.4);
+}
+
+.expiry-card p {
+  margin: 10px 0;
+  color: #4a5568;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.expiry-card strong {
+  color: #2d3748;
+  font-weight: 700;
+}
+
+.expiry-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.expiry-actions button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.expiry-actions button:first-child {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  color: white;
+  box-shadow: 0 3px 12px rgba(66, 153, 225, 0.4);
+}
+
+.expiry-actions button:first-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(66, 153, 225, 0.5);
+}
+
+.expiry-actions button:last-child {
+  background: linear-gradient(135deg, #fc8181, #f56565);
+  color: white;
+  box-shadow: 0 3px 12px rgba(245, 101, 101, 0.4);
+}
+
+.expiry-actions button:last-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(245, 101, 101, 0.5);
+}
+
+.expiry-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.expiry-timestamp {
+  font-size: 0.8rem;
+  color: #a0aec0;
+  margin-top: 15px;
+  font-style: italic;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .top-bar h1 {
+    font-size: 1.6rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .expiries-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .expiry-actions {
+    flex-direction: column;
+  }
+  
+  .expiry-form {
+    padding: 25px;
+  }
+}

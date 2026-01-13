@@ -7,7 +7,6 @@ function ResetPassword() {
   const [language, setLanguage] = useState("tamil");
   const [formData, setFormData] = useState({ token: "", newPassword: "" });
 
-  // Language content
   const content = {
     tamil: {
       title: "கடவுச்சொல்லை மீட்டமைக்கவும்",
@@ -27,7 +26,6 @@ function ResetPassword() {
     }
   };
 
-  // Load saved theme and language
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const savedLanguage = localStorage.getItem("language");
@@ -40,13 +38,11 @@ function ResetPassword() {
     }
   }, []);
 
-  // Apply theme
   useEffect(() => {
     document.body.className = isDarkMode ? "dark-theme" : "light-theme";
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
-  // Save language preference
   useEffect(() => {
     localStorage.setItem("language", language);
   }, [language]);
@@ -68,7 +64,7 @@ function ResetPassword() {
     try {
       const res = await api.post("/auth/reset-password", formData);
       alert(res.data.message || content[language].success);
-      setFormData({ token: "", newPassword: "" }); // clear fields
+      setFormData({ token: "", newPassword: "" }); 
     } catch (err) {
       alert(err.response?.data?.message || content[language].error);
     }
@@ -86,7 +82,6 @@ function ResetPassword() {
             className="control-btn theme-btn"
             aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {isDarkMode ? "☀️" : "🌙"}
           </button>
           <button
             onClick={toggleLanguage}
@@ -98,7 +93,6 @@ function ResetPassword() {
         </div>
       </div>
 
-      {/* Reset Password Form */}
       <div className="reset-content">
         <h2 className="reset-title">{currentContent.title}</h2>
         <form className="reset-form" onSubmit={handleSubmit}>

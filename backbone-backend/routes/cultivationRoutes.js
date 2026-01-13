@@ -3,10 +3,18 @@ const router = express.Router();
 const CultivationActivity = require('../models/CultivationActivity');
 const protect = require('../middleware/authMiddleware');
 
-// GET latest entry for logged-in user (must be before '/' route)
+// GET latest entry for logged-in user with season/year filtering
 router.get('/latest', protect, async (req, res) => {
   try {
-    const latest = await CultivationActivity.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+    const { season, year } = req.query;
+    let filter = { user: req.user._id };
+    
+    if (season && year) {
+      filter.season = season;
+      filter.year = parseInt(year);
+    }
+    
+    const latest = await CultivationActivity.findOne(filter).sort({ createdAt: -1 });
     res.json(latest);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -16,12 +24,13 @@ router.get('/latest', protect, async (req, res) => {
 // GET all with optional filters for logged-in user
 router.get('/', protect, async (req, res) => {
   try {
-    const { month, year, date, search } = req.query;
+    const { month, year, date, search, season } = req.query;
     let filter = { user: req.user._id };
 
+    if (season) filter.season = season;
+    if (year) filter.year = parseInt(year);
     if (date) filter.date = date;
     if (month) filter.date = { $regex: `^${month}` }; // YYYY-MM
-    if (year) filter.date = { $regex: `^${year}` };   // YYYY
     if (search) filter.title = { $regex: search, $options: 'i' };
 
     const activities = await CultivationActivity.find(filter).sort({ date: -1 });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LanguageProvider } from "./context/LanguageContext";
+import { SeasonProvider } from "./context/SeasonContext";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -26,6 +27,7 @@ import AgroChemical from "./pages/Agrochemicals/AgroChemical.js";
 import AiChat from "./pages/AiChat.js";
 import UserProfile from "./pages/UserProfile.js";
 import PublicProfile from "./pages/PublicProfile.js";
+import Review from "./pages/Review.js";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -51,9 +53,10 @@ function App() {
 
   return (
     <LanguageProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Navbar user={user} setUser={setUser} />
+      <SeasonProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Navbar user={user} setUser={setUser} />
 
       <Routes>
         {/* Public Routes */}
@@ -162,11 +165,20 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/review"
+          element={
+            <ProtectedRoute>
+              <Review user={user} />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </BrowserRouter>
+      </SeasonProvider>
     </LanguageProvider>
   );
 }

@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 
 const TractorSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  season: { type: String, required: true },
+  year: { type: Number, required: true },
   date: { type: Date, required: true },
   day: { type: String, required: true },
   work: { type: String, required: true },

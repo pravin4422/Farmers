@@ -190,7 +190,7 @@ function Prices() {
       <div className="filters">
         <input 
           type="text" 
-          placeholder="🔍 Search Commodity/Market/State" 
+          placeholder=" Search Commodity/Market/State" 
           value={searchQuery} 
           onChange={(e) => setSearchQuery(e.target.value)} 
         />
@@ -214,15 +214,15 @@ function Prices() {
       </div>
 
       <div className="button-group">
-        <button onClick={handleExportCSV}>📊 Export to CSV</button>
-        <button onClick={handlePrint}>🖨️ Print Report</button>
+        <button onClick={handleExportCSV}> Export to CSV</button>
+        <button onClick={handlePrint}> Print Report</button>
       </div>
 
       {loading ? (
         <p className="loading">Loading market data...</p>
       ) : (
         <>
-          <h3>📈 Today's Market Prices ({todayPrices.length} items)</h3>
+          <h3> Today's Market Prices ({todayPrices.length} items)</h3>
           {todayPrices.length > 0 ? (
             <table>
               <thead>
@@ -252,7 +252,7 @@ function Prices() {
             <p className="no-data">No prices available for today</p>
           )}
 
-          <h3>📋 All Market Prices</h3>
+          <h3> All Market Prices</h3>
           <table id="price-table">
             <thead>
               <tr>
@@ -285,7 +285,7 @@ function Prices() {
                     </td>
                     <td>
                       {isUserPrice && (
-                        <button onClick={() => handleDelete(item._id)}>🗑️ Delete</button>
+                        <button onClick={() => handleDelete(item._id)}> Delete</button>
                       )}
                     </td>
                   </tr>
@@ -299,7 +299,7 @@ function Prices() {
           </table>
 
           <div className="manual-form">
-            <h3>➕ Add New Price Entry</h3>
+            <h3>Add New Price Entry</h3>
             <form onSubmit={handleAdd}>
               <input 
                 type="text" 
@@ -360,7 +360,7 @@ function Prices() {
 
           {chartData.length > 0 && (
             <div className="chart-container">
-              <h3>📊 Average Price by Commodity</h3>
+              <h3> Average Price by Commodity</h3>
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
