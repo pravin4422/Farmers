@@ -14,6 +14,8 @@ const OwnerSchema = new mongoose.Schema({
 
 const CultivationActivitySchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  season: { type: String, required: true },
+  year: { type: Number, required: true },
   title: { type: String, required: true },
   note: { type: String, required: true },
   date: { type: String, required: true },

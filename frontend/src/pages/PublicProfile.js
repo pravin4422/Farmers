@@ -88,7 +88,7 @@ const PublicProfile = () => {
             </div>
 
             <div className="public-profile-card">
-              <div className="card-icon">👤</div>
+              <div className="card-icon"></div>
               <div className="card-content">
                 <label>Age</label>
                 <p>{profile.age} years</p>
@@ -96,7 +96,7 @@ const PublicProfile = () => {
             </div>
 
             <div className="public-profile-card full-width">
-              <div className="card-icon">📍</div>
+              <div className="card-icon"></div>
               <div className="card-content">
                 <label>Address</label>
                 <p>{profile.address}</p>
@@ -104,7 +104,7 @@ const PublicProfile = () => {
             </div>
 
             <div className="public-profile-card">
-              <div className="card-icon">🌱</div>
+              <div className="card-icon"></div>
               <div className="card-content">
                 <label>Main Crop</label>
                 <p>{profile.mainCrop}</p>
@@ -113,7 +113,7 @@ const PublicProfile = () => {
 
             {profile.landSize && (
               <div className="public-profile-card">
-                <div className="card-icon">🏞️</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>Land Size</label>
                   <p>{profile.landSize} acres</p>
@@ -123,7 +123,7 @@ const PublicProfile = () => {
 
             {profile.educationQualification && (
               <div className="public-profile-card">
-                <div className="card-icon">🎓</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>Education</label>
                   <p>{profile.educationQualification}</p>
@@ -133,7 +133,7 @@ const PublicProfile = () => {
 
             {profile.agriEducationExperience && (
               <div className="public-profile-card">
-                <div className="card-icon">📚</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>Agricultural Education</label>
                   <p>{profile.agriEducationExperience} years</p>

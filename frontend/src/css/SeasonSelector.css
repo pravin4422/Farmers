@@ -1,0 +1,51 @@
+.season-selector {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.season-year-fields {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.season-year-fields label {
+  flex: 1;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.season-year-fields select,
+.season-year-fields input {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.season-year-fields select:focus,
+.season-year-fields input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.season-display {
+  margin-top: 15px;
+  padding: 10px;
+  background: #e8f5e9;
+  border-radius: 6px;
+  text-align: center;
+  color: #27ae60;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .season-year-fields {
+    flex-direction: column;
+  }
+}

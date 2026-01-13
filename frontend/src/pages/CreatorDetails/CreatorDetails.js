@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSeason } from '../../context/SeasonContext';
+import SeasonSelector from '../../components/SeasonSelector';
 import '../../css/Mainpages/CreatorDetail.css';
 
 function CreatorDetail() {
+  const { season, year } = useSeason();
   const [showForm, setShowForm] = useState(false);
   const [language, setLanguage] = useState('en');
   const [editingIndex, setEditingIndex] = useState(null);
@@ -10,11 +13,12 @@ function CreatorDetail() {
   const [loading, setLoading] = useState(false);
   
   // Filter states
-  const [showHistory, setShowHistory] = useState(false);
-  const [filterType, setFilterType] = useState('date');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
+  const [filterSeason, setFilterSeason] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+  const [filterDay, setFilterDay] = useState('');
+  
+  // Season and Year states
+  // Removed - now using context
   
   // Form states
   const [seedDate, setSeedDate] = useState('');
@@ -27,6 +31,7 @@ function CreatorDetail() {
   // Data states
   const [lastEntry, setLastEntry] = useState(null);
   const [historyEntries, setHistoryEntries] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
   
   // Seeding taker states
   const [seedingTakers, setSeedingTakers] = useState([]);
@@ -67,6 +72,13 @@ function CreatorDetail() {
     }
   }, []);
 
+  // Refetch latest entry when season or year changes
+  useEffect(() => {
+    if (season && year) {
+      fetchLastEntry();
+    }
+  }, [season, year]);
+
   // ✅ Silent authentication check - no alert
   const checkAuthentication = () => {
     const token = getAuthToken();
@@ -78,7 +90,14 @@ function CreatorDetail() {
   // ✅ Fetch with silent redirect on auth failure
   const fetchLastEntry = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/creator-details/latest`, {
+      let url = `${API_BASE_URL}/creator-details/latest`;
+      
+      // Add season and year parameters if available
+      if (season && year) {
+        url += `?season=${encodeURIComponent(season)}&year=${encodeURIComponent(year)}`;
+      }
+      
+      const response = await fetch(url, {
         headers: getAuthHeaders()
       });
       
@@ -90,6 +109,9 @@ function CreatorDetail() {
       if (response.ok) {
         const data = await response.json();
         setLastEntry(data);
+      } else if (response.status === 404) {
+        // No entry found for this season/year combination
+        setLastEntry(null);
       }
     } catch (error) {
       console.error('Error fetching last entry:', error);
@@ -101,12 +123,13 @@ function CreatorDetail() {
     try {
       let url = `${API_BASE_URL}/creator-details/history?`;
       
-      if (filterType === 'date' && selectedDate) {
-        url += `date=${selectedDate}`;
-      } else if (filterType === 'month' && selectedMonth) {
-        url += `month=${selectedMonth}`;
-      } else if (filterType === 'year' && selectedYear) {
-        url += `year=${selectedYear}`;
+      const params = [];
+      if (filterSeason) params.push(`season=${encodeURIComponent(filterSeason)}`);
+      if (filterYear) params.push(`year=${encodeURIComponent(filterYear)}`);
+      if (filterDay) params.push(`day=${encodeURIComponent(filterDay)}`);
+      
+      if (params.length > 0) {
+        url += params.join('&');
       }
       
       const response = await fetch(url, {
@@ -129,11 +152,12 @@ function CreatorDetail() {
     }
   };
 
-  const saveEntryToDatabase = async (entryData) => {
+  const saveEntryToDatabase = async (entryData, entryId = null) => {
     try {
-      const method = editingId ? 'PUT' : 'POST';
-      const url = editingId 
-        ? `${API_BASE_URL}/creator-details/${editingId}` 
+      const id = entryId || editingId;
+      const method = id ? 'PUT' : 'POST';
+      const url = id 
+        ? `${API_BASE_URL}/creator-details/${id}` 
         : `${API_BASE_URL}/creator-details`;
       
       const response = await fetch(url, {
@@ -190,40 +214,51 @@ function CreatorDetail() {
   const totalMoneyForSeedings = seedingTakers.reduce((sum, p) => sum + p.money, 0);
 
   const handleAddOrUpdateEntry = async () => {
-    if (!seedDate) {
+    if (!season || !year) {
+      alert(t('Please select Season and Year', 'பருவம் மற்றும் ஆண்டு தேர்ந்தெடுக்கவும்'));
       return;
     }
 
     setLoading(true);
     
+    // Check if entry exists for this season and year
+    let existingEntryId = editingId;
+    if (!existingEntryId && lastEntry && lastEntry.season === season && lastEntry.year === parseInt(year)) {
+      existingEntryId = lastEntry._id || lastEntry.id;
+    }
+    
     const entryData = {
-      seedDate,
-      seedWeight,
-      seedCost,
-      seedingCount,
-      peopleCount,
-      moneyPerPerson,
-      totalSeedingCost,
-      seedingTakers,
-      plantingDate,
-      workers,
-      createdAt: editingId ? undefined : new Date().toISOString(),
+      season,
+      year,
+      seedDate: seedDate || null,
+      seedWeight: seedWeight || null,
+      seedCost: seedCost || null,
+      seedingCount: seedingCount || null,
+      peopleCount: peopleCount || null,
+      moneyPerPerson: moneyPerPerson || null,
+      totalSeedingCost: totalSeedingCost || null,
+      seedingTakers: seedingTakers.length > 0 ? seedingTakers : null,
+      plantingDate: plantingDate || null,
+      workers: workers.length > 0 ? workers : null,
+      createdAt: existingEntryId ? undefined : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    const success = await saveEntryToDatabase(entryData);
+    console.log('Saving entry:', entryData);
+    const success = await saveEntryToDatabase(entryData, existingEntryId);
     
     if (success) {
-      resetForm();
-      setShowForm(false);
-      setEditingIndex(null);
-      setEditingId(null);
+      alert(t('Saved successfully!', 'வெற்றிகரமாக சேமிக்கப்பட்டது!'));
+      await fetchLastEntry();
+    } else {
+      alert(t('Failed to save. Please try again.', 'சேமிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'));
     }
     
     setLoading(false);
   };
 
   const resetForm = () => {
+    // Season and year are not reset - they persist across forms
     setSeedDate('');
     setSeedWeight('');
     setSeedCost('');
@@ -236,6 +271,7 @@ function CreatorDetail() {
   };
 
   const handleEdit = (entry) => {
+    // Season and year are set in context, not in form
     setSeedDate(entry.seedDate);
     setSeedWeight(entry.seedWeight);
     setSeedCost(entry.seedCost);
@@ -256,21 +292,18 @@ function CreatorDetail() {
         if (lastEntry && (lastEntry.id === entryId || lastEntry._id === entryId)) {
           fetchLastEntry();
         }
-        if (showHistory) {
-          fetchHistoryEntries();
-        }
       }
     }
   };
 
   const handleAddSeedingTaker = () => {
-    if (!seedingPerson || !seedingTakenCount || !seedingPersonMoney) return;
+    if (!seedingPerson || !seedingTakenCount) return;
     setSeedingTakers([
       ...seedingTakers,
       {
         name: seedingPerson,
         taken: parseInt(seedingTakenCount),
-        money: parseInt(seedingPersonMoney),
+        money: seedingPersonMoney ? parseInt(seedingPersonMoney) : 0,
       },
     ]);
     setSeedingPerson('');
@@ -279,13 +312,13 @@ function CreatorDetail() {
   };
 
   const handleAddWorker = () => {
-    if (!workerName || !costPerPerson) return;
+    if (!workerName) return;
     setWorkers([
       ...workers,
       {
         name: workerName,
         moneyGiven,
-        cost: parseInt(costPerPerson),
+        cost: costPerPerson ? parseInt(costPerPerson) : 0,
       },
     ]);
     setWorkerName('');
@@ -313,11 +346,13 @@ function CreatorDetail() {
     <div key={entry._id || entry.id} className={`entry-card ${isLast ? 'last-entry' : ''}`}>
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
-      <p><strong>{t('Date:', 'நாள்:')}</strong> {formatDate(entry.seedDate)}</p>
-      <p><strong>{t('Seed Weight:', 'விதை எடை:')}</strong> {entry.seedWeight} kg</p>
-      <p><strong>{t('Seed Cost:', 'விதை செலவு:')}</strong> ₹ {entry.seedCost}</p>
-      <p><strong>{t('Seedings:', 'விதைப்புகள்:')}</strong> {entry.seedingCount}</p>
-      <p><strong>{t('People Involved:', 'சேர்ந்தவர்கள்:')}</strong> {entry.peopleCount}</p>
+      <p><strong>{t('Season:', 'பருவம்:')}</strong> {entry.season}</p>
+      <p><strong>{t('Year:', 'ஆண்டு:')}</strong> {entry.year}</p>
+      {entry.seedDate && <p><strong>{t('Date:', 'நாள்:')}</strong> {formatDate(entry.seedDate)}</p>}
+      {entry.seedWeight && <p><strong>{t('Seed Weight:', 'விதை எடை:')}</strong> {entry.seedWeight} kg</p>}
+      {entry.seedCost && <p><strong>{t('Seed Cost:', 'விதை செலவு:')}</strong> ₹ {entry.seedCost}</p>}
+      {entry.seedingCount && <p><strong>{t('Seedings:', 'விதைப்புகள்:')}</strong> {entry.seedingCount}</p>}
+      {entry.peopleCount && <p><strong>{t('People Involved:', 'சேர்ந்தவர்கள்:')}</strong> {entry.peopleCount}</p>}
 
       {entry.seedingTakers && entry.seedingTakers.length > 0 && (
         <>
@@ -387,6 +422,9 @@ function CreatorDetail() {
           <button className="cultivating-btn" onClick={() => navigate('/cultivatingfield')}>
              {t('Cultivating Field', 'வயல் உழுது')}
           </button>
+          <button className="review-btn" onClick={() => navigate('/review')}>
+             {t('Review', 'மதிப்பாய்வு')}
+          </button>
         </div>
       </div>
 
@@ -400,10 +438,12 @@ function CreatorDetail() {
           {showForm ? t('Cancel', 'ரத்துசெய்') : t(' Add Entry', ' பதிவை சேர்க்க')}
         </button>
         
-        <button className="history-button" onClick={handleViewHistory} disabled={loading}>
-           {showHistory ? t('Hide History', 'வரலாற்றை மறைக்க') : t('View History', 'வரலாற்றைப் பார்க்க')}
+        <button className="history-button" onClick={() => navigate('/CreatorHistory')} disabled={loading}>
+           {t('View History', 'வரலாற்றைப் பார்க்க')}
         </button>
       </div>
+
+      <SeasonSelector language={language} t={t} />
 
       {showForm && (
         <div className="entry-form">
@@ -427,6 +467,12 @@ function CreatorDetail() {
           <label>{t('Money per Person (₹):', 'ஒருவருக்கு செலவு (₹):')}</label>
           <input type="number" value={moneyPerPerson} onChange={(e) => setMoneyPerPerson(e.target.value)} />
 
+          <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
+            {loading ? '⏳' : '💾'} {t('Save Seed Sowing', 'விதைப்பு சேமிக்க')}
+          </button>
+
+          <hr style={{margin: '30px 0', border: '1px solid #ddd'}} />
+
           <div className="taking-seeding-inline">
             <h4>{t('Taking Seeding', 'விதைப்புகளை எடுத்தல்')}</h4>
             <label>{t('Name of Person:', 'நபரின் பெயர்:')}</label>
@@ -440,12 +486,25 @@ function CreatorDetail() {
 
             <button onClick={handleAddSeedingTaker}> {t('Add Person', 'நபரை சேர்க்க')}</button>
 
+            <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
+              {loading ? '⏳' : '💾'} {t('Save Taking Seeding', 'விதைப்பு எடுத்தல் சேமிக்க')}
+            </button>
+
             <div className="seeding-takers-list">
               {seedingTakers.map((person, index) => (
                 <div key={index} className="taker-card">
                   <p> <strong>{person.name}</strong></p>
                   <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {person.taken}</p>
                   <p>{t('Money:', 'தொகை:')} ₹ {person.money}</p>
+                  <div className="entry-actions">
+                    <button onClick={() => {
+                      setSeedingPerson(person.name);
+                      setSeedingTakenCount(person.taken);
+                      setSeedingPersonMoney(person.money);
+                      setSeedingTakers(seedingTakers.filter((_, i) => i !== index));
+                    }}>✏️ {t('Edit', 'திருத்த')}</button>
+                    <button onClick={() => setSeedingTakers(seedingTakers.filter((_, i) => i !== index))}>🗑️ {t('Delete', 'அழிக்க')}</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -455,6 +514,8 @@ function CreatorDetail() {
               <p><strong>{t('Total Money for Seedings:', 'மொத்த செலவு:')}</strong> ₹ {totalMoneyForSeedings}</p>
             </div>
           </div>
+
+          <hr style={{margin: '30px 0', border: '1px solid #ddd'}} />
 
           <div className="planting-section">
             <h4> {t('Planted Cost (Natta Kooli)', 'நட்ட கூலி')}</h4>
@@ -475,12 +536,25 @@ function CreatorDetail() {
 
             <button onClick={handleAddWorker}> {t('Add Worker', 'நபரை சேர்க்க')}</button>
 
+            <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
+              {loading ? '⏳' : '💾'} {t('Save Planted Cost', 'நட்ட கூலி சேமிக்க')}
+            </button>
+
             <div className="worker-list">
               {workers.map((worker, i) => (
                 <div key={i} className="taker-card">
                   <p> {worker.name}</p>
                   <p>{t('Money Given:', 'கூலி வழங்கப்பட்டது:')} {worker.moneyGiven === 'yes' ? t('Yes', 'ஆம்') : t('No', 'இல்லை')}</p>
                   <p>{t('Cost:', 'செலவு:')} ₹ {worker.cost}</p>
+                  <div className="entry-actions">
+                    <button onClick={() => {
+                      setWorkerName(worker.name);
+                      setMoneyGiven(worker.moneyGiven);
+                      setCostPerPerson(worker.cost);
+                      setWorkers(workers.filter((_, idx) => idx !== i));
+                    }}>✏️ {t('Edit', 'திருத்த')}</button>
+                    <button onClick={() => setWorkers(workers.filter((_, idx) => idx !== i))}>🗑️ {t('Delete', 'அழிக்க')}</button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -490,100 +564,25 @@ function CreatorDetail() {
               <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹ {workers.reduce((sum, w) => sum + parseInt(w.cost || 0), 0)}</p>
             </div>
           </div>
-
-          <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button">
-            {loading ? '⏳' : '✅'} {editingId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Save Entry', 'பதிவை சேமிக்க')}
-          </button>
         </div>
       )}
 
       <div className="last-entry-section">
-        <h2> {t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
+        <h2> {season && year 
+          ? t(`Latest Entry for ${season} ${year}`, `${season} ${year} இன் சமீபத்திய பதிவு`)
+          : t('Latest Entry', 'சமீபத்திய பதிவு')
+        }</h2>
         {lastEntry ? (
           renderEntry(lastEntry, true)
         ) : (
-          <p className="no-entries">{t('No entries yet.', 'எந்த பதிவும் இல்லை.')}</p>
+          <p className="no-entries">
+            {season && year 
+              ? t(`No entries found for ${season} ${year}.`, `${season} ${year} க்கு எந்த பதிவும் இல்லை.`)
+              : t('No entries yet.', 'எந்த பதிவும் இல்லை.')
+            }
+          </p>
         )}
       </div>
-
-      {showHistory && (
-        <div className="history-section">
-          <div className="filter-controls">
-            <h3> {t('History Filter', 'வரலாற்று வடிப்பு')}</h3>
-            
-            <div className="filter-type-selection">
-              <label>
-                <input 
-                  type="radio" 
-                  value="date" 
-                  checked={filterType === 'date'} 
-                  onChange={(e) => setFilterType(e.target.value)} 
-                />
-                {t('By Date', 'தேதி வாரியாக')}
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  value="month" 
-                  checked={filterType === 'month'} 
-                  onChange={(e) => setFilterType(e.target.value)} 
-                />
-                {t('By Month', 'மாதம் வாரியாக')}
-              </label>
-              <label>
-                <input 
-                  type="radio" 
-                  value="year" 
-                  checked={filterType === 'year'} 
-                  onChange={(e) => setFilterType(e.target.value)} 
-                />
-                {t('By Year', 'ஆண்டு வாரியாக')}
-              </label>
-            </div>
-
-            <div className="filter-inputs">
-              {filterType === 'date' && (
-                <input 
-                  type="date" 
-                  value={selectedDate} 
-                  onChange={(e) => setSelectedDate(e.target.value)} 
-                />
-              )}
-              {filterType === 'month' && (
-                <input 
-                  type="month" 
-                  value={selectedMonth} 
-                  onChange={(e) => setSelectedMonth(e.target.value)} 
-                />
-              )}
-              {filterType === 'year' && (
-                <input 
-                  type="number" 
-                  placeholder={t('Year', 'ஆண்டு')}
-                  value={selectedYear} 
-                  onChange={(e) => setSelectedYear(e.target.value)}
-                  min="2020"
-                  max={new Date().getFullYear()}
-                />
-              )}
-              <button onClick={handleFilterChange} disabled={loading}>
-                 {t('Search', 'தேடல்')}
-              </button>
-            </div>
-          </div>
-
-          <div className="history-entries">
-            <h3>{t('History Entries', 'வரலாற்று பதிவுகள்')}</h3>
-            {loading ? (
-              <p> {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
-            ) : historyEntries.length === 0 ? (
-              <p className="no-entries">{t('No entries found for the selected filter.', 'தேர்ந்தெடுக்கப்பட்ட வடிப்புக்கு எந்த பதிவும் இல்லை.')}</p>
-            ) : (
-              historyEntries.map(entry => renderEntry(entry))
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

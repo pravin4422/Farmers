@@ -18,20 +18,34 @@ exports.addTractor = async (req, res) => {
   }
 };
 
-// ✅ Get all entries for logged-in user
+// ✅ Get all entries for logged-in user with season/year filtering
 exports.getTractors = async (req, res) => {
   try {
-    const tractors = await Tractor.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const { season, year } = req.query;
+    let filter = { user: req.user._id };
+    
+    if (season) filter.season = season;
+    if (year) filter.year = parseInt(year);
+    
+    const tractors = await Tractor.find(filter).sort({ createdAt: -1 });
     res.json(tractors);
   } catch (err) {
     res.status(500).json({ message: "Error fetching tractor entries", error: err.message });
   }
 };
 
-// ✅ Get latest entry for logged-in user
+// ✅ Get latest entry for logged-in user with season/year filtering
 exports.getLatestTractor = async (req, res) => {
   try {
-    const latestTractor = await Tractor.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+    const { season, year } = req.query;
+    let filter = { user: req.user._id };
+    
+    if (season && year) {
+      filter.season = season;
+      filter.year = parseInt(year);
+    }
+    
+    const latestTractor = await Tractor.findOne(filter).sort({ createdAt: -1 });
     if (!latestTractor) {
       return res.status(404).json({ message: "No tractor entries found" });
     }

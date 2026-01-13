@@ -180,6 +180,7 @@
 
 .last-entry {
   position: relative;
+  border-left: none !important;
 }
 
 .last-entry-badge {
@@ -204,6 +205,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   position: relative;
+  border-left: none;
 }
 
 .entry-card:hover {
@@ -529,25 +531,22 @@
 /* CreatorDetail Main Styles */
 
 .creator-detail-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
   font-family: 'Arial', sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
 }
 
 .top-bar {
-
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #d0e2dc;
   color: white;
-  padding: 20px;
-  border-radius: 23px;
-  
-  margin-bottom: 25px;
+  padding: 20px 30px;
+  width: 100%;
+  margin: 0 0 25px 0;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
@@ -616,6 +615,15 @@
 
 .cultivating-btn:hover {
   background: #007bff;
+  transform: translateY(-2px);
+}
+
+.review-btn {
+  background: #ff6b35;
+}
+
+.review-btn:hover {
+  background: #e55a2b;
   transform: translateY(-2px);
 }
 

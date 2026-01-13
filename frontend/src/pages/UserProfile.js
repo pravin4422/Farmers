@@ -66,7 +66,6 @@ const UserProfile = () => {
     const savedLanguage = localStorage.getItem('language');
     if (savedLanguage) setLanguage(savedLanguage);
     
-    // Check if viewing own profile or another user's profile
     const currentUserId = JSON.parse(localStorage.getItem('user') || '{}')._id;
     setIsOwnProfile(!userId || userId === currentUserId);
     
@@ -83,7 +82,6 @@ const UserProfile = () => {
         setFormData(response.data);
         setHasProfile(true);
         
-        // Store user info from populated data
         if (response.data.userId) {
           setProfileUserInfo(response.data.userId);
         }
@@ -129,7 +127,6 @@ const UserProfile = () => {
       setIsEditing(false);
       setHasProfile(true);
       
-      // Refetch profile
       const profileResponse = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -172,14 +169,14 @@ const UserProfile = () => {
             {isOwnProfile && (
               <div className="profile-actions">
                 <button onClick={() => setIsEditing(true)} className="edit-btn">
-                  <span>✏️</span> {currentContent.edit}
+                  <span></span> {currentContent.edit}
                 </button>
               </div>
             )}
             
             <div className="profile-grid">
               <div className="profile-card">
-                <div className="card-icon">🌾</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>{currentContent.agricultureExperience}</label>
                   <p>{formData.agricultureExperience} {currentContent.years}</p>
@@ -187,7 +184,7 @@ const UserProfile = () => {
               </div>
 
               <div className="profile-card">
-                <div className="card-icon">👤</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>{currentContent.age}</label>
                   <p>{formData.age} {currentContent.years}</p>
@@ -195,7 +192,7 @@ const UserProfile = () => {
               </div>
 
               <div className="profile-card full-width">
-                <div className="card-icon">📍</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>{currentContent.address}</label>
                   <p>{formData.address}</p>
@@ -203,7 +200,7 @@ const UserProfile = () => {
               </div>
 
               <div className="profile-card">
-                <div className="card-icon">🌱</div>
+                <div className="card-icon"></div>
                 <div className="card-content">
                   <label>{currentContent.mainCrop}</label>
                   <p>{formData.mainCrop}</p>
@@ -212,7 +209,7 @@ const UserProfile = () => {
 
               {formData.landSize && (
                 <div className="profile-card">
-                  <div className="card-icon">🏞️</div>
+                  <div className="card-icon"></div>
                   <div className="card-content">
                     <label>{currentContent.landSize}</label>
                     <p>{formData.landSize} {currentContent.acres}</p>
@@ -222,7 +219,7 @@ const UserProfile = () => {
 
               {formData.educationQualification && (
                 <div className="profile-card">
-                  <div className="card-icon">🎓</div>
+                  <div className="card-icon"></div>
                   <div className="card-content">
                     <label>{currentContent.educationQualification}</label>
                     <p>{formData.educationQualification}</p>
@@ -232,7 +229,7 @@ const UserProfile = () => {
 
               {formData.agriEducationExperience && (
                 <div className="profile-card">
-                  <div className="card-icon">📚</div>
+                  <div className="card-icon"></div>
                   <div className="card-content">
                     <label>{currentContent.agriEducationExperience}</label>
                     <p>{formData.agriEducationExperience} {currentContent.years}</p>
@@ -246,7 +243,7 @@ const UserProfile = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  <span className="label-icon">🌾</span>
+                  <span className="label-icon"></span>
                   {currentContent.agricultureExperience} <span className="mandatory">*</span>
                 </label>
                 <input type="number" name="agricultureExperience" value={formData.agricultureExperience} onChange={handleChange} required min="0" placeholder="0" />
@@ -254,7 +251,7 @@ const UserProfile = () => {
 
               <div className="form-group">
                 <label>
-                  <span className="label-icon">👤</span>
+                  <span className="label-icon"></span>
                   {currentContent.age} <span className="mandatory">*</span>
                 </label>
                 <input type="number" name="age" value={formData.age} onChange={handleChange} required min="18" placeholder="18" />
@@ -263,7 +260,7 @@ const UserProfile = () => {
 
             <div className="form-group">
               <label>
-                <span className="label-icon">📍</span>
+                <span className="label-icon"></span>
                 {currentContent.address} <span className="mandatory">*</span>
               </label>
               <textarea name="address" value={formData.address} onChange={handleChange} required placeholder="Enter your address" />
@@ -271,7 +268,7 @@ const UserProfile = () => {
 
             <div className="form-group">
               <label>
-                <span className="label-icon">🌱</span>
+                <span className="label-icon"></span>
                 {currentContent.mainCrop} <span className="mandatory">*</span>
               </label>
               <input type="text" name="mainCrop" value={formData.mainCrop} onChange={handleChange} required placeholder="e.g., Rice, Wheat" />
@@ -280,7 +277,7 @@ const UserProfile = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>
-                  <span className="label-icon">🏞️</span>
+                  <span className="label-icon"></span>
                   {currentContent.landSize} <span className="optional">({currentContent.optional})</span>
                 </label>
                 <input type="number" name="landSize" value={formData.landSize} onChange={handleChange} min="0" step="0.01" placeholder="0.0" />
@@ -297,7 +294,7 @@ const UserProfile = () => {
 
             <div className="form-group">
               <label>
-                <span className="label-icon">📚</span>
+                <span className="label-icon"></span>
                 {currentContent.agriEducationExperience} <span className="optional">({currentContent.optional})</span>
               </label>
               <input type="number" name="agriEducationExperience" value={formData.agriEducationExperience} onChange={handleChange} min="0" placeholder="0" />

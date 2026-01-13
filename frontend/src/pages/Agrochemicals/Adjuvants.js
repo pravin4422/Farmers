@@ -16,7 +16,6 @@ const AdjuvantCard = ({ adjuvant, onClick }) => (
     </div>
   </div>
 );
-
 // Separate component for detailed view
 const AdjuvantDetailView = ({ adjuvant, onBack }) => (
   <div className="adjuvant-detail-view">

@@ -1,15 +1,12 @@
 const mongoose = require('mongoose');
 
-const KamittySchema = new mongoose.Schema({
+const kamittySchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  date: { type: Date, required: true },
-  description: { type: String, required: true },
-  numBags: { type: Number, default: 0 },
-  costPerBag: { type: Number, default: 0 },
-  otherCost: { type: Number, default: 0 },
-  totalKamitty: { type: Number, required: true },
+  season: { type: String, required: true },
+  year: { type: Number, required: true },
+  date: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Kamitty', KamittySchema);
+module.exports = mongoose.model('Kamitty', kamittySchema);

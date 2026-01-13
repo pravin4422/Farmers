@@ -17,7 +17,6 @@ function Forum() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // Translations
   const translations = {
     en: {
       title: 'Farmer Forum',
@@ -37,7 +36,7 @@ function Forum() {
       endDate: 'End Date',
     },
     ta: {
-      title: '👨‍🌾 விவசாயி மன்றம்',
+      title: ' விவசாயி மன்றம்',
       searchPlaceholder: 'இடுகைகளைத் தேடுங்கள்...',
       filterByDate: 'தேதி வாரியாக வடிகட்டவும்:',
       allTime: 'அனைத்து காலம்',
@@ -392,7 +391,7 @@ function Forum() {
                 }}
                 title="Delete all posts from this date"
               >
-                🗑️
+                ❌
               </button>
             </div>
           </div>
