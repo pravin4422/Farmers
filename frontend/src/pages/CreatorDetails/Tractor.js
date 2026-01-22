@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSeason } from '../../context/SeasonContext';
 import '../../css/Mainpages/Tractor.css';
 
 
 function Tractor() {
   const navigate = useNavigate();
+  const { season, year } = useSeason();
   const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
   
@@ -192,6 +194,8 @@ function Tractor() {
         ? `${API_BASE_URL}/tractor/${editingId}` 
         : `${API_BASE_URL}/tractor`;
       
+      console.log('Sending tractor data:', entryData);
+      
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -204,9 +208,13 @@ function Tractor() {
       if (response.ok) {
         const savedEntry = await response.json();
         setLastTractorEntry(savedEntry);
+        alert(t('Saved successfully!', 'வெற்றிகரமாக சேமிக்கப்பட்டது!'));
         return true;
       } else {
-        throw new Error('Failed to save tractor entry');
+        const errorData = await response.json();
+        console.error('Backend error:', errorData);
+        alert(t('Error: ', 'பிழை: ') + (errorData.message || errorData.error || 'Failed to save'));
+        return false;
       }
     } catch (error) {
       console.error('Error saving tractor entry:', error);
@@ -428,28 +436,37 @@ function Tractor() {
   };
 
   const handleAddEntry = async () => {
-    if (!date || !day || !work || !tractorName || timeSegments.some(s => !s.hours) || !rate) {
-      alert(t('Please fill in all fields.', 'அனைத்து புலங்களும் நிரப்பவும்.'));
+    if (!date || !day || !work || !tractorName || timeSegments.some(s => !s.hours)) {
+      alert(t('Please fill in all required fields.', 'தேவையான அனைத்து புலங்களும் நிரப்பவும்.'));
+      return;
+    }
+
+    if (!season || !year) {
+      alert(t('Please select Season and Year from Creator Details page', 'உருவாக்குநர் விவரம் பக்கத்தில் பருவம் மற்றும் ஆண்டு தேர்ந்தெடுக்கவும்'));
       return;
     }
 
     setLoading(true);
 
     const totalHours = timeSegments.reduce((acc, s) => acc + parseFloat(s.hours || 0), 0);
-    const total = totalHours * parseFloat(rate);
+    const rateValue = rate ? parseFloat(rate) : 0;
+    const total = totalHours * rateValue;
 
     const entryData = {
-      date,
+      date: new Date(date).toISOString(),
       day,
       work,
       tractorName,
-      timeSegments,
-      totalHours: totalHours.toFixed(2),
-      rate: parseFloat(rate),
-      total: total.toFixed(2), // Fixed: changed from totalAmount to total
+      timeSegments: timeSegments.map(seg => ({
+        period: seg.period,
+        hours: parseFloat(seg.hours)
+      })),
+      totalHours: parseFloat(totalHours.toFixed(2)),
+      rate: rateValue,
+      total: parseFloat(total.toFixed(2)),
       moneyGiven,
-      createdAt: editingId ? undefined : new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      year: parseInt(year),
+      season
     };
 
     const success = await saveTractorEntryToDatabase(entryData);
@@ -469,6 +486,11 @@ function Tractor() {
       return;
     }
 
+    if (!season || !year) {
+      alert(t('Please select Season and Year from Creator Details page', 'உருவாக்குநர் விவரம் பக்கத்தில் பருவம் மற்றும் ஆண்டு தேர்ந்தெடுக்கவும்'));
+      return;
+    }
+
     setLoading(true);
 
     const entryData = {
@@ -478,6 +500,8 @@ function Tractor() {
       costPerBag: costPerBag || '0',
       otherCost: otherCost || '0',
       totalKamitty: kamittyCost.toFixed(2),
+      year: parseInt(year),
+      season,
       createdAt: editingKamittyId ? undefined : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -1215,24 +1239,25 @@ function Tractor() {
         </button>
       </div>
 
-      {/* Latest Tractor Entry */}
-      <div className="latest-entries-section">
-        <h2>🚜 {t('Latest Tractor Entry', 'சமீபத்திய டிராக்டர் பதிவு')}</h2>
-        {lastTractorEntry ? (
-          renderTractorEntry(lastTractorEntry, true)
-        ) : (
-          <p className="no-entries">{t('No tractor entries yet.', 'ஏதாவது டிராக்டர் பதிவுகள் இல்லை.')}</p>
-        )}
-      </div>
+      {/* Latest Entries - Side by Side */}
+      <div className="latest-entries-container">
+        <div className="latest-entries-section">
+          <h2>🚜 {t('Latest Tractor Entry', 'சமீபத்திய டிராக்டர் பதிவு')}</h2>
+          {lastTractorEntry ? (
+            renderTractorEntry(lastTractorEntry, true)
+          ) : (
+            <p className="no-entries">{t('No tractor entries yet.', 'ஏதாவது டிராக்டர் பதிவுகள் இல்லை.')}</p>
+          )}
+        </div>
 
-      {/* Latest Kamitty Entry */}
-      <div className="latest-entries-section">
-        <h2>🧾 {t('Latest Kamitty Entry', 'சமீபத்திய கமிட்டி பதிவு')}</h2>
-        {lastKamittyEntry ? (
-          renderKamittyEntry(lastKamittyEntry, true)
-        ) : (
-          <p className="no-entries">{t('No kamitty entries yet.', 'ஏதாவது கமிட்டி பதிவுகள் இல்லை.')}</p>
-        )}
+        <div className="latest-entries-section">
+          <h2>🧾 {t('Latest Kamitty Entry', 'சமீபத்திய கமிட்டி பதிவு')}</h2>
+          {lastKamittyEntry ? (
+            renderKamittyEntry(lastKamittyEntry, true)
+          ) : (
+            <p className="no-entries">{t('No kamitty entries yet.', 'ஏதாவது கமிட்டி பதிவுகள் இல்லை.')}</p>
+          )}
+        </div>
       </div>
 
       {/* Tractor History Section */}
@@ -1399,28 +1424,6 @@ function Tractor() {
         </div>
       )}
 
-      {/* Total Summary */}
-      <div className="total-summary">
-        <h3>{t('Summary', 'சுருக்கம்')}</h3>
-        <div className="summary-grid">
-          <div className="summary-card tractor-summary">
-            <h4>🚜 {t('Tractor Cost', 'டிராக்டர் செலவு')}</h4>
-            <p className="amount">₹{totalTractorCost.toFixed(2)}</p>
-          </div>
-          <div className="summary-card kamitty-summary">
-            <h4>🧾 {t('Kamitty Cost', 'கமிட்டி செலவு')}</h4>
-            <p className="amount">₹{totalKamittyCost.toFixed(2)}</p>
-          </div>
-          <div className="summary-card total-summary-card">
-            <h4>{t('Grand Total', 'மொத்த செலவு')}</h4>
-            <p className="grand-total">₹{grandTotal.toFixed(2)}</p>
-          </div>
-        </div>
-      </div>
-
-      <button className="back-btn" onClick={() => navigate(-1)}>
-        🔙 {t('Go Back', 'பின்செல்')}
-      </button>
     </div>
   );
 }

@@ -40,7 +40,6 @@ function ScrollToTop() {
 function App() {
   const [user, setUser] = useState(null);
 
-  // ✅ Load user from localStorage on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     const email = localStorage.getItem("userEmail");

@@ -554,6 +554,8 @@
   margin: 0;
   font-size: 28px;
   font-weight: bold;
+  text-align: left;
+  flex: 0 0 auto;
 }
 
 .top-actions {
@@ -574,11 +576,11 @@
 }
 
 .toggle-btn {
-  background: #3498db;
+  background: blue;
 }
 
 .toggle-btn:hover {
-  background: #2980b9;
+  background: blue;
   transform: translateY(-2px);
 }
 
@@ -619,11 +621,11 @@
 }
 
 .review-btn {
-  background: #ff6b35;
+  background: #007bff;
 }
 
 .review-btn:hover {
-  background: #e55a2b;
+  background: #0056b3;
   transform: translateY(-2px);
 }
 

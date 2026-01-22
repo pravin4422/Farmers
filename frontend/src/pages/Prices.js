@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import '../css/Prices/Prices.css';
 
 function Prices() {
@@ -10,6 +9,10 @@ function Prices() {
   const [filterDate, setFilterDate] = useState('');
   const [filterMinPrice, setFilterMinPrice] = useState('');
   const [filterMaxPrice, setFilterMaxPrice] = useState('');
+  const [govState, setGovState] = useState('');
+  const [govMarket, setGovMarket] = useState('');
+  const [govCommodity, setGovCommodity] = useState('');
+  const [govDate, setGovDate] = useState('');
   const [formData, setFormData] = useState({
     commodity: '',
     market: '',
@@ -22,8 +25,12 @@ function Prices() {
   const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    fetchUserPrices();
-    fetchApiPrices();
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchUserPrices(), fetchApiPrices()]);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const fetchUserPrices = async () => {
@@ -38,18 +45,21 @@ function Prices() {
       setUserPrices(data);
     } catch (error) {
       console.error('Error fetching user prices:', error);
+      setUserPrices([]);
     }
   };
 
   const fetchApiPrices = async () => {
     try {
-      const response = await fetch('https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100');
+      const response = await fetch('http://localhost:5000/api/prices/external');
+      if (!response.ok) {
+        setApiPrices([]);
+        return;
+      }
       const data = await response.json();
       setApiPrices(data.records || []);
     } catch (error) {
-      console.error('Error fetching API prices:', error);
-    } finally {
-      setLoading(false);
+      setApiPrices([]);
     }
   };
 
@@ -94,17 +104,43 @@ function Prices() {
   };
 
   const formatDateWithDay = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-IN', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    if (!dateStr) return 'N/A';
+    try {
+      let date;
+      if (dateStr.includes('/')) {
+        const [day, month, year] = dateStr.split('/');
+        date = new Date(`${year}-${month}-${day}`);
+      } else {
+        date = new Date(dateStr);
+      }
+      if (isNaN(date.getTime())) return 'N/A';
+      return date.toLocaleDateString('en-IN', { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    } catch {
+      return 'N/A';
+    }
   };
 
   const isToday = (dateStr) => {
-    return dateStr === today;
+    if (!dateStr) return false;
+    try {
+      let date;
+      if (dateStr.includes('/')) {
+        const [day, month, year] = dateStr.split('/');
+        date = new Date(`${year}-${month}-${day}`);
+      } else {
+        date = new Date(dateStr);
+      }
+      if (isNaN(date.getTime())) return false;
+      const itemDate = date.toISOString().split('T')[0];
+      return itemDate === today;
+    } catch {
+      return false;
+    }
   };
 
   const combinedPrices = [...userPrices, ...apiPrices].filter(item => {
@@ -161,26 +197,11 @@ function Prices() {
     printWindow.print();
   };
 
-  const chartData = [];
-  const priceMap = {};
-
-  combinedPrices.forEach(item => {
-    const key = item.commodity;
-    const avg = (parseFloat(item.min_price) + parseFloat(item.max_price)) / 2 || 0;
-    if (!priceMap[key]) {
-      priceMap[key] = { commodity: key, total: avg, count: 1 };
-    } else {
-      priceMap[key].total += avg;
-      priceMap[key].count += 1;
-    }
-  });
-
-  Object.values(priceMap).forEach(entry => {
-    chartData.push({
-      commodity: entry.commodity,
-      avgPrice: parseFloat((entry.total / entry.count).toFixed(2))
-    });
-  });
+  const handleRefresh = async () => {
+    setLoading(true);
+    await Promise.all([fetchUserPrices(), fetchApiPrices()]);
+    setLoading(false);
+  };
 
   return (
     <div className="prices-container">
@@ -214,8 +235,9 @@ function Prices() {
       </div>
 
       <div className="button-group">
-        <button onClick={handleExportCSV}> Export to CSV</button>
-        <button onClick={handlePrint}> Print Report</button>
+        <button onClick={handleRefresh} disabled={loading}>🔄 Refresh</button>
+        <button onClick={handleExportCSV}>📥 Export to CSV</button>
+        <button onClick={handlePrint}>🖨️ Print Report</button>
       </div>
 
       {loading ? (
@@ -252,8 +274,17 @@ function Prices() {
             <p className="no-data">No prices available for today</p>
           )}
 
-          <h3> All Market Prices</h3>
-          <table id="price-table">
+          <h3>📝 My Manually Entered Prices ({userPrices.filter(item => {
+            const matchesSearch = !searchQuery || 
+              item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesDate = !filterDate || item.arrival_date === filterDate;
+            const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+            const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+            return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+          }).length} items)</h3>
+          <table>
             <thead>
               <tr>
                 <th>Commodity</th>
@@ -267,9 +298,26 @@ function Prices() {
               </tr>
             </thead>
             <tbody>
-              {combinedPrices.length > 0 ? combinedPrices.map((item, idx) => {
+              {userPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).length > 0 ? userPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).map((item, idx) => {
                 const itemIsToday = isToday(item.arrival_date);
-                const isUserPrice = userPrices.some(p => p._id === item._id);
                 return (
                   <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
                     <td><strong>{item.commodity}</strong></td>
@@ -284,15 +332,110 @@ function Prices() {
                       </span>
                     </td>
                     <td>
-                      {isUserPrice && (
-                        <button onClick={() => handleDelete(item._id)}> Delete</button>
-                      )}
+                      <button onClick={() => handleDelete(item._id)}>🗑️ Delete</button>
                     </td>
                   </tr>
                 );
               }) : (
                 <tr>
-                  <td colSpan="8" className="no-data">No data available</td>
+                  <td colSpan="8" className="no-data">No manually entered prices</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <h3>🏛️ Government Market Prices ({apiPrices.filter(item => {
+            const matchesState = !govState || item.state?.toLowerCase().includes(govState.toLowerCase());
+            const matchesMarket = !govMarket || item.market?.toLowerCase().includes(govMarket.toLowerCase());
+            const matchesCommodity = !govCommodity || item.commodity?.toLowerCase().includes(govCommodity.toLowerCase());
+            let matchesDate = true;
+            if (govDate && item.arrival_date) {
+              const [day, month, year] = item.arrival_date.split('/');
+              const itemDateStr = `${year}-${month}-${day}`;
+              matchesDate = itemDateStr === govDate;
+            }
+            return matchesState && matchesMarket && matchesCommodity && matchesDate;
+          }).length} items)</h3>
+          <div className="filters">
+            <input 
+              type="text" 
+              placeholder="🌾 Search Commodity" 
+              value={govCommodity} 
+              onChange={(e) => setGovCommodity(e.target.value)} 
+            />
+            <input 
+              type="text" 
+              placeholder="🏪 Search Market" 
+              value={govMarket} 
+              onChange={(e) => setGovMarket(e.target.value)} 
+            />
+            <input 
+              type="text" 
+              placeholder="📍 Search State" 
+              value={govState} 
+              onChange={(e) => setGovState(e.target.value)} 
+            />
+            <input 
+              type="date" 
+              value={govDate} 
+              onChange={(e) => setGovDate(e.target.value)} 
+            />
+          </div>
+          <table id="price-table">
+            <thead>
+              <tr>
+                <th>Commodity</th>
+                <th>Market</th>
+                <th>State</th>
+                <th>Min Price (₹)</th>
+                <th>Max Price (₹)</th>
+                <th>Date</th>
+                <th>Today?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {apiPrices.filter(item => {
+                const matchesState = !govState || item.state?.toLowerCase().includes(govState.toLowerCase());
+                const matchesMarket = !govMarket || item.market?.toLowerCase().includes(govMarket.toLowerCase());
+                const matchesCommodity = !govCommodity || item.commodity?.toLowerCase().includes(govCommodity.toLowerCase());
+                let matchesDate = true;
+                if (govDate && item.arrival_date) {
+                  const [day, month, year] = item.arrival_date.split('/');
+                  const itemDateStr = `${year}-${month}-${day}`;
+                  matchesDate = itemDateStr === govDate;
+                }
+                return matchesState && matchesMarket && matchesCommodity && matchesDate;
+              }).length > 0 ? apiPrices.filter(item => {
+                const matchesState = !govState || item.state?.toLowerCase().includes(govState.toLowerCase());
+                const matchesMarket = !govMarket || item.market?.toLowerCase().includes(govMarket.toLowerCase());
+                const matchesCommodity = !govCommodity || item.commodity?.toLowerCase().includes(govCommodity.toLowerCase());
+                let matchesDate = true;
+                if (govDate && item.arrival_date) {
+                  const [day, month, year] = item.arrival_date.split('/');
+                  const itemDateStr = `${year}-${month}-${day}`;
+                  matchesDate = itemDateStr === govDate;
+                }
+                return matchesState && matchesMarket && matchesCommodity && matchesDate;
+              }).map((item, idx) => {
+                const itemIsToday = isToday(item.arrival_date);
+                return (
+                  <tr key={idx} className={itemIsToday ? 'today-row' : ''}>
+                    <td><strong>{item.commodity}</strong></td>
+                    <td>{item.market}</td>
+                    <td>{item.state}</td>
+                    <td>₹{item.min_price}</td>
+                    <td>₹{item.max_price}</td>
+                    <td>{formatDateWithDay(item.arrival_date)}</td>
+                    <td>
+                      <span className="status-badge">
+                        {itemIsToday ? '✅ Yes' : '❌ No'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" className="no-data">No government prices available</td>
                 </tr>
               )}
             </tbody>
@@ -357,48 +500,6 @@ function Prices() {
               </button>
             </form>
           </div>
-
-          {chartData.length > 0 && (
-            <div className="chart-container">
-              <h3> Average Price by Commodity</h3>
-              <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ecf0f1" />
-                  <XAxis 
-                    dataKey="commodity" 
-                    tick={{ fontSize: 12 }}
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }}
-                    label={{ value: 'Price (₹)', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`₹${value}`, 'Avg Price']}
-                    labelStyle={{ color: '#2c3e50' }}
-                    contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #ddd',
-                      borderRadius: '6px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="avgPrice" 
-                    fill="url(#colorGradient)"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <defs>
-                    <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3498db" />
-                      <stop offset="100%" stopColor="#2980b9" />
-                    </linearGradient>
-                  </defs>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
         </>
       )}
     </div>
