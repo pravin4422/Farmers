@@ -357,26 +357,30 @@ function CreatorDetail() {
       {entry.seedingTakers && entry.seedingTakers.length > 0 && (
         <>
           <p><strong>{t('Seeding Takers:', 'விதைப்புகளை எடுத்தவர்கள்:')}</strong></p>
-          {entry.seedingTakers.map((taker, i) => (
-            <div key={i} className="taker-card">
-              <p>👤 {taker.name}</p>
-              <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {taker.taken}</p>
-              <p>{t('Money:', 'தொகை:')} ₹ {taker.money}</p>
-            </div>
-          ))}
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
+            {entry.seedingTakers.map((taker, i) => (
+              <div key={i} className="taker-card" style={{flex: '0 0 calc(33.333% - 10px)', minWidth: '150px'}}>
+                <p>👤 {taker.name}</p>
+                <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {taker.taken}</p>
+                <p>{t('Money:', 'தொகை:')} ₹ {taker.money}</p>
+              </div>
+            ))}
+          </div>
         </>
       )}
 
       {entry.workers && entry.workers.length > 0 && (
         <>
           <p><strong>{t('Planted Workers:', 'நட்ட நபர்கள்:')}</strong></p>
-          {entry.workers.map((w, i) => (
-            <div key={i} className="taker-card">
-              <p> {w.name}</p>
-              <p>{t('Money Given:', 'கொடுக்கப்பட்டதா:')} {w.moneyGiven === 'yes' ? t('Yes', 'ஆம்') : t('No', 'இல்லை')}</p>
-              <p>{t('Cost:', 'செலவு:')} ₹ {w.cost}</p>
-            </div>
-          ))}
+          <div style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
+            {entry.workers.map((w, i) => (
+              <div key={i} className="taker-card" style={{flex: '0 0 calc(33.333% - 10px)', minWidth: '150px'}}>
+                <p> {w.name}</p>
+                <p>{t('Money Given:', 'கொடுக்கப்பட்டதா:')} {w.moneyGiven === 'yes' ? t('Yes', 'ஆம்') : t('No', 'இல்லை')}</p>
+                <p>{t('Cost:', 'செலவு:')} ₹ {w.cost}</p>
+              </div>
+            ))}
+          </div>
           <p><strong>{t('Total Workers:', 'மொத்த நபர்கள்:')}</strong> {entry.workers.length}</p>
           <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹ {entry.workers.reduce((sum, w) => sum + parseInt(w.cost || 0), 0)}</p>
         </>
@@ -407,7 +411,7 @@ function CreatorDetail() {
       <div className="top-bar">
         <h1>🌾 {t('Creator Detail', 'உருவாக்குநர் விவரம்')}</h1>
         <div className="top-actions">
-          <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
+          <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} style={{background: 'blue'}}>
              {t('தமிழ்', 'English')}
           </button>
           <button className="print-btn" onClick={() => window.print()}>

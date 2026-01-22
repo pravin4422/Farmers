@@ -6,10 +6,10 @@ const productSchema = new mongoose.Schema({
     year: { type: Number, required: true },
     date: { type: String, required: true },
     day: { type: String, required: true },
-    name: { type: String, required: true },
-    quantity: { type: Number, required: true },
-    cost: { type: Number, required: true },
-    total: { type: Number, required: true }
+    name: { type: String, default: '' },
+    quantity: { type: Number, default: 0 },
+    cost: { type: Number, default: 0 },
+    total: { type: Number, default: 0 }
 }, { timestamps: true });
 
 productSchema.pre('validate', function(next) {

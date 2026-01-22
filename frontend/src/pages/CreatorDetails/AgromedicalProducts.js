@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useSeason } from '../../context/SeasonContext';
 import '../../css/Mainpages/AgromedicalProducts.css';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 function AgromedicalProducts() {
+  const { season, year } = useSeason();
   const [products, setProducts] = useState([]);
   const [lastEntry, setLastEntry] = useState(null);
   const [date, setDate] = useState('');
@@ -272,15 +274,25 @@ function AgromedicalProducts() {
   };
 
   const addProduct = async () => {
-    if (!date || !day || !name || !quantity || !cost) return;
+    if (!date || !day) {
+      alert('Please fill in date and day');
+      return;
+    }
+
+    if (!season || !year) {
+      alert('Please select Season and Year from Creator Details page');
+      return;
+    }
 
     const newEntry = {
       date,
       day,
-      name,
-      quantity: parseFloat(quantity),
-      cost: parseFloat(cost),
-      total: parseFloat(quantity) * parseFloat(cost),
+      name: name || '',
+      quantity: quantity ? parseFloat(quantity) : 0,
+      cost: cost ? parseFloat(cost) : 0,
+      total: (quantity && cost) ? parseFloat(quantity) * parseFloat(cost) : 0,
+      season,
+      year: parseInt(year)
     };
 
     setButtonLoading(true);
@@ -482,16 +494,12 @@ function AgromedicalProducts() {
             max="2100"
           />
           <button onClick={clearFilters}>{t.clearFilters}</button>
-          <button onClick={exportToExcel}>{t.exportExcel}</button>
-          <button onClick={exportToPDF}>{t.exportPDF}</button>
           <button onClick={handlePrint}>{t.print}</button>
         </div>
       )}
 
       {!showHistoryView && (
         <div className="export-bar">
-          <button onClick={exportToExcel}>{t.exportExcel}</button>
-          <button onClick={exportToPDF}>{t.exportPDF}</button>
           <button onClick={handlePrint}>{t.print}</button>
         </div>
       )}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useSeason } from '../../context/SeasonContext';
 import '../../css/Mainpages/CultivatingField.css';
 
 
 
 function CultivatingField() {
+  const { season, year } = useSeason();
   const [language, setLanguage] = useState('en');
   const t = (en, ta) => (language === 'ta' ? ta : en);
 
@@ -230,6 +232,11 @@ function CultivatingField() {
       return;
     }
 
+    if (!season || !year) {
+      alert(t('Please select Season and Year from Creator Details page', 'உருவாக்குநர் விவரம் பக்கத்தில் பருவம் மற்றும் ஆண்டு தேர்ந்தெடுக்கவும்'));
+      return;
+    }
+
     const totalHours = timeSegments.reduce((acc, seg) => acc + parseFloat(seg.hours || 0), 0);
     const total = totalHours * parseFloat(rate);
 
@@ -243,6 +250,8 @@ function CultivatingField() {
       rate: parseFloat(rate),
       totalHours: totalHours.toFixed(2),
       total: total.toFixed(2),
+      season,
+      year: parseInt(year)
     };
 
     setButtonLoading(true);
@@ -502,93 +511,31 @@ function CultivatingField() {
         </button>
       </div>
 
-      <div className="view-toggle">
-        <button 
-          onClick={() => setShowHistoryView(!showHistoryView)}
-          className="toggle-btn"
-        >
-          {showHistoryView ? t('⬅️ Back to Latest', '⬅️ சமீபத்தியதற்கு திரும்பு') : t('📋 View History', '📋 வரலாறு பார்க்க')}
-        </button>
-      </div>
-
-      {showHistoryView && (
-        <div className="filter-section">
-          <input 
-            type="date" 
-            value={filterDate} 
-            onChange={(e) => setFilterDate(e.target.value)}
-            placeholder={t('Filter by Date', 'தேதி மூலம் வடிகட்டு')}
-          />
-          <input 
-            type="month" 
-            value={filterMonth} 
-            onChange={(e) => setFilterMonth(e.target.value)}
-            placeholder={t('Filter by Month', 'மாதம் மூலம் வடிகட்டு')}
-          />
-          <input 
-            type="number" 
-            value={filterYear} 
-            onChange={(e) => setFilterYear(e.target.value)}
-            placeholder={t('Filter by Year', 'வருடம் மூலம் வடிகட்டு')}
-            min="2000" 
-            max="2100"
-          />
-          <input 
-            type="text" 
-            placeholder={t("Search...", "தேடு...")} 
-            value={search} 
-            onChange={e => setSearch(e.target.value)} 
-          />
-          <button onClick={clearFilters}>{t('🔄 Clear Filters', '🔄 வடிகட்டிகளை அழி')}</button>
-        </div>
-      )}
-
       <div className="actions">
-        <button onClick={handleExportCSV}>{t("📊 CSV", "📊 CSV")}</button>
-        <button onClick={handleExportExcel}>{t("📊 Excel", "📊 Excel")}</button>
-        <button onClick={handleExportPDF}>{t("📄 PDF", "📄 PDF")}</button>
         <button onClick={handlePrint}>🖨️ {t("Print", "அச்சிடு")}</button>
       </div>
 
       <div className="section-header">
-        <h2>{showHistoryView ? t('History View', 'வரலாறு பார்வை') : t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
+        <h2>{t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
       </div>
 
       <div id="print-section" className="activity-list">
-        {paginatedActivities.length === 0 ? (
+        {lastEntry ? (
+          <div className="activity-card">
+            <h3>{lastEntry.title} ({lastEntry.date})</h3>
+            <p><strong>{t('Note', 'குறிப்பு')}:</strong> {lastEntry.note}</p>
+            <p>👷 {t("Driver", "டிரைவர்")}: {lastEntry.driver}</p>
+            <p>👤 {t("Owner", "உரிமையாளர்")}: {lastEntry.owner.name} | 📞 {lastEntry.owner.phone1}, {lastEntry.owner.phone2}</p>
+            <p>📍 {t("Address", "முகவரி")}: {lastEntry.owner.address}</p>
+            <p>⏱️ {t("Time", "நேரம்")}: {lastEntry.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
+            <p>💰 {t("Hours", "மணிநேரம்")}: {lastEntry.totalHours} | {t("Rate", "விலை")}: ₹{lastEntry.rate} | {t("Total", "மொத்தம்")}: ₹{lastEntry.total}</p>
+          </div>
+        ) : (
           <div className="no-records">
             {t('No records found', 'பதிவுகள் இல்லை')}
           </div>
-        ) : (
-          paginatedActivities.map((item, index) => (
-            <div key={item.id || item._id || index} className="activity-card">
-              <h3>{item.title} ({item.date})</h3>
-              <p><strong>{t('Note', 'குறிப்பு')}:</strong> {item.note}</p>
-              <p>👷 {t("Driver", "டிரைவர்")}: {item.driver}</p>
-              <p>👤 {t("Owner", "உரிமையாளர்")}: {item.owner.name} | 📞 {item.owner.phone1}, {item.owner.phone2}</p>
-              <p>📍 {t("Address", "முகவரி")}: {item.owner.address}</p>
-              <p>⏱️ {t("Time", "நேரம்")}: {item.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
-              <p>💰 {t("Hours", "மணிநேரம்")}: {item.totalHours} | {t("Rate", "விலை")}: ₹{item.rate} | {t("Total", "மொத்தம்")}: ₹{item.total}</p>
-              {showHistoryView && (
-                <div className="card-actions">
-                  <button onClick={() => handleEdit(item)}>✏️ {t("Edit", "தொகு")}</button>
-                  <button onClick={() => handleDelete(item)}>🗑 {t("Delete", "நீக்கு")}</button>
-                </div>
-              )}
-            </div>
-          ))
         )}
       </div>
-
-      {showHistoryView && totalPages > 1 && (
-        <div className="pagination">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i} onClick={() => setCurrentPage(i + 1)} className={currentPage === i + 1 ? 'active' : ''}>
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

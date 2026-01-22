@@ -34,10 +34,10 @@ body {
 
 .toggle-btn, .back-btn {
   padding: 8px 16px;
-  border: 2px solid #1a202c;
+  border: 2px solid #6c757d;
   border-radius: 8px;
-  background: white;
-  color: #1a202c;
+  background: #6c757d;
+  color: white;
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
@@ -47,10 +47,11 @@ body {
 }
 
 .toggle-btn:hover, .back-btn:hover {
-  background: #1a202c;
+  background: #5a6268;
+  border-color: #5a6268;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
 }
 
 .action-buttons {

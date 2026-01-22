@@ -12,9 +12,10 @@ function SeasonSelector({ language, t }) {
           {t('Season:', 'பருவம்:')}
           <select value={season} onChange={(e) => setSeason(e.target.value)} required>
             <option value="">{t('Select Season', 'பருவத்தை தேர்ந்தெடுக்கவும்')}</option>
-            <option value="Kuruvai">{t('Kuruvai (குறுவை)', 'குறுவை')}</option>
-            <option value="Samba">{t('Samba (சம்பா)', 'சம்பா')}</option>
-            <option value="Thaladi">{t('Thaladi (தாளடி)', 'தாளடி')}</option>
+            <option value="Summer">{t('Summer', 'கோடை')}</option>
+            <option value="Winter">{t('Winter', 'குளிர்காலம்')}</option>
+            <option value="Spring">{t('Spring', 'வசந்தம்')}</option>
+            <option value="Rain">{t('Rain', 'மழைக்காலம்')}</option>
           </select>
         </label>
 

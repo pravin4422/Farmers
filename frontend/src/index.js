@@ -4,6 +4,13 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Suppress WebSocket errors from React dev server
+const originalError = console.error;
+console.error = (...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('WebSocket')) return;
+  originalError.apply(console, args);
+};
+
 if ('scrollRestoration' in window.history) {
   window.history.scrollRestoration = 'manual';
 }

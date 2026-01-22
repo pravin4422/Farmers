@@ -124,11 +124,56 @@ function CreatorHistory() {
           {entry.seedDate && <span className="entry-date">📅 {formatDate(entry.seedDate)}</span>}
         </div>
         
-        <div className="entry-details">
-          <p><strong>{t('Seed Weight:', 'விதை எடை:')}</strong> {entry.seedWeight} kg</p>
-          <p><strong>{t('Seed Cost:', 'விதை செலவு:')}</strong> ₹{entry.seedCost}</p>
-          <p><strong>{t('Seedings:', 'விதைப்புகள்:')}</strong> {entry.seedingCount}</p>
-          <p><strong>{t('People:', 'மக்கள்:')}</strong> {entry.peopleCount}</p>
+        <div className="entry-sections-container">
+          {/* Seed Sowing Details */}
+          {(entry.seedWeight || entry.seedCost || entry.seedingCount || entry.peopleCount) && (
+            <div className="entry-section">
+              <h4>{t('Seed Sowing Details', 'விதை விதைக்கும் விவரம்')}</h4>
+              <div className="entry-details">
+                {entry.seedWeight && <p><strong>{t('Seed Weight:', 'விதை எடை:')}</strong> {entry.seedWeight} kg</p>}
+                {entry.seedCost && <p><strong>{t('Seed Cost:', 'விதை செலவு:')}</strong> ₹{entry.seedCost}</p>}
+                {entry.seedingCount && <p><strong>{t('Seedings:', 'விதைப்புகள்:')}</strong> {entry.seedingCount}</p>}
+                {entry.peopleCount && <p><strong>{t('People:', 'மக்கள்:')}</strong> {entry.peopleCount}</p>}
+                {entry.moneyPerPerson && <p><strong>{t('Money per Person:', 'ஒருவருக்கு செலவு:')}</strong> ₹{entry.moneyPerPerson}</p>}
+                {entry.totalSeedingCost && <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.totalSeedingCost}</p>}
+              </div>
+            </div>
+          )}
+
+          {/* Taking Seeding */}
+          {entry.seedingTakers && entry.seedingTakers.length > 0 && (
+            <div className="entry-section">
+              <h4>{t('Taking Seeding', 'விதைப்புகளை எடுத்தல்')}</h4>
+              <div className="entry-details">
+                {entry.seedingTakers.map((taker, i) => (
+                  <div key={i} className="taker-info">
+                    <p>👤 <strong>{taker.name}</strong></p>
+                    <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {taker.taken}</p>
+                    <p>{t('Money:', 'தொகை:')} ₹{taker.money}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Planted Cost */}
+          {entry.workers && entry.workers.length > 0 && (
+            <div className="entry-section">
+              <h4>{t('Planted Cost (Natta Kooli)', 'நட்ட கூலி')}</h4>
+              <div className="entry-details">
+                {entry.plantingDate && <p><strong>{t('Planting Date:', 'நட்ட தேதி:')}</strong> {formatDate(entry.plantingDate)}</p>}
+                {entry.workers.map((worker, i) => (
+                  <div key={i} className="taker-info">
+                    <p>👷 <strong>{worker.name}</strong></p>
+                    <p>{t('Money Given:', 'கூலி வழங்கப்பட்டது:')} {worker.moneyGiven === 'yes' ? t('Yes', 'ஆம்') : t('No', 'இல்லை')}</p>
+                    <p>{t('Cost:', 'செலவு:')} ₹{worker.cost}</p>
+                  </div>
+                ))}
+                <p><strong>{t('Total Workers:', 'மொத்த நபர்கள்:')}</strong> {entry.workers.length}</p>
+                <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.workers.reduce((sum, w) => sum + parseInt(w.cost || 0), 0)}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="entry-actions">
@@ -234,8 +279,6 @@ function CreatorHistory() {
               <>
                 <p><strong>{t('Type:', 'வகை:')}</strong> {t('Solution', 'தீர்வு')}</p>
                 <p><strong>{t('Product:', 'தயாரிப்பு:')}</strong> {entry.productName}</p>
-                {entry.expiryDate && <p><strong>{t('Expiry Date:', 'காலாவதி தேதி:')}</strong> {formatDate(entry.expiryDate)}</p>}
-                {entry.category && <p><strong>{t('Category:', 'வகை:')}</strong> {entry.category}</p>}
                 {entry.notes && <p><strong>{t('Notes:', 'குறிப்புகள்:')}</strong> {entry.notes}</p>}
               </>
             )}
@@ -290,12 +333,10 @@ function CreatorHistory() {
             onChange={(e) => setFilterSeason(e.target.value)}
           >
             <option value="">{t('All Seasons', 'அனைத்து பருவங்கள்')}</option>
-            <option value="Samba">Samba</option>
-            <option value="Thaladi">Thaladi</option>
-            <option value="Kuruvai">Kuruvai</option>
-            <option value="Kharif">Kharif</option>
-            <option value="Rabi">Rabi</option>
             <option value="Summer">Summer</option>
+            <option value="Winter">Winter</option>
+            <option value="Spring">Spring</option>
+            <option value="Rain">Rain</option>
           </select>
           
           <input 
