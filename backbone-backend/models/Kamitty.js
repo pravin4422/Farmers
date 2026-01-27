@@ -9,7 +9,7 @@ const kamittySchema = new mongoose.Schema({
   numBags: { type: String },
   costPerBag: { type: String },
   otherCost: { type: String },
-  totalKamitty: { type: String },
+  totalKamitty: { type: String }, // Total Mandi cost
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });

@@ -313,7 +313,6 @@ function AgromedicalProducts() {
 
       resetForm();
     } catch (error) {
-      // Error already handled in API functions
     } finally {
       setButtonLoading(false);
     }
@@ -341,7 +340,6 @@ function AgromedicalProducts() {
           await loadLatestEntry();
         }
       } catch (error) {
-        // Error already handled in API functions
       }
     }
   };

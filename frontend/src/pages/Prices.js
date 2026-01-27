@@ -36,15 +36,18 @@ function Prices() {
   const fetchUserPrices = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/prices', {
+      const response = await fetch('http://localhost:5000/api/prices/my-prices', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
-      const data = await response.json();
-      setUserPrices(data);
+      if (response.ok) {
+        const data = await response.json();
+        setUserPrices(data);
+      } else {
+        setUserPrices([]);
+      }
     } catch (error) {
-      console.error('Error fetching user prices:', error);
       setUserPrices([]);
     }
   };
@@ -57,7 +60,19 @@ function Prices() {
         return;
       }
       const data = await response.json();
-      setApiPrices(data.records || []);
+      const prices = (data.records || []).filter(item => {
+        if (item.arrival_date?.includes('/')) {
+          const [day] = item.arrival_date.split('/');
+          const dayNum = parseInt(day);
+          if (dayNum < 1 || dayNum > 31) return false;
+        }
+        return true;
+      }).map(item => ({
+        ...item,
+        min_price: (parseFloat(item.min_price) / 100).toFixed(2),
+        max_price: (parseFloat(item.max_price) / 100).toFixed(2)
+      }));
+      setApiPrices(prices);
     } catch (error) {
       setApiPrices([]);
     }
@@ -67,7 +82,7 @@ function Prices() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/prices', {
+      const response = await fetch('http://localhost:5000/api/prices/add', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -109,6 +124,8 @@ function Prices() {
       let date;
       if (dateStr.includes('/')) {
         const [day, month, year] = dateStr.split('/');
+        const dayNum = parseInt(day);
+        if (dayNum < 1 || dayNum > 31) return 'N/A';
         date = new Date(`${year}-${month}-${day}`);
       } else {
         date = new Date(dateStr);
@@ -131,6 +148,8 @@ function Prices() {
       let date;
       if (dateStr.includes('/')) {
         const [day, month, year] = dateStr.split('/');
+        const dayNum = parseInt(day);
+        if (dayNum < 1 || dayNum > 31) return false;
         date = new Date(`${year}-${month}-${day}`);
       } else {
         date = new Date(dateStr);
@@ -208,42 +227,76 @@ function Prices() {
       <h2>Market Prices Dashboard</h2>
       <p>Today: {formatDateWithDay(today)}</p>
 
-      <div className="filters">
-        <input 
-          type="text" 
-          placeholder=" Search Commodity/Market/State" 
-          value={searchQuery} 
-          onChange={(e) => setSearchQuery(e.target.value)} 
-        />
-        <input 
-          type="date" 
-          value={filterDate} 
-          onChange={(e) => setFilterDate(e.target.value)} 
-        />
-        <input 
-          type="number" 
-          placeholder="Min Price (₹)" 
-          value={filterMinPrice} 
-          onChange={(e) => setFilterMinPrice(e.target.value)} 
-        />
-        <input 
-          type="number" 
-          placeholder="Max Price (₹)" 
-          value={filterMaxPrice} 
-          onChange={(e) => setFilterMaxPrice(e.target.value)} 
-        />
-      </div>
-
       <div className="button-group">
-        <button onClick={handleRefresh} disabled={loading}>🔄 Refresh</button>
-        <button onClick={handleExportCSV}>📥 Export to CSV</button>
-        <button onClick={handlePrint}>🖨️ Print Report</button>
+        <button onClick={handleRefresh} disabled={loading}>Refresh</button>
+        <button onClick={handleExportCSV}>Export to CSV</button>
+        <button onClick={handlePrint}>Print Report</button>
       </div>
 
       {loading ? (
         <p className="loading">Loading market data...</p>
       ) : (
         <>
+          <div className="manual-form">
+            <h3>Add New Price Entry</h3>
+            <form onSubmit={handleAdd}>
+              <input 
+                type="text" 
+                name="commodity" 
+                placeholder="Commodity (e.g., Rice, Wheat)" 
+                value={formData.commodity} 
+                onChange={handleChange} 
+                required 
+              />
+              <input 
+                type="text" 
+                name="market" 
+                placeholder="Market Name" 
+                value={formData.market} 
+                onChange={handleChange} 
+                required 
+              />
+              <input 
+                type="text" 
+                name="state" 
+                placeholder="State" 
+                value={formData.state} 
+                onChange={handleChange} 
+                required
+              />
+              <input 
+                type="number" 
+                name="min_price" 
+                placeholder="Minimum Price (₹)" 
+                value={formData.min_price} 
+                onChange={handleChange} 
+                required
+                min="0"
+                step="0.01"
+              />
+              <input 
+                type="number" 
+                name="max_price" 
+                placeholder="Maximum Price (₹)" 
+                value={formData.max_price} 
+                onChange={handleChange} 
+                required
+                min="0"
+                step="0.01"
+              />
+              <input 
+                type="date" 
+                name="arrival_date" 
+                value={formData.arrival_date} 
+                onChange={handleChange} 
+                required 
+              />
+              <button type="submit">
+                Add Price Entry
+              </button>
+            </form>
+          </div>
+
           <h3> Today's Market Prices ({todayPrices.length} items)</h3>
           {todayPrices.length > 0 ? (
             <table>
@@ -274,16 +327,7 @@ function Prices() {
             <p className="no-data">No prices available for today</p>
           )}
 
-          <h3>📝 My Manually Entered Prices ({userPrices.filter(item => {
-            const matchesSearch = !searchQuery || 
-              item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              item.state?.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesDate = !filterDate || item.arrival_date === filterDate;
-            const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
-            const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
-            return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
-          }).length} items)</h3>
+          <h3>My Manually Entered Prices ({userPrices.length} items)</h3>
           <table>
             <thead>
               <tr>
@@ -328,11 +372,11 @@ function Prices() {
                     <td>{formatDateWithDay(item.arrival_date)}</td>
                     <td>
                       <span className="status-badge">
-                        {itemIsToday ? '✅ Yes' : '❌ No'}
+                        {itemIsToday ? 'Yes' : 'No'}
                       </span>
                     </td>
                     <td>
-                      <button onClick={() => handleDelete(item._id)}>🗑️ Delete</button>
+                      <button onClick={() => handleDelete(item._id)}>Delete</button>
                     </td>
                   </tr>
                 );
@@ -344,7 +388,7 @@ function Prices() {
             </tbody>
           </table>
 
-          <h3>🏛️ Government Market Prices ({apiPrices.filter(item => {
+          <h3>Government Market Prices ({apiPrices.filter(item => {
             const matchesState = !govState || item.state?.toLowerCase().includes(govState.toLowerCase());
             const matchesMarket = !govMarket || item.market?.toLowerCase().includes(govMarket.toLowerCase());
             const matchesCommodity = !govCommodity || item.commodity?.toLowerCase().includes(govCommodity.toLowerCase());
@@ -359,19 +403,19 @@ function Prices() {
           <div className="filters">
             <input 
               type="text" 
-              placeholder="🌾 Search Commodity" 
+              placeholder="Search Commodity" 
               value={govCommodity} 
               onChange={(e) => setGovCommodity(e.target.value)} 
             />
             <input 
               type="text" 
-              placeholder="🏪 Search Market" 
+              placeholder="Search Market" 
               value={govMarket} 
               onChange={(e) => setGovMarket(e.target.value)} 
             />
             <input 
               type="text" 
-              placeholder="📍 Search State" 
+              placeholder="Search State" 
               value={govState} 
               onChange={(e) => setGovState(e.target.value)} 
             />
@@ -428,7 +472,7 @@ function Prices() {
                     <td>{formatDateWithDay(item.arrival_date)}</td>
                     <td>
                       <span className="status-badge">
-                        {itemIsToday ? '✅ Yes' : '❌ No'}
+                        {itemIsToday ? 'Yes' : 'No'}
                       </span>
                     </td>
                   </tr>
@@ -440,66 +484,6 @@ function Prices() {
               )}
             </tbody>
           </table>
-
-          <div className="manual-form">
-            <h3>Add New Price Entry</h3>
-            <form onSubmit={handleAdd}>
-              <input 
-                type="text" 
-                name="commodity" 
-                placeholder="Commodity (e.g., Rice, Wheat)" 
-                value={formData.commodity} 
-                onChange={handleChange} 
-                required 
-              />
-              <input 
-                type="text" 
-                name="market" 
-                placeholder="Market Name" 
-                value={formData.market} 
-                onChange={handleChange} 
-                required 
-              />
-              <input 
-                type="text" 
-                name="state" 
-                placeholder="State" 
-                value={formData.state} 
-                onChange={handleChange} 
-                required
-              />
-              <input 
-                type="number" 
-                name="min_price" 
-                placeholder="Minimum Price (₹)" 
-                value={formData.min_price} 
-                onChange={handleChange} 
-                required
-                min="0"
-                step="0.01"
-              />
-              <input 
-                type="number" 
-                name="max_price" 
-                placeholder="Maximum Price (₹)" 
-                value={formData.max_price} 
-                onChange={handleChange} 
-                required
-                min="0"
-                step="0.01"
-              />
-              <input 
-                type="date" 
-                name="arrival_date" 
-                value={formData.arrival_date} 
-                onChange={handleChange} 
-                required 
-              />
-              <button type="submit">
-                ➕ Add Price Entry
-              </button>
-            </form>
-          </div>
         </>
       )}
     </div>

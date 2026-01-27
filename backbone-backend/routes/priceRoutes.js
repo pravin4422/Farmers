@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Price = require('../models/Price');
 const axios = require('axios');
+const auth = require('../middleware/authMiddleware');
 
-// Get all user prices
-router.get('/', async (req, res) => {
+// Get user's prices
+router.get('/my-prices', auth, async (req, res) => {
   try {
-    const prices = await Price.find().sort({ arrival_date: -1 });
+    const prices = await Price.find({ userId: req.user.id }).sort({ arrival_date: -1 });
     res.json(prices);
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
@@ -14,9 +15,9 @@ router.get('/', async (req, res) => {
 });
 
 // Add new price
-router.post('/', async (req, res) => {
+router.post('/add', auth, async (req, res) => {
   try {
-    const newPrice = new Price(req.body);
+    const newPrice = new Price({ ...req.body, userId: req.user.id });
     const savedPrice = await newPrice.save();
     res.status(201).json(savedPrice);
   } catch (err) {
@@ -25,9 +26,9 @@ router.post('/', async (req, res) => {
 });
 
 // Delete price by ID
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const price = await Price.findByIdAndDelete(req.params.id);
+    const price = await Price.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
     if (!price) return res.status(404).json({ error: 'Price not found' });
     res.json({ message: 'Price deleted successfully' });
   } catch (err) {
@@ -42,13 +43,12 @@ router.get('/external', async (req, res) => {
       params: {
         'api-key': '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b',
         'format': 'json',
-        'limit': 400
+        'limit': 100
       },
       timeout: 15000
     });
     res.json(response.data);
   } catch (err) {
-    console.error('External API Error:', err.message);
     res.json({ records: [] });
   }
 });

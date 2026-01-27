@@ -366,7 +366,7 @@ function CultivatingField() {
         </style>
       </head>
       <body>
-        <h1>${t('📋 Cultivating Field - Activity Log', '📋 விவசாய செயல் பதிவேடு')}</h1>
+        <h1>${t('Cultivating Field - Activity Log', 'விவசாய செயல் பதிவேடு')}</h1>
         <p><strong>Report Type:</strong> ${showHistoryView ? t('History View', 'வரலாறு பார்வை') : t('Latest Entry', 'சமீபத்திய பதிவு')}</p>
         ${dataToExport.map(item => `
           <div class="activity">
@@ -419,7 +419,7 @@ function CultivatingField() {
           </style>
         </head>
         <body>
-          <h2>${t('📋 Cultivating Field - Activity Log', '📋 விவசாய செயல் பதிவேடு')}</h2>
+          <h2>${t('Cultivating Field - Activity Log', 'விவசாய செயல் பதிவேடு')}</h2>
           ${printContent.innerHTML}
           <div style="margin-top: 40px;">
             ${t('Printed on', 'அச்சிடப்பட்ட தேதி')}: ${new Date().toLocaleDateString()}<br/>
@@ -460,11 +460,11 @@ function CultivatingField() {
     <div className="cultivating-container">
       <div style={{ textAlign: 'right', marginBottom: '10px' }}>
         <button onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
-          🌐 {language === 'en' ? 'தமிழில்' : 'In English'}
+           {language === 'en' ? 'தமிழ்' : 'English'}
         </button>
       </div>
 
-      <h1>{t('📋 Cultivating Field - Activity Log', '📋 விவசாய செயல் பதிவேடு')}</h1>
+      <h1>{t('Cultivating Field - Activity Log', 'விவசாய செயல் பதிவேடு')}</h1>
 
       {error && (
         <div className="error-message">
@@ -499,10 +499,10 @@ function CultivatingField() {
                 <option value="Night">{t("Night", "இரவு")}</option>
               </select>
               <input type="number" placeholder={t("Hours", "மணிநேரம்")} value={seg.hours} onChange={e => handleSegmentChange(idx, 'hours', e.target.value)} />
-              {idx > 0 && <button type="button" onClick={() => removeTimeSegment(idx)}>➖</button>}
+              {idx > 0 && <button type="button" onClick={() => removeTimeSegment(idx)}></button>}
             </div>
           ))}
-          <button type="button" onClick={addTimeSegment}>➕ {t("Add Time Slot", "நேர இடைவெளியை சேர்")}</button>
+          <button type="button" onClick={addTimeSegment}>{t("Add Time Slot", "நேர இடைவெளியை சேர்")}</button>
         </div>
 
         <input type="number" placeholder={t("Price per hour", "மணிக்கு விலை")} value={rate} onChange={e => setRate(e.target.value)} />
@@ -512,7 +512,7 @@ function CultivatingField() {
       </div>
 
       <div className="actions">
-        <button onClick={handlePrint}>🖨️ {t("Print", "அச்சிடு")}</button>
+        <button onClick={handlePrint}> {t("Print", "அச்சிடு")}</button>
       </div>
 
       <div className="section-header">
@@ -524,11 +524,11 @@ function CultivatingField() {
           <div className="activity-card">
             <h3>{lastEntry.title} ({lastEntry.date})</h3>
             <p><strong>{t('Note', 'குறிப்பு')}:</strong> {lastEntry.note}</p>
-            <p>👷 {t("Driver", "டிரைவர்")}: {lastEntry.driver}</p>
-            <p>👤 {t("Owner", "உரிமையாளர்")}: {lastEntry.owner.name} | 📞 {lastEntry.owner.phone1}, {lastEntry.owner.phone2}</p>
-            <p>📍 {t("Address", "முகவரி")}: {lastEntry.owner.address}</p>
-            <p>⏱️ {t("Time", "நேரம்")}: {lastEntry.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
-            <p>💰 {t("Hours", "மணிநேரம்")}: {lastEntry.totalHours} | {t("Rate", "விலை")}: ₹{lastEntry.rate} | {t("Total", "மொத்தம்")}: ₹{lastEntry.total}</p>
+            <p>{t("Driver", "டிரைவர்")}: {lastEntry.driver}</p>
+            <p>{t("Owner", "உரிமையாளர்")}: {lastEntry.owner.name} |  {lastEntry.owner.phone1}, {lastEntry.owner.phone2}</p>
+            <p>{t("Address", "முகவரி")}: {lastEntry.owner.address}</p>
+            <p>{t("Time", "நேரம்")}: {lastEntry.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
+            <p>{t("Hours", "மணிநேரம்")}: {lastEntry.totalHours} | {t("Rate", "விலை")}: ₹{lastEntry.rate} | {t("Total", "மொத்தம்")}: ₹{lastEntry.total}</p>
           </div>
         ) : (
           <div className="no-records">

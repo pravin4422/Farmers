@@ -121,7 +121,7 @@ function CreatorHistory() {
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
           <span className="entry-season">🌾 {entry.season} {entry.year}</span>
-          {entry.seedDate && <span className="entry-date">📅 {formatDate(entry.seedDate)}</span>}
+          {entry.seedDate && <span className="entry-date"> {formatDate(entry.seedDate)}</span>}
         </div>
         
         <div className="entry-sections-container">
@@ -164,7 +164,7 @@ function CreatorHistory() {
                 {entry.plantingDate && <p><strong>{t('Planting Date:', 'நட்ட தேதி:')}</strong> {formatDate(entry.plantingDate)}</p>}
                 {entry.workers.map((worker, i) => (
                   <div key={i} className="taker-info">
-                    <p>👷 <strong>{worker.name}</strong></p>
+                    <p> <strong>{worker.name}</strong></p>
                     <p>{t('Money Given:', 'கூலி வழங்கப்பட்டது:')} {worker.moneyGiven === 'yes' ? t('Yes', 'ஆம்') : t('No', 'இல்லை')}</p>
                     <p>{t('Cost:', 'செலவு:')} ₹{worker.cost}</p>
                   </div>
@@ -177,8 +177,8 @@ function CreatorHistory() {
         </div>
 
         <div className="entry-actions">
-          <button onClick={() => handleEdit(entry)}>✏️ {t('Edit', 'திருத்த')}</button>
-          <button onClick={() => handleDelete(entry._id || entry.id)}>🗑️ {t('Delete', 'அழிக்க')}</button>
+          <button onClick={() => handleEdit(entry)}> {t('Edit', 'திருத்த')}</button>
+          <button onClick={() => handleDelete(entry._id || entry.id)}> {t('Delete', 'அழிக்க')}</button>
         </div>
       </div>
     ))
@@ -188,8 +188,8 @@ function CreatorHistory() {
     tractorEntries.map(entry => (
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
-          <span className="entry-season">🚜 {entry.season} {entry.year}</span>
-          <span className="entry-date">📅 {formatDate(entry.date)}</span>
+          <span className="entry-season"> {entry.season} {entry.year}</span>
+          <span className="entry-date"> {formatDate(entry.date)}</span>
         </div>
         
         <div className="entry-details">
@@ -207,8 +207,8 @@ function CreatorHistory() {
     productEntries.map(entry => (
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
-          <span className="entry-season">🧪 {entry.season} {entry.year}</span>
-          <span className="entry-date">📅 {entry.date}</span>
+          <span className="entry-season"> {entry.season} {entry.year}</span>
+          <span className="entry-date">{entry.date}</span>
         </div>
         
         <div className="entry-details">
@@ -225,8 +225,8 @@ function CreatorHistory() {
     cultivationEntries.map(entry => (
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
-          <span className="entry-season">🌱 {entry.season} {entry.year}</span>
-          <span className="entry-date">📅 {entry.date}</span>
+          <span className="entry-season"> {entry.season} {entry.year}</span>
+          <span className="entry-date"> {entry.date}</span>
         </div>
         
         <div className="entry-details">
@@ -244,8 +244,8 @@ function CreatorHistory() {
     kamittyEntries.map(entry => (
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
-          <span className="entry-season">💰 {entry.season} {entry.year}</span>
-          <span className="entry-date">📅 {entry.date}</span>
+          <span className="entry-season"> {entry.season} {entry.year}</span>
+          <span className="entry-date"> {entry.date}</span>
         </div>
         
         <div className="entry-details">
@@ -265,7 +265,7 @@ function CreatorHistory() {
             <span className="entry-season">
               {isProblem ? '🔴' : '🟢'} {entry.season} {entry.year}
             </span>
-            <span className="entry-date">📅 {formatDate(entry.createdAt)}</span>
+            <span className="entry-date"> {formatDate(entry.createdAt)}</span>
           </div>
           
           <div className="entry-details">
@@ -318,7 +318,7 @@ function CreatorHistory() {
         <button className="back-btn" onClick={() => navigate('/creator')}>
           ← {t('Back', 'பின்செல்')}
         </button>
-        <h1>📜 {t('Creator History', 'உருவாக்குநர் வரலாறு')}</h1>
+        <h1>{t('Creator History', 'உருவாக்குநர் வரலாறு')}</h1>
         <button className="lang-toggle" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
           {t('தமிழ்', 'English')}
         </button>
@@ -363,7 +363,7 @@ function CreatorHistory() {
           </select>
           
           <button onClick={fetchHistoryEntries} disabled={loading}>
-            🔍 {t('Search', 'தேடல்')}
+             {t('Search', 'தேடல்')}
           </button>
         </div>
       </div>
@@ -375,37 +375,37 @@ function CreatorHistory() {
               className={activeTab === 'creator' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('creator')}
             >
-              🌾 {t('Seed Sowing', 'விதை விதைப்பு')}
+               {t('Seed Sowing', 'விதை விதைப்பு')}
             </button>
             <button 
               className={activeTab === 'tractor' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('tractor')}
             >
-              🚜 {t('Tracker', 'டிராக்டர்')}
+               {t('Tracker', 'டிராக்டர்')}
             </button>
             <button 
               className={activeTab === 'products' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('products')}
             >
-              🧪 {t('Agromedical Products', 'வேளாண் மருத்துவ பொருட்கள்')}
+               {t('Agromedical Products', 'வேளாண் மருத்துவ பொருட்கள்')}
             </button>
             <button 
               className={activeTab === 'cultivation' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('cultivation')}
             >
-              🌱 {t('Cultivating Field', 'வயல் உழுது')}
+               {t('Cultivating Field', 'வயல் உழுது')}
             </button>
             <button 
               className={activeTab === 'kamitty' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('kamitty')}
             >
-              💰 {t('Kamitty', 'கமிட்டி')}
+               {t('Mandi', 'மண்டி')}
             </button>
             <button 
               className={activeTab === 'review' ? 'tab active' : 'tab'}
               onClick={() => setActiveTab('review')}
             >
-              📝 {t('Review History', 'மதிப்பாய்வு வரலாறு')}
+               {t('Review History', 'மதிப்பாய்வு வரலாறு')}
             </button>
           </div>
         </div>
@@ -413,7 +413,7 @@ function CreatorHistory() {
         <h3>{t('Results', 'முடிவுகள்')} ({getCurrentEntries().length})</h3>
         
         {loading ? (
-          <p className="loading">⏳ {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
+          <p className="loading"> {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
         ) : getCurrentEntries().length === 0 ? (
           <p className="no-results">{t('No entries found.', 'எந்த பதிவும் இல்லை.')}</p>
         ) : (

@@ -495,7 +495,7 @@ function Tractor() {
 
     const entryData = {
       date: kamittyDate,
-      description: kamittyDescription || t('Kamitty Entry', 'கமிட்டி பதிவு'),
+      description: kamittyDescription || t('Mandi', 'மண்டி'),
       numBags: numBags || '0',
       costPerBag: costPerBag || '0',
       otherCost: otherCost || '0',
@@ -692,7 +692,7 @@ function Tractor() {
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
       <div className="entry-header">
-        <h4>🚜 {entry.tractorName}</h4>
+        <h4> {entry.tractorName}</h4>
         <span className={`status-badge ${entry.moneyGiven === 'Okay' ? 'paid' : 'pending'}`}>
           {entry.moneyGiven === 'Okay' ? t('Paid', 'பணம் கொடுத்தது') : t('Pending', 'நிலுவை')}
         </span>
@@ -740,13 +740,13 @@ function Tractor() {
 
       <div className="entry-actions">
         <button onClick={() => handleEdit(entry, 'tractor')} disabled={loading}>
-          ✏️ {t('Edit', 'திருத்த')}
+           {t('Edit', 'திருத்த')}
         </button>
         <button onClick={() => toggleMoneyGiven(entry)} disabled={loading} className="toggle-money-btn">
-          💰 {t('Toggle Payment', 'பணம் மாற்று')}
+           {t('Toggle Payment', 'பணம் மாற்று')}
         </button>
         <button onClick={() => handleDelete(entry._id || entry.id, 'tractor')} disabled={loading}>
-          🗑️ {t('Delete', 'அழிக்க')}
+           {t('Delete', 'அழிக்க')}
         </button>
       </div>
       
@@ -766,7 +766,7 @@ function Tractor() {
       {isLast && <div className="last-entry-badge">{t('Latest Entry', 'சமீபத்திய பதிவு')}</div>}
       
       <div className="entry-header">
-        <h4>🧾 {entry.description}</h4>
+        <h4> {entry.description}</h4>
         <span className="cost-badge">₹{entry.totalKamitty}</span>
       </div>
       
@@ -793,10 +793,10 @@ function Tractor() {
 
       <div className="entry-actions">
         <button onClick={() => handleEdit(entry, 'kamitty')} disabled={loading}>
-          ✏️ {t('Edit', 'திருத்த')}
+           {t('Edit', 'திருத்த')}
         </button>
         <button onClick={() => handleDelete(entry._id || entry.id, 'kamitty')} disabled={loading}>
-          🗑️ {t('Delete', 'அழிக்க')}
+           {t('Delete', 'அழிக்க')}
         </button>
       </div>
       
@@ -822,7 +822,7 @@ function Tractor() {
         </button>
       </div>
 
-      <h1>🚜 {t('Tractor Tracker', 'டிராக்டர் ட்ராக்கர்')}</h1>
+      <h1> {t('Tractor Tracker', 'டிராக்டர் ட்ராக்கர்')}</h1>
 
       {/* Tractor Entry Form */}
       <div className="form-container">
@@ -852,15 +852,15 @@ function Tractor() {
             {listeningField === 'date' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'date' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -889,15 +889,15 @@ function Tractor() {
             {listeningField === 'day' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'day' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -926,15 +926,15 @@ function Tractor() {
             {listeningField === 'work' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'work' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn">{t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -963,15 +963,15 @@ function Tractor() {
             {listeningField === 'tractorName' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'tractorName' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -994,11 +994,11 @@ function Tractor() {
                 onChange={e => handleSegmentChange(index, 'hours', e.target.value)} 
               />
               {index > 0 && (
-                <button onClick={() => removeTimeSegment(index)} className="remove-segment-btn">➖</button>
+                <button onClick={() => removeTimeSegment(index)} className="remove-segment-btn"></button>
               )}
             </div>
           ))}
-          <button onClick={addTimeSegment} className="add-segment-btn">➕ {t('Add Time Slot', 'நேரம் சேர்க்க')}</button>
+          <button onClick={addTimeSegment} className="add-segment-btn"> {t('Add Time Slot', 'நேரம் சேர்க்க')}</button>
         </div>
 
         <div className="form-grid">
@@ -1026,15 +1026,15 @@ function Tractor() {
             {listeningField === 'rate' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'rate' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -1059,7 +1059,7 @@ function Tractor() {
 
       {/* Kamitty Entry Form */}
       <div className="form-container kamitty-form">
-        <h2>🧾 {t('Kamitty Entry', 'கமிட்டி பதிவு')}</h2>
+        <h2> {t('Mandi', 'மண்டி')}</h2>
         <div className="form-grid">
           <label>
             {t('Date:', 'தேதி:')} 
@@ -1085,15 +1085,15 @@ function Tractor() {
             {listeningField === 'kamittyDate' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn">{t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'kamittyDate' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -1127,15 +1127,15 @@ function Tractor() {
             {listeningField === 'kamittyDescription' && recordedText && (
               <div className="recorded-text-preview">
                 <span>{recordedText}</span>
-                <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
               </div>
             )}
             {audioField === 'kamittyDescription' && audioBlob && (
               <div className="recorded-text-preview">
                 <audio src={URL.createObjectURL(audioBlob)} controls />
-                <button type="button" onClick={saveAudioRecording} className="add-text-btn">✅ {t('Save', 'சேமி')}</button>
-                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn">❌</button>
+                <button type="button" onClick={saveAudioRecording} className="add-text-btn"> {t('Save', 'சேமி')}</button>
+                <button type="button" onClick={cancelAudioRecording} className="cancel-text-btn"></button>
               </div>
             )}
           </label>
@@ -1159,8 +1159,8 @@ function Tractor() {
               {listeningField === 'numBags' && recordedText && (
                 <div className="recorded-text-preview">
                   <span>{recordedText}</span>
-                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn"> {t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
                 </div>
               )}
             </label>
@@ -1181,8 +1181,8 @@ function Tractor() {
               {listeningField === 'costPerBag' && recordedText && (
                 <div className="recorded-text-preview">
                   <span>{recordedText}</span>
-                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn">{t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
                 </div>
               )}
             </label>
@@ -1203,15 +1203,15 @@ function Tractor() {
               {listeningField === 'otherCost' && recordedText && (
                 <div className="recorded-text-preview">
                   <span>{recordedText}</span>
-                  <button type="button" onClick={addRecordedText} className="add-text-btn">✅ {t('Add', 'சேர்')}</button>
-                  <button type="button" onClick={cancelRecording} className="cancel-text-btn">❌</button>
+                  <button type="button" onClick={addRecordedText} className="add-text-btn">{t('Add', 'சேர்')}</button>
+                  <button type="button" onClick={cancelRecording} className="cancel-text-btn"></button>
                 </div>
               )}
             </label>
           </div>
           
           <p className="kamitty-total">
-            {t('Total Kamitty Cost', 'மொத்த கமிட்டி செலவு')}: ₹{kamittyCost.toFixed(2)}
+            {t('Total Mandi Cost', 'மொத்த மண்டி செலவு')}: ₹{kamittyCost.toFixed(2)}
           </p>
         </div>
 
@@ -1220,29 +1220,29 @@ function Tractor() {
           onClick={handleAddKamittyEntry}
           disabled={loading}
         >
-          {loading ? '⏳' : (editingKamittyId ? '✅' : '➕')} {editingKamittyId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Kamitty Entry', 'கமிட்டி பதிவை சேர்க்க')}
+          {loading ? '⏳' : (editingKamittyId ? '✅' : '➕')} {editingKamittyId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Mandi Entry', 'மண்டி பதிவை சேர்க்க')}
         </button>
       </div>
 
       {/* Action Buttons */}
       <div className="action-buttons">
         <button className="history-btn" onClick={() => handleViewHistory('tractor')} disabled={loading}>
-          📊 {showTractorHistory ? t('Hide Tractor History', 'டிராக்டர் வரலாற்றை மறைக்க') : t('View Tractor History', 'டிராக்டர் வரலாற்றைப் பார்க்க')}
+           {showTractorHistory ? t('Hide Tractor History', 'டிராக்டர் வரலாற்றை மறைக்க') : t('View Tractor History', 'டிராக்டர் வரலாற்றைப் பார்க்க')}
         </button>
         
         <button className="history-btn" onClick={() => handleViewHistory('kamitty')} disabled={loading}>
-          📊 {showKamittyHistory ? t('Hide Kamitty History', 'கமிட்டி வரலாற்றை மறைக்க') : t('View Kamitty History', 'கமிட்டி வரலாற்றைப் பார்க்க')}
+           {showKamittyHistory ? t('Hide Mandi History', 'மண்டி வரலாற்றை மறைக்க') : t('View Mandi History', 'மண்டி வரலாற்றைப் பார்க்க')}
         </button>
         
         <button className="export-btn" onClick={handleExportCSV} disabled={loading}>
-          📤 {t('Export CSV', 'CSV ஏற்றுமதி')}
+           {t('Export CSV', 'CSV ஏற்றுமதி')}
         </button>
       </div>
 
       {/* Latest Entries - Side by Side */}
       <div className="latest-entries-container">
         <div className="latest-entries-section">
-          <h2>🚜 {t('Latest Tractor Entry', 'சமீபத்திய டிராக்டர் பதிவு')}</h2>
+          <h2>{t('Latest Tractor Entry', 'சமீபத்திய டிராக்டர் பதிவு')}</h2>
           {lastTractorEntry ? (
             renderTractorEntry(lastTractorEntry, true)
           ) : (
@@ -1251,11 +1251,11 @@ function Tractor() {
         </div>
 
         <div className="latest-entries-section">
-          <h2>🧾 {t('Latest Kamitty Entry', 'சமீபத்திய கமிட்டி பதிவு')}</h2>
+          <h2> {t('Latest Mandi Entry', 'சமீபத்திய மண்டி பதிவு')}</h2>
           {lastKamittyEntry ? (
             renderKamittyEntry(lastKamittyEntry, true)
           ) : (
-            <p className="no-entries">{t('No kamitty entries yet.', 'ஏதாவது கமிட்டி பதிவுகள் இல்லை.')}</p>
+            <p className="no-entries">{t('No mandi entries yet.', 'ஏதாவது மண்டி பதிவுகள் இல்லை.')}</p>
           )}
         </div>
       </div>
@@ -1264,7 +1264,7 @@ function Tractor() {
       {showTractorHistory && (
         <div className="history-section">
           <div className="filter-controls">
-            <h3>📊 {t('Tractor History Filter', 'டிராக்டர் வரலாற்று வடிப்பு')}</h3>
+            <h3>{t('Tractor History Filter', 'டிராக்டர் வரலாற்று வடிப்பு')}</h3>
             
             <div className="filter-type-selection">
               <label>
@@ -1322,7 +1322,7 @@ function Tractor() {
                 />
               )}
               <button onClick={() => handleFilterChange('tractor')} disabled={loading}>
-                🔍 {t('Search', 'தேடல்')}
+                 {t('Search', 'தேடல்')}
               </button>
             </div>
           </div>
@@ -1330,7 +1330,7 @@ function Tractor() {
           <div className="history-entries">
             <h3>{t('Tractor History Entries', 'டிராக்டர் வரலாற்று பதிவுகள்')}</h3>
             {loading ? (
-              <p>⏳ {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
+              <p> {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
             ) : historyTractorEntries.length === 0 ? (
               <p className="no-entries">{t('No entries found for the selected filter.', 'தேர்ந்தெடுக்கப்பட்ட வடிப்புக்கு எந்த பதிவும் இல்லை.')}</p>
             ) : (
@@ -1346,7 +1346,7 @@ function Tractor() {
       {showKamittyHistory && (
         <div className="history-section">
           <div className="filter-controls">
-            <h3>📊 {t('Kamitty History Filter', 'கமிட்டி வரலாற்று வடிப்பு')}</h3>
+            <h3> {t('Mandi History Filter', 'மண்டி வரலாற்று வடிப்பு')}</h3>
             
             <div className="filter-type-selection">
               <label>
@@ -1404,15 +1404,15 @@ function Tractor() {
                 />
               )}
               <button onClick={() => handleFilterChange('kamitty')} disabled={loading}>
-                🔍 {t('Search', 'தேடல்')}
+                 {t('Search', 'தேடல்')}
               </button>
             </div>
           </div>
 
           <div className="history-entries">
-            <h3>{t('Kamitty History Entries', 'கமிட்டி வரலாற்று பதிவுகள்')}</h3>
+            <h3>{t('Mandi History Entries', 'மண்டி வரலாற்று பதிவுகள்')}</h3>
             {loading ? (
-              <p>⏳ {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
+              <p> {t('Loading...', 'ஏற்றப்படுகிறது...')}</p>
             ) : historyKamittyEntries.length === 0 ? (
               <p className="no-entries">{t('No entries found for the selected filter.', 'தேர்ந்தெடுக்கப்பட்ட வடிப்புக்கு எந்த பதிவும் இல்லை.')}</p>
             ) : (
