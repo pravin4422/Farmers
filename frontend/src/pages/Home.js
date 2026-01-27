@@ -44,7 +44,7 @@ function Home() {
           description: "விவசாயிகளுக்கான கூடுதல் ஆதாரங்கள் மற்றும் கருவிகள்"
         },
         {
-          title: "விவசாய ரசாயன பொருட்கள்",
+          title: "விவசாயிகள் நூலகம்",
           description: "உரங்கள், பூச்சிக்கொல்லிகள் மற்றும் விவசாய ரசாயனங்கள் பற்றிய விவரங்கள்"
         }
       ]
@@ -86,7 +86,7 @@ function Home() {
           description: "Additional resources and tools for farmers."
         },
         {
-          title: "AgroChemical Products",
+          title: "Farmer Library",
           description: "Details about fertilizers, pesticides, and farming chemicals."
         }
       ]
@@ -95,7 +95,7 @@ function Home() {
 
   const routes = [
     "/creator", "/ai-chat", "/prices", "/common-forum",
-    "/forum", "/weather", "/schemes", "/reminder", "/agro-chemicals"
+    "/forum", "/weather", "/schemes", "/reminder", "/farmer-library"
   ];
 
   const currentContent = content[language];

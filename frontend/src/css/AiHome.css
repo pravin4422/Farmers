@@ -1,0 +1,327 @@
+.ai-home-container {
+  min-height: 100vh;
+  background: white;
+  padding: 20px;
+}
+
+.ai-home-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 40px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.header-buttons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.prediction-dropdown {
+  position: relative;
+}
+
+.ai-home-header h1 {
+  color: white;
+  font-size: 2rem;
+  margin: 0;
+  display: none;
+}
+
+.ai-chat-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.ai-chat-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: white;
+  color: #333;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 0.95rem;
+}
+
+.dropdown-menu button:hover {
+  background: #f0f0f0;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.grid-item {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.grid-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+.grid-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.grid-item h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.grid-item p {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.ai-chat-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.prediction-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-content h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.prediction-content p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.prediction-form-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-form-container h2 {
+  color: #333;
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.prediction-form-container form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.prediction-form-container form button {
+  grid-column: 1 / -1;
+}
+
+.prediction-form-container input {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.prediction-form-container select {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  background: white;
+  cursor: pointer;
+}
+
+.prediction-form-container input:focus,
+.prediction-form-container select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.prediction-form-container button {
+  padding: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 10px;
+}
+
+.prediction-form-container button:hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.prediction-form-container button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.prediction-result {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f0f7ff;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.prediction-result h3 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.prediction-result p {
+  color: #667eea;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.image-upload-area {
+  grid-column: 1 / -1;
+  margin-bottom: 10px;
+}
+
+.upload-label {
+  display: block;
+  width: 180px;
+  height: 25px;
+  border: 2px dashed #ddd;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.upload-label:hover {
+  border-color: #667eea;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  color: #999;
+}
+
+.upload-placeholder span {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.upload-placeholder p {
+  font-size: 0.75rem;
+}
+
+.image-preview {
+  width: 180px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.disease-name {
+  color: #667eea !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 15px !important;
+}
+
+.disease-details {
+  color: #666 !important;
+  font-size: 1rem !important;
+  font-weight: normal !important;
+  line-height: 1.6 !important;
+  text-align: left !important;
+}
+
+@media (max-width: 768px) {
+  .ai-home-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+  }
+
+  .ai-home-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .grid-container {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .grid-item {
+    padding: 30px;
+  }
+
+  .prediction-form-container form {
+    grid-template-columns: 1fr;
+  }
+}

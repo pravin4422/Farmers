@@ -12,7 +12,7 @@ exports.addKamitty = async (req, res) => {
     await newKamitty.save();
     res.status(201).json(newKamitty);
   } catch (err) {
-    res.status(400).json({ message: 'Error adding kamitty entry', error: err.message });
+    res.status(400).json({ message: 'Error adding mandi entry', error: err.message });
   }
 };
 
@@ -28,7 +28,7 @@ exports.getKamitty = async (req, res) => {
     const kamitty = await Kamitty.find(filter).sort({ createdAt: -1 });
     res.json(kamitty);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching kamitty entries', error: err.message });
+    res.status(500).json({ message: 'Error fetching mandi entries', error: err.message });
   }
 };
 
@@ -45,11 +45,11 @@ exports.getLatestKamitty = async (req, res) => {
     
     const latestKamitty = await Kamitty.findOne(filter).sort({ createdAt: -1 });
     if (!latestKamitty) {
-      return res.status(404).json({ message: 'No kamitty entries found' });
+      return res.status(404).json({ message: 'No mandi entries found' });
     }
     res.json(latestKamitty);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching latest kamitty entry', error: err.message });
+    res.status(500).json({ message: 'Error fetching latest mandi entry', error: err.message });
   }
 };
 
@@ -73,7 +73,7 @@ exports.getKamittyHistory = async (req, res) => {
     const kamitty = await Kamitty.find(filter).sort({ createdAt: -1 });
     res.json(kamitty);
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching kamitty history', error: err.message });
+    res.status(500).json({ message: 'Error fetching mandi history', error: err.message });
   }
 };
 
@@ -88,12 +88,12 @@ exports.updateKamitty = async (req, res) => {
     );
     
     if (!updatedKamitty) {
-      return res.status(404).json({ message: 'Kamitty entry not found' });
+      return res.status(404).json({ message: 'Mandi entry not found' });
     }
     
     res.json(updatedKamitty);
   } catch (err) {
-    res.status(400).json({ message: 'Error updating kamitty entry', error: err.message });
+    res.status(400).json({ message: 'Error updating mandi entry', error: err.message });
   }
 };
 
@@ -104,11 +104,11 @@ exports.deleteKamitty = async (req, res) => {
     const deletedKamitty = await Kamitty.findOneAndDelete({ _id: id, user: req.user._id });
     
     if (!deletedKamitty) {
-      return res.status(404).json({ message: 'Kamitty entry not found' });
+      return res.status(404).json({ message: 'Mandi entry not found' });
     }
     
-    res.json({ message: 'Kamitty entry deleted successfully' });
+    res.json({ message: 'Mandi entry deleted successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Error deleting kamitty entry', error: err.message });
+    res.status(500).json({ message: 'Error deleting mandi entry', error: err.message });
   }
 };

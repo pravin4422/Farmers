@@ -338,7 +338,7 @@ function Review() {
   return (
     <>
       <div className="top-bar">
-        <h1>📋 {t('Product Expiry Review', 'தயாரிப்பு காலாவதி மதிப்பாய்வு')}</h1>
+        <h1>{t('Product Expiry Review', 'தயாரிப்பு காலாவதி மதிப்பாய்வு')}</h1>
         <div className="top-actions">
           <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
             {t('தமிழ்', 'English')}
@@ -414,14 +414,14 @@ function Review() {
                     setAudioUrl(null);
                   }}
                 >
-                  🗑️ {t('Remove', 'அழிக்க')}
+                  {t('Remove', 'அழிக்க')}
                 </button>
               </div>
             )}
           </div>
 
           <button onClick={saveProblem} disabled={loading} className="save-button">
-            {loading ? '⏳' : '💾'} {editingProblemId ? t('Update Problem', 'பிரச்சனை புதுப்பிக்க') : t('Submit Problem', 'பிரச்சனை அனுப்பு')}
+            {loading} {editingProblemId ? t('Update Problem', 'பிரச்சனை புதுப்பிக்க') : t('Submit Problem', 'பிரச்சனை அனுப்பு')}
           </button>
         </div>
       )}
@@ -473,20 +473,20 @@ function Review() {
                     setAudioUrl(null);
                   }}
                 >
-                  🗑️ {t('Remove', 'அழிக்க')}
+                   {t('Remove', 'அழிக்க')}
                 </button>
               </div>
             )}
           </div>
 
           <button onClick={saveExpiry} disabled={loading} className="save-button">
-            {loading ? '⏳' : '💾'} {t('Save Solution', 'தீர்வு சேமிக்க')}
+            {loading} {t('Save Solution', 'தீர்வு சேமிக்க')}
           </button>
         </div>
       )}
 
       <div className="expiries-section">
-        <h2>{t('Product Expiries & Problems', 'தயாரிப்பு காலாவதிகள் & பிரச்சனைகள்')}</h2>
+        <h2>{t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
         
         {loading ? (
           <p>{t('Loading...', 'ஏற்றுகிறது...')}</p>
@@ -506,10 +506,10 @@ function Review() {
                 
                 <div className="expiry-actions">
                   <button onClick={() => handleEditProblem(problems[0])} disabled={loading}>
-                    ✏️ {t('Edit', 'திருத்த')}
+                     {t('Edit', 'திருத்த')}
                   </button>
                   <button onClick={() => deleteProblem(problems[0]._id)} disabled={loading}>
-                    🗑️ {t('Delete', 'அழிக்க')}
+                     {t('Delete', 'அழிக்க')}
                   </button>
                 </div>
                 
@@ -519,23 +519,19 @@ function Review() {
               </div>
             )}
             {expiries.length > 0 && (
-              <div 
-                className={`expiry-card ${isExpired(expiries[0].expiryDate) ? 'expired' : isExpiringSoon(expiries[0].expiryDate) ? 'expiring-soon' : ''}`}
-              >
+              <div className="expiry-card">
                 <div className="expiry-header">
                   <h3>{expiries[0].productName}</h3>
-                  {isExpired(expiries[0].expiryDate) && <span className="status-badge expired">⚠️ {t('Expired', 'காலாவதியானது')}</span>}
-                  {isExpiringSoon(expiries[0].expiryDate) && !isExpired(expiries[0].expiryDate) && <span className="status-badge expiring">⏰ {t('Expiring Soon', 'விரைவில் காலாவதி')}</span>}
                 </div>
                 
                 {expiries[0].notes && <p><strong>{t('Notes:', 'குறிப்புகள்:')}</strong> {expiries[0].notes}</p>}
                 
                 <div className="expiry-actions">
                   <button onClick={() => handleEdit(expiries[0])} disabled={loading}>
-                    ✏️ {t('Edit', 'திருத்த')}
+                     {t('Edit', 'திருத்த')}
                   </button>
                   <button onClick={() => deleteExpiry(expiries[0]._id)} disabled={loading}>
-                    🗑️ {t('Delete', 'அழிக்க')}
+                     {t('Delete', 'அழிக்க')}
                   </button>
                 </div>
                 

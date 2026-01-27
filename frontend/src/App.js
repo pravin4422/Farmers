@@ -13,6 +13,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Prices from "./pages/Prices";
 import Forum from "./pages/Forums/Forum.js";
+import CommonForum from "./pages/CommonForum";
 
 // Protected Pages
 import CreatorDetail from "./pages/CreatorDetails/CreatorDetails.js";
@@ -23,8 +24,9 @@ import CultivatingField from "./pages/CreatorDetails/CultivatingField.js";
 import Schemes from "./pages/Schemes/Scheme.js";
 import Weather from "./pages/weather/weather.js";
 import Reminder from "./pages/Reminders/reminder.js";
-import AgroChemical from "./pages/Agrochemicals/AgroChemical.js";
+import FarmerLibrary from "./pages/FarmerLibrary/FarmerLibrary.js";
 import AiChat from "./pages/AiChat.js";
+import AiHome from "./pages/AiHome.js";
 import UserProfile from "./pages/UserProfile.js";
 import PublicProfile from "./pages/PublicProfile.js";
 import Review from "./pages/Review.js";
@@ -63,6 +65,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/prices" element={<Prices />} />
         <Route path="/forum" element={<Forum />} />
+        <Route path="/common-forum" element={<CommonForum />} />
 
         <Route
           path="/login"
@@ -141,10 +144,10 @@ function App() {
           }
         />
         <Route
-          path="/agro-chemicals"
+          path="/farmer-library"
           element={
             <ProtectedRoute>
-              <AgroChemical user={user} />
+              <FarmerLibrary user={user} />
             </ProtectedRoute>
           }
         />
@@ -152,7 +155,7 @@ function App() {
           path="/ai-chat"
           element={
             <ProtectedRoute>
-              <AiChat user={user} />
+              <AiHome user={user} />
             </ProtectedRoute>
           }
         />

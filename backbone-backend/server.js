@@ -8,14 +8,17 @@ const authRoutes = require('./routes/authRoutes');
 const creatorRoutes = require('./routes/creatorRoutes'); // ✅ CreatorDetail routes
 const productRoutes = require('./routes/products'); // ✅ AgromedicalProducts routes
 const tractorRoutes = require('./routes/tractorRoutes'); // ✅ Tractor routes
-const kamittyRoutes = require('./routes/kamittyRoutes'); // ✅ Kamitty routes
+const kamittyRoutes = require('./routes/kamittyRoutes'); // ✅ Mandi routes
 const priceRoutes = require('./routes/priceRoutes'); // ✅ Prices routes
 const postRoutes = require('./routes/posts');
+const commonForumRoutes = require('./routes/commonForumRoutes');
 // ✅ Add Reminder/Task routes
 const taskRoutes = require('./routes/tasks');
 const userProfileRoutes = require('./routes/userProfileRoutes');
 const expiryRoutes = require('./routes/expiryRoutes'); // ✅ Expiry routes
 const problemRoutes = require('./routes/problemRoutes'); // ✅ Problem routes
+const libraryRoutes = require('./routes/libraryRoutes'); // ✅ Library routes
+const predictionRoutes = require('./routes/predictionRoutes'); // ✅ Prediction routes
 
 // Load environment variables
 dotenv.config();
@@ -48,9 +51,12 @@ app.use('/api/prices', priceRoutes);
 // ✅ Add Reminder/Task routes
 app.use('/api/tasks', taskRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/common-forum', commonForumRoutes);
 app.use('/api/user-profile', userProfileRoutes);
 app.use('/api/expiries', expiryRoutes); // ✅ Expiry routes
 app.use('/api/problems', problemRoutes); // ✅ Problem routes
+app.use('/api/library', libraryRoutes); // ✅ Library routes
+app.use('/api/predict', predictionRoutes); // ✅ Prediction routes
 
 
 // Test routes

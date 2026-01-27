@@ -79,7 +79,6 @@ function CreatorDetail() {
     }
   }, [season, year]);
 
-  // ✅ Silent authentication check - no alert
   const checkAuthentication = () => {
     const token = getAuthToken();
     if (!token) {
@@ -87,7 +86,6 @@ function CreatorDetail() {
     }
   };
 
-  // ✅ Fetch with silent redirect on auth failure
   const fetchLastEntry = async () => {
     try {
       let url = `${API_BASE_URL}/creator-details/latest`;
@@ -360,7 +358,7 @@ function CreatorDetail() {
           <div style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
             {entry.seedingTakers.map((taker, i) => (
               <div key={i} className="taker-card" style={{flex: '0 0 calc(33.333% - 10px)', minWidth: '150px'}}>
-                <p>👤 {taker.name}</p>
+                <p> {taker.name}</p>
                 <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {taker.taken}</p>
                 <p>{t('Money:', 'தொகை:')} ₹ {taker.money}</p>
               </div>
@@ -409,7 +407,7 @@ function CreatorDetail() {
   return (
     <div className="creator-detail-container">
       <div className="top-bar">
-        <h1>🌾 {t('Creator Detail', 'உருவாக்குநர் விவரம்')}</h1>
+        <h1>{t('Creator Detail', 'உருவாக்குநர் விவரம்')}</h1>
         <div className="top-actions">
           <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} style={{background: 'blue'}}>
              {t('தமிழ்', 'English')}
@@ -472,7 +470,7 @@ function CreatorDetail() {
           <input type="number" value={moneyPerPerson} onChange={(e) => setMoneyPerPerson(e.target.value)} />
 
           <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-            {loading ? '⏳' : '💾'} {t('Save Seed Sowing', 'விதைப்பு சேமிக்க')}
+            {loading} {t('Save Seed Sowing', 'விதைப்பு சேமிக்க')}
           </button>
 
           <hr style={{margin: '30px 0', border: '1px solid #ddd'}} />
@@ -491,7 +489,7 @@ function CreatorDetail() {
             <button onClick={handleAddSeedingTaker}> {t('Add Person', 'நபரை சேர்க்க')}</button>
 
             <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-              {loading ? '⏳' : '💾'} {t('Save Taking Seeding', 'விதைப்பு எடுத்தல் சேமிக்க')}
+              {loading } {t('Save Taking Seeding', 'விதைப்பு எடுத்தல் சேமிக்க')}
             </button>
 
             <div className="seeding-takers-list">
@@ -506,8 +504,8 @@ function CreatorDetail() {
                       setSeedingTakenCount(person.taken);
                       setSeedingPersonMoney(person.money);
                       setSeedingTakers(seedingTakers.filter((_, i) => i !== index));
-                    }}>✏️ {t('Edit', 'திருத்த')}</button>
-                    <button onClick={() => setSeedingTakers(seedingTakers.filter((_, i) => i !== index))}>🗑️ {t('Delete', 'அழிக்க')}</button>
+                    }}> {t('Edit', 'திருத்த')}</button>
+                    <button onClick={() => setSeedingTakers(seedingTakers.filter((_, i) => i !== index))}> {t('Delete', 'அழிக்க')}</button>
                   </div>
                 </div>
               ))}
@@ -541,7 +539,7 @@ function CreatorDetail() {
             <button onClick={handleAddWorker}> {t('Add Worker', 'நபரை சேர்க்க')}</button>
 
             <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-              {loading ? '⏳' : '💾'} {t('Save Planted Cost', 'நட்ட கூலி சேமிக்க')}
+              {loading} {t('Save Planted Cost', 'நட்ட கூலி சேமிக்க')}
             </button>
 
             <div className="worker-list">
@@ -556,8 +554,8 @@ function CreatorDetail() {
                       setMoneyGiven(worker.moneyGiven);
                       setCostPerPerson(worker.cost);
                       setWorkers(workers.filter((_, idx) => idx !== i));
-                    }}>✏️ {t('Edit', 'திருத்த')}</button>
-                    <button onClick={() => setWorkers(workers.filter((_, idx) => idx !== i))}>🗑️ {t('Delete', 'அழிக்க')}</button>
+                    }}> {t('Edit', 'திருத்த')}</button>
+                    <button onClick={() => setWorkers(workers.filter((_, idx) => idx !== i))}> {t('Delete', 'அழிக்க')}</button>
                   </div>
                 </div>
               ))}

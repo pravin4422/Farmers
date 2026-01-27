@@ -1,0 +1,531 @@
+.common-forum {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.common-forum h2 {
+  color: #2d7a36;
+  margin-bottom: 20px;
+}
+
+.admin-post-form {
+  background: #f0f8ff;
+  border: 2px solid #2d7a36;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.admin-post-form h3 {
+  color: #2d7a36;
+  margin-bottom: 16px;
+}
+
+.admin-post-form .submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #2d7a36;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.admin-post-form .submit-btn:hover {
+  background: #25642c;
+}
+
+.cancel-btn {
+  width: 100%;
+  padding: 12px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.edit-btn {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  background: #0056b3;
+}
+
+.validated-section {
+  margin-bottom: 40px;
+}
+
+.validated-card {
+  background: #e8f5e9;
+  border: 2px solid #2d7a36;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.validated-card .problem {
+  margin-bottom: 12px;
+}
+
+.validated-card .problem strong {
+  color: #2d7a36;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.validated-card .problem small {
+  color: #666;
+  font-size: 12px;
+}
+
+.validated-card .solution {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.validated-card .solution strong {
+  color: #2d7a36;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.validated-card .solution p {
+  margin: 8px 0;
+  color: #222;
+}
+
+.validated-card .solution small {
+  color: #777;
+  font-size: 11px;
+}
+
+.pros-cons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.pros, .cons {
+  padding: 10px;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.pros strong {
+  color: #2d7a36;
+}
+
+.cons strong {
+  color: #2d7a36;
+}
+
+.validate-form {
+  margin-top: 16px;
+  padding: 16px;
+  background: #e8f5e9;
+  border-radius: 8px;
+}
+
+.validate-form h4 {
+  color: #2d7a36;
+  margin-bottom: 12px;
+}
+
+.input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.input-group textarea {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  min-height: 60px;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.voice-btn {
+  padding: 8px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  width: 50px;
+}
+
+.voice-btn:hover {
+  background: #0056b3;
+}
+
+.audio-btn {
+  padding: 0;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.audio-btn:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+
+.audio-btn:active {
+  transform: scale(0.95);
+}
+
+.delete-audio-btn {
+  padding: 0;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.delete-audio-btn:hover {
+  background: #c82333;
+  transform: scale(1.05);
+}
+
+.delete-audio-btn:active {
+  transform: scale(0.95);
+}
+
+.admin-form {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.admin-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.admin-form button {
+  padding: 12px;
+  background: #2d7a36;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-form button:hover {
+  background: #25642c;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.controls input,
+.controls select {
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.controls input {
+  flex: 1;
+}
+
+.controls select {
+  min-width: 150px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card h3 {
+  color: #2d7a36;
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-block;
+  background: #e0f3e0;
+  color: #2d7a36;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #222;
+}
+
+.tips {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #ccc;
+  color: #555;
+  font-style: italic;
+}
+
+.delete-btn {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.delete-btn:hover {
+  background: #c82333;
+}
+
+.discussion-section {
+  margin-top: 40px;
+  padding-top: 40px;
+  border-top: 3px solid #2d7a36;
+}
+
+.discussion-form {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.discussion-form textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  resize: vertical;
+}
+
+.discussion-form button {
+  padding: 12px 20px;
+  background: #2d7a36;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.discussions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.discussion-card {
+  background: #f8f8f8;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.question {
+  position: relative;
+}
+
+.question strong {
+  color: #2d7a36;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.question p {
+  margin: 8px 0;
+  color: #222;
+}
+
+.question small {
+  color: #777;
+  font-size: 12px;
+  margin-right: 12px;
+}
+
+.question .status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.question .status.open {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.question .status.validated {
+  background: #d4edda;
+  color: #155724;
+}
+
+.solutions {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.solution-item {
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.solution-item strong {
+  color: #2d7a36;
+  margin-right: 6px;
+}
+
+.solution-form {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.solution-form input {
+  flex: 1;
+  padding: 8px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+}
+
+.solution-form button {
+  padding: 8px 16px;
+  background: #2d7a36;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.solution-form button:hover {
+  background: #25642c;
+}
+
+.no-data {
+  text-align: center;
+  color: #777;
+  padding: 40px;
+}
+
+.validate-form .validate-btn {
+  width: 100%;
+  padding: 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.validate-form .validate-btn:hover {
+  background: #218838;
+}
+
+@media (max-width: 768px) {
+  .pros-cons {
+    grid-template-columns: 1fr;
+  }
+  .controls {
+    flex-direction: column;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

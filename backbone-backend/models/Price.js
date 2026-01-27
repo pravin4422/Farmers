@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const priceSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   commodity: { type: String, required: true },
   market: { type: String, required: true },
   state: { type: String, required: true },

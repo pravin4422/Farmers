@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import '../css/AiChat.css';
 import '../css/ai-chart.css';
 
-const AiChat = () => {
+const AiChat = ({ initialMessage = '' }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,8 +12,37 @@ const AiChat = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [isSpeechRecording, setIsSpeechRecording] = useState(false);
   const [recordedText, setRecordedText] = useState('');
+  const [showYieldForm, setShowYieldForm] = useState(false);
+  const [yieldFormData, setYieldFormData] = useState({
+    crop: '',
+    crop_year: '',
+    season: '',
+    state: '',
+    area: '',
+    annual_rainfall: ''
+  });
+  const [yieldOptions, setYieldOptions] = useState({ crops: [], seasons: [], states: [] });
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    if (initialMessage) {
+      setInput(initialMessage);
+    }
+  }, [initialMessage]);
+
+  useEffect(() => {
+    if (showYieldForm && yieldOptions.crops.length === 0) {
+      fetch('http://127.0.0.1:5002/get_options')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            setYieldOptions(data.options);
+          }
+        })
+        .catch(err => console.error('Failed to load options:', err));
+    }
+  }, [showYieldForm]);
 
   const translations = {
     english: {
@@ -215,17 +244,144 @@ const AiChat = () => {
     setRecordedText('');
   };
 
+  const handleYieldPrediction = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const userMessage = {
+      role: 'user',
+      content: `Yield Prediction Request:\nCrop: ${yieldFormData.crop}\nYear: ${yieldFormData.crop_year}\nSeason: ${yieldFormData.season}\nState: ${yieldFormData.state}\nArea: ${yieldFormData.area} hectares\nAnnual Rainfall: ${yieldFormData.annual_rainfall} mm`
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    try {
+      const response = await fetch('http://127.0.0.1:5002/predict_yield', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(yieldFormData)
+      });
+
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        const aiMessage = {
+          role: 'assistant',
+          content: `Predicted Yield: ${data.predicted_yield}\n\nInput Details:\n• Crop: ${data.input_details.crop}\n• Year: ${data.input_details.year}\n• Season: ${data.input_details.season}\n• State: ${data.input_details.state}\n• Area: ${data.input_details.area} hectares\n• Annual Rainfall: ${data.input_details.annual_rainfall} mm`
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      } else {
+        throw new Error(data.message || 'Prediction failed');
+      }
+    } catch (error) {
+      const errorMessage = {
+        role: 'assistant',
+        content: `Error: ${error.message || 'Failed to get yield prediction. Please try again.'}`
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
+      setShowYieldForm(false);
+      setYieldFormData({
+        crop: '',
+        crop_year: '',
+        season: '',
+        state: '',
+        area: '',
+        annual_rainfall: ''
+      });
+    }
+  };
+
   return (
     <div className="ai-chat-container">
       <div className="chat-header">
         <h2>{t.title}</h2>
-        <button
-          onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
-          className="lang-btn"
-        >
-          {language === 'english' ? 'தமிழ்' : 'English'}
-        </button>
+        <div className="header-actions">
+          <button
+            onClick={() => setShowYieldForm(!showYieldForm)}
+            className="yield-btn"
+          >
+            🌾 Yield Prediction
+          </button>
+          <button
+            onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
+            className="lang-btn"
+          >
+            {language === 'english' ? 'தமிழ்' : 'English'}
+          </button>
+        </div>
       </div>
+
+      {showYieldForm && (
+        <div className="yield-form-overlay" onClick={() => setShowYieldForm(false)}>
+          <div className="yield-form-container" onClick={(e) => e.stopPropagation()}>
+            <h3>🌾 Yield Prediction</h3>
+            <form onSubmit={handleYieldPrediction}>
+              <select
+                value={yieldFormData.crop}
+                onChange={(e) => setYieldFormData({...yieldFormData, crop: e.target.value})}
+                required
+              >
+                <option value="">Select Crop</option>
+                {yieldOptions.crops.map(crop => (
+                  <option key={crop} value={crop}>{crop}</option>
+                ))}
+              </select>
+              <input
+                type="number"
+                placeholder="Year (e.g., 2000)"
+                value={yieldFormData.crop_year}
+                onChange={(e) => setYieldFormData({...yieldFormData, crop_year: e.target.value})}
+                min="1990"
+                max="2030"
+                required
+              />
+              <select
+                value={yieldFormData.season}
+                onChange={(e) => setYieldFormData({...yieldFormData, season: e.target.value})}
+                required
+              >
+                <option value="">Select Season</option>
+                {yieldOptions.seasons.map(season => (
+                  <option key={season} value={season}>{season}</option>
+                ))}
+              </select>
+              <select
+                value={yieldFormData.state}
+                onChange={(e) => setYieldFormData({...yieldFormData, state: e.target.value})}
+                required
+              >
+                <option value="">Select State</option>
+                {yieldOptions.states.map(state => (
+                  <option key={state} value={state}>{state}</option>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Area (hectares) - e.g., 1021721.0"
+                value={yieldFormData.area}
+                onChange={(e) => setYieldFormData({...yieldFormData, area: e.target.value})}
+                required
+              />
+              <input
+                type="number"
+                step="0.1"
+                placeholder="Annual Rainfall (mm) - e.g., 935.6"
+                value={yieldFormData.annual_rainfall}
+                onChange={(e) => setYieldFormData({...yieldFormData, annual_rainfall: e.target.value})}
+                required
+              />
+              <div className="form-actions">
+                <button type="submit" disabled={loading}>Predict Yield</button>
+                <button type="button" onClick={() => setShowYieldForm(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div className="chat-messages">
         {messages.length === 0 && (
