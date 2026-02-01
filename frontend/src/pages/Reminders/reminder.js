@@ -203,7 +203,6 @@ function Reminder() {
   const getFilteredTasks = () => {
     let filtered = tasks;
 
-    // Apply status filter
     if (filter === 'today') {
       filtered = filtered.filter(t => isToday(t.date) && !t.completed);
     } else if (filter === 'completed') {
@@ -212,7 +211,6 @@ function Reminder() {
       filtered = filtered.filter(t => isPast(t.date) && !t.completed);
     }
 
-    // Apply date filter
     filtered = filtered.filter(filterByDate);
 
     return filtered;
@@ -230,7 +228,6 @@ function Reminder() {
   return (
     <div className="task-manager-container">
       <div className="task-manager-wrapper">
-        {/* Header */}
         <div className="header-card">
           <div className="header-top">
             <h1 className="main-title">{t.title}</h1>
@@ -242,7 +239,6 @@ function Reminder() {
             </button>
           </div>
 
-          {/* Add Task Input */}
           <div className="add-task-section">
             <input
               type="text"
@@ -259,9 +255,7 @@ function Reminder() {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="filter-card">
-          {/* Status Filter */}
           <div className="filter-section">
             <label className="filter-label">{t.filterBy}</label>
             <div className="filter-buttons">
@@ -277,7 +271,6 @@ function Reminder() {
             </div>
           </div>
 
-          {/* Date Filter */}
           <div className="filter-section">
             <label className="filter-label">
               <Filter size={16} />
@@ -312,7 +305,6 @@ function Reminder() {
                 </button>
               </div>
 
-              {/* Year and Month Selectors */}
               {(dateFilter === 'year' || dateFilter === 'month') && (
                 <div className="date-selectors">
                   <select
@@ -342,7 +334,6 @@ function Reminder() {
           </div>
         </div>
 
-        {/* Task Summary Cards */}
         <div className="summary-grid">
           <div className="summary-card today-card">
             <div className="summary-content">
@@ -375,7 +366,6 @@ function Reminder() {
           </div>
         </div>
 
-        {/* Tasks List */}
         <div className="tasks-card">
           <h2 className="tasks-title">
             {filter === 'today' && <Calendar className="title-icon today-icon" />}

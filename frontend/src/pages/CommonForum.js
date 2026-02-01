@@ -190,14 +190,14 @@ function CommonForum() {
   const handleAdminPost = async (e) => {
     e.preventDefault();
     
-    // Check if user is admin
+    
     const userEmail = localStorage.getItem('userEmail');
     if (userEmail !== 'admin@gmail.com') {
       alert('Only admin can post solutions. Please login as admin@gmail.com');
       return;
     }
     
-    // Validate that each field has either text or audio
+    
     if (!adminPostData.problem && !audioBlob['admin-problem']) {
       alert('Please provide problem (text or audio)');
       return;
@@ -230,7 +230,7 @@ function CommonForum() {
         cons: adminPostData.cons || 'Audio Message'
       };
       
-      // Convert audio blobs to base64
+      
       if (audioBlob['admin-problem']) {
         const reader = new FileReader();
         postData.problemAudio = await new Promise((resolve) => {
@@ -336,7 +336,7 @@ function CommonForum() {
       
       {!isAdmin && (
         <div style={{background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#856404'}}>
-          <strong>ℹ️ Information:</strong> Only administrators can post solutions. Please login as admin to post.
+          <strong> Information:</strong> Only administrators can post solutions. Please login as admin to post.
         </div>
       )}
       

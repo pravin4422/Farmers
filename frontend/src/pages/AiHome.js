@@ -387,9 +387,9 @@ const AiHome = () => {
   };
 
   const gridItems = [
-    { id: 1, title: 'Farm Setup', icon: '🏡', description: 'Manage your farm infrastructure' },
-    { id: 2, title: 'Irrigation Systems', icon: '💧', description: 'Control and monitor irrigation' },
-    { id: 3, title: 'Storage Facilities', icon: '🏪', description: 'Track storage and inventory' }
+    { id: 1, title: 'Farm Setup', description: 'Manage your farm infrastructure' },
+    { id: 2, title: 'Irrigation Systems', description: 'Control and monitor irrigation' },
+    { id: 3, title: 'Storage Facilities', description: 'Track storage and inventory' }
   ];
 
   return (

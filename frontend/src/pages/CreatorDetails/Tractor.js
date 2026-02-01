@@ -12,7 +12,6 @@ function Tractor() {
   
   const t = (en, ta) => (language === 'ta' ? ta : en);
 
-  // Tractor form states
   const [date, setDate] = useState('');
   const [day, setDay] = useState('');
   const [work, setWork] = useState('');
@@ -23,7 +22,6 @@ function Tractor() {
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingId, setEditingId] = useState(null);
 
-  // Kamitty form states
   const [numBags, setNumBags] = useState('');
   const [costPerBag, setCostPerBag] = useState('');
   const [otherCost, setOtherCost] = useState('');
@@ -32,13 +30,11 @@ function Tractor() {
   const [kamittyDescription, setKamittyDescription] = useState('');
   const [editingKamittyId, setEditingKamittyId] = useState(null);
 
-  // Data states
   const [lastTractorEntry, setLastTractorEntry] = useState(null);
   const [lastKamittyEntry, setLastKamittyEntry] = useState(null);
   const [historyTractorEntries, setHistoryTractorEntries] = useState([]);
   const [historyKamittyEntries, setHistoryKamittyEntries] = useState([]);
 
-  // History filter states
   const [showTractorHistory, setShowTractorHistory] = useState(false);
   const [showKamittyHistory, setShowKamittyHistory] = useState(false);
   const [tractorFilterType, setTractorFilterType] = useState('date');
@@ -59,7 +55,6 @@ function Tractor() {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  // Database API endpoints - Replace with your actual API endpoints
   const API_BASE_URL = 'http://localhost:5000/api';
 
   useEffect(() => {
@@ -109,13 +104,12 @@ function Tractor() {
         try {
           recognitionRef.current.stop();
         } catch (e) {
-          // Ignore errors on cleanup
+          
         }
       }
     };
   }, [language]);
 
-  // Fetch last entries from database
   const fetchLastEntries = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -142,7 +136,6 @@ function Tractor() {
     }
   };
 
-  // Fetch history entries
   const fetchHistoryEntries = async (type) => {
     setLoading(true);
     try {
@@ -185,7 +178,6 @@ function Tractor() {
     }
   };
 
-  // Save tractor entry to database
   const saveTractorEntryToDatabase = async (entryData) => {
     try {
       const token = localStorage.getItem('token');
@@ -223,7 +215,6 @@ function Tractor() {
     }
   };
 
-  // Save kamitty entry to database
   const saveKamittyEntryToDatabase = async (entryData) => {
     try {
       const token = localStorage.getItem('token');
@@ -255,7 +246,6 @@ function Tractor() {
     }
   };
 
-  // Delete entry from database
   const deleteEntryFromDatabase = async (type, entryId) => {
     try {
       const token = localStorage.getItem('token');
@@ -283,7 +273,6 @@ function Tractor() {
     }
     
     if (isRecording && listeningField === field) {
-      // Stop recording
       try {
         recognitionRef.current.stop();
       } catch (e) {
@@ -291,7 +280,6 @@ function Tractor() {
       }
       setIsRecording(false);
     } else {
-      // Stop any existing recording first
       if (isRecording) {
         try {
           recognitionRef.current.stop();
@@ -300,7 +288,6 @@ function Tractor() {
         }
       }
       
-      // Start new recording
       setListeningField(field);
       setRecordedText('');
       setIsRecording(true);
@@ -344,7 +331,6 @@ function Tractor() {
 
   const startAudioRecording = async (field) => {
     if (audioRecording && audioField === field) {
-      // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
       }
@@ -379,7 +365,6 @@ function Tractor() {
   const saveAudioRecording = () => {
     if (!audioBlob) return;
     
-    // Convert blob to base64 or URL for storage
     const audioUrl = URL.createObjectURL(audioBlob);
     
     if (audioField === 'day') setDay(audioUrl);
@@ -625,7 +610,6 @@ function Tractor() {
     
     let csvContent = '';
     
-    // Tractor entries
     if (tractorEntries.length > 0) {
       const tractorHeader = ['Type', 'Date', 'Day', 'Work', 'Tractor', 'Time Segments', 'Total Hours', 'Rate/hr (₹)', 'Total (₹)', 'Money Given'];
       const tractorRows = tractorEntries.map(entry => [
@@ -643,7 +627,6 @@ function Tractor() {
       csvContent += [tractorHeader, ...tractorRows].map(e => e.join(",")).join("\n");
     }
     
-    // Kamitty entries
     if (kamittyEntries.length > 0) {
       if (csvContent) csvContent += "\n\n";
       const kamittyHeader = ['Type', 'Date', 'Description', 'Number of Bags', 'Cost per Bag', 'Other Cost', 'Total Kamitty Cost'];
@@ -1224,7 +1207,6 @@ function Tractor() {
         </button>
       </div>
 
-      {/* Action Buttons */}
       <div className="action-buttons">
         <button className="history-btn" onClick={() => handleViewHistory('tractor')} disabled={loading}>
            {showTractorHistory ? t('Hide Tractor History', 'டிராக்டர் வரலாற்றை மறைக்க') : t('View Tractor History', 'டிராக்டர் வரலாற்றைப் பார்க்க')}
@@ -1239,7 +1221,6 @@ function Tractor() {
         </button>
       </div>
 
-      {/* Latest Entries - Side by Side */}
       <div className="latest-entries-container">
         <div className="latest-entries-section">
           <h2>{t('Latest Tractor Entry', 'சமீபத்திய டிராக்டர் பதிவு')}</h2>
@@ -1260,7 +1241,6 @@ function Tractor() {
         </div>
       </div>
 
-      {/* Tractor History Section */}
       {showTractorHistory && (
         <div className="history-section">
           <div className="filter-controls">

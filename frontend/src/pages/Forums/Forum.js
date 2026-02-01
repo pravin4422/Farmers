@@ -3,7 +3,7 @@ import ForumForm from '../../components/ForumForm';
 import ForumPost from '../../components/ForumPost';
 import '../../css/Forums/Forum.css';
 
-const BACKEND_URL = 'http://localhost:5000'; // Backend URL
+const BACKEND_URL = 'http://localhost:5000'; 
 
 function Forum() {
   const [posts, setPosts] = useState([]);
@@ -56,7 +56,6 @@ function Forum() {
 
   const t = translations[language];
 
-  // Fetch posts on mount
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -299,13 +298,11 @@ function Forum() {
     }
   };
 
-  // Get date string from post
   const getDateString = (dateStr) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  // Group posts by exact date
   const groupPostsByDate = () => {
     const groups = {};
     posts.forEach(post => {
@@ -319,14 +316,12 @@ function Forum() {
   const postsByDate = groupPostsByDate();
   const dateKeys = Object.keys(postsByDate).sort((a, b) => new Date(b) - new Date(a));
 
-  // Set initial selected date
   useEffect(() => {
     if (!selectedDate && dateKeys.length > 0) {
       setSelectedDate(dateKeys[0]);
     }
   }, [dateKeys, selectedDate]);
 
-  // Filter posts by selected date
   const filteredPosts = selectedDate
     ? posts
         .filter((post) => getDateString(post.createdAt) === selectedDate)
@@ -340,7 +335,6 @@ function Forum() {
 
   return (
     <>
-      {/* Language Toggle - Fixed Position */}
       <div className="language-toggle">
         <button 
           className="lang-btn active" 
@@ -351,7 +345,6 @@ function Forum() {
       </div>
 
       <div className="forum-wrapper">
-      {/* Toggle Button */}
       <button 
         className={`sidebar-toggle-btn ${sidebarOpen ? 'hidden' : ''}`}
         onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -360,7 +353,6 @@ function Forum() {
         {sidebarOpen ? '✕' : '☰'}
       </button>
 
-      {/* Sidebar */}
       <aside className={`forum-sidebar ${!sidebarOpen ? 'closed' : ''}`}>
         <button 
           className="sidebar-close-btn" 
@@ -369,7 +361,6 @@ function Forum() {
         >
           ✕
         </button>
-        {/* Date List */}
         {dateKeys.map(dateKey => (
           <div key={dateKey} className="sidebar-section">
             <div 
@@ -397,7 +388,6 @@ function Forum() {
           </div>
         ))}
 
-        {/* User Info */}
         <div className="sidebar-footer">
           <div className="user-info">
             <div className="user-avatar">👤</div>
@@ -409,7 +399,6 @@ function Forum() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className={`forum-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="forum-header">
         <h1 className="forum-title">{t.title}</h1>

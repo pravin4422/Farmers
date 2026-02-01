@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/ForgotPassword.css";
-import api from "../api"; // axios instance
+import api from "../api"; 
 
 function ForgotPassword() {
   const [language, setLanguage] = useState("english");
@@ -68,7 +68,7 @@ function ForgotPassword() {
         </div>
       </div>
 
-      {/* Main forgot password form */}
+     
       <div className="forgot-content">
         <h2 className="forgot-title">{currentContent.title}</h2>
         <form className="forgot-form" onSubmit={handleSubmit}>

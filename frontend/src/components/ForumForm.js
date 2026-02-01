@@ -17,13 +17,12 @@ function ForumForm({ onPost, language = 'en' }) {
   const timerRef = useRef(null);
   const titleTimerRef = useRef(null);
 
-  // Translations
   const translations = {
     en: {
       titlePlaceholder: 'Post Title (Optional)',
       contentPlaceholder: 'Write your content here...',
       tagsPlaceholder: 'Tags (comma separated)',
-      addPost: '➕ Add Post',
+      addPost: 'Add Post',
       startRecording: '🎤 Voice',
       stopRecording: '⏹️ Stop',
       deleteVoice: '🗑️'
@@ -32,7 +31,7 @@ function ForumForm({ onPost, language = 'en' }) {
       titlePlaceholder: 'இடுகை தலைப்பு (விருப்பமானது)',
       contentPlaceholder: 'உங்கள் உள்ளடக்கத்தை இங்கே எழுதுங்கள்...',
       tagsPlaceholder: 'குறிச்சொற்கள் (காற்புள்ளியால் பிரிக்கப்பட்டது)',
-      addPost: '➕ இடுகையைச் சேர்க்கவும்',
+      addPost: 'இடுகையைச் சேர்க்கவும்',
       startRecording: '🎤 குரல்',
       stopRecording: '⏹️ நிறுத்து',
       deleteVoice: '🗑️'
@@ -82,7 +81,7 @@ function ForumForm({ onPost, language = 'en' }) {
       setRecordingTime(0);
       timerRef.current = setInterval(() => {
         setRecordingTime(prev => {
-          if (prev >= 179) { // 3 minutes = 180 seconds, stop at 179
+          if (prev >= 179) { 
             stopRecording();
             return 180;
           }
@@ -127,7 +126,7 @@ function ForumForm({ onPost, language = 'en' }) {
       setTitleRecordingTime(0);
       titleTimerRef.current = setInterval(() => {
         setTitleRecordingTime(prev => {
-          if (prev >= 179) { // 3 minutes = 180 seconds, stop at 179
+          if (prev >= 179) { 
             stopTitleRecording();
             return 180;
           }
@@ -162,7 +161,7 @@ function ForumForm({ onPost, language = 'en' }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Only content is required (title is optional)
+
     const hasContentData = content.trim() || voiceBlob;
     
     if (!hasContentData) {
@@ -201,10 +200,10 @@ function ForumForm({ onPost, language = 'en' }) {
       comments: [],
     };
 
-    // Send new post to parent (Forum.js)
+
     onPost(newPost);
 
-    // Clear form inputs
+
     setTitle('');
     setContent('');
     setTags('');
@@ -213,7 +212,7 @@ function ForumForm({ onPost, language = 'en' }) {
     setTitleVoiceBlob(null);
     setRecordingTime(0);
     setTitleRecordingTime(0);
-    e.target.reset(); // clears file input visually
+    e.target.reset(); 
   };
 
   return (
