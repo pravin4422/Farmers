@@ -21,3 +21,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# =========================
+# ML / Python (NEWLY ADDED)
+# =========================
+ML/crop_model.pkl
+*.pkl
+__pycache__/
+*.pyc
+.env
