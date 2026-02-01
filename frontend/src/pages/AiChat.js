@@ -163,13 +163,13 @@ const AiChat = ({ initialMessage = '' }) => {
 
   const handleVoiceClick = async () => {
     if (isRecording) {
-      // Stop recording
+      
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
       }
       setIsRecording(false);
     } else {
-      // Start recording
+      
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);

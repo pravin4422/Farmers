@@ -6,16 +6,13 @@ const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Clear all localStorage items
     localStorage.removeItem("token");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("displayName");
     localStorage.removeItem("user");
     
-    // Update user state
     setUser(null);
     
-    // Navigate to dashboard
     navigate("/dashboard");
   };
 
@@ -41,7 +38,6 @@ const Navbar = ({ user, setUser }) => {
 
           {user ? (
             <>
-              {/* After Login: Show profile icon and Logout */}
               <div className="profile-icon" onClick={handleProfileClick} title="Profile">
                 {(user.displayName || user.email).charAt(0).toUpperCase()}
               </div>
@@ -49,7 +45,6 @@ const Navbar = ({ user, setUser }) => {
             </>
           ) : (
             <>
-              {/* Before Login: Show Signup and Login */}
               <Link to="/signup"><button className="nav-btn">Signup</button></Link>
               <Link to="/login"><button className="login-btn">Login</button></Link>
             </>

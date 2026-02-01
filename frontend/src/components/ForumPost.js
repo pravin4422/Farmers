@@ -15,23 +15,21 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
   const commentMediaRecorderRef = React.useRef(null);
   const commentTimerRef = React.useRef(null);
 
-  // Update comments when post changes (after refresh)
   React.useEffect(() => {
     setComments(post.comments || []);
   }, [post.comments]);
 
-  // Translations
   const translations = {
     en: {
       save: '✅ Save',
       cancel: '❌ Cancel',
-      edit: '✏️ Edit',
-      delete: '🗑️ Delete',
+      edit: 'Edit',
+      delete: ' Delete',
       comments: '💬 Comments',
       noComments: 'No comments yet.',
       writeComment: 'Write a comment...',
-      addComment: '➕ Comment',
-      attachment: '📎 Attachment:',
+      addComment: ' Comment',
+      attachment: ' Attachment:',
       download: '📄 Download/View',
       voiceMessage: '🎤 Voice Message:',
       titleVoice: '🎤 Title:',
@@ -40,13 +38,13 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
     ta: {
       save: '✅ சேமி',
       cancel: '❌ ரத்து',
-      edit: '✏️ திருத்து',
-      delete: '🗑️ அழி',
+      edit: 'திருத்து',
+      delete: 'அழி',
       comments: '💬 கருத்துகள்',
       noComments: 'இதுவரை கருத்துகள் இல்லை.',
       writeComment: 'கருத்து எழுதுங்கள்...',
-      addComment: '➕ கருத்து',
-      attachment: '📎 இணைப்பு:',
+      addComment: ' கருத்து',
+      attachment: ' இணைப்பு:',
       download: '📄 பதிவிறக்கு/காண்க',
       voiceMessage: '🎤 குரல் செய்தி:',
       titleVoice: '🎤 தலைப்பு:',
@@ -152,7 +150,7 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
     setCommentVoiceBlob(null);
     setCommentRecordingTime(0);
 
-    // Update the post with new comments
+
     await onUpdate(post._id, {
       comments: newComments,
     });
@@ -248,7 +246,6 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
         </>
       ) : (
         <>
-          {/* Header with user info and date */}
           <div className="forum-post-header">
             <div 
               className="forum-user-avatar-container" 
@@ -413,7 +410,7 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, language = 
                   )}
                   {commentVoiceBlob && !isCommentRecording && (
                     <button type="button" onClick={deleteCommentVoice} className="voice-delete-btn-small">
-                      🗑️
+                      
                     </button>
                   )}
                 </div>

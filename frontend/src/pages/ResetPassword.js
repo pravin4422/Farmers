@@ -74,7 +74,7 @@ function ResetPassword() {
 
   return (
     <div className={`reset-container ${isDarkMode ? "dark" : "light"}`}>
-      {/* Header with theme & language controls */}
+     
       <div className="reset-header">
         <div className="theme-language-controls">
           <button

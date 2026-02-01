@@ -34,10 +34,9 @@ function CultivatingField() {
   const [error, setError] = useState('');
   const entriesPerPage = 5;
 
-  // Replace with your actual API base URL
-  const API_BASE_URL = 'http://localhost:5000/api'; // Update this to your backend URL
+ 
+  const API_BASE_URL = 'http://localhost:5000/api'; 
 
-  // API Functions
   const saveToDatabase = async (activityData) => {
     try {
       setLoading(true);
@@ -163,7 +162,6 @@ function CultivatingField() {
     }
   };
 
-  // Load latest entry on component mount
   useEffect(() => {
     loadLatestEntry();
   }, []);
@@ -191,8 +189,7 @@ function CultivatingField() {
   }, [showHistoryView, filterMonth, filterYear, filterDate, search]);
 
   const showMessage = (message) => {
-    // You can implement a toast notification here
-    alert(message); // Simple alert for now
+    alert(message); 
   };
 
   const handleSegmentChange = (index, key, value) => {
@@ -269,7 +266,6 @@ function CultivatingField() {
         await loadHistoryData();
       }
     } catch (error) {
-      // Error already handled in API functions
     } finally {
       setButtonLoading(false);
     }
@@ -297,14 +293,12 @@ function CultivatingField() {
         const id = showHistoryView ? (item.id || item._id) : (activities[item].id || activities[item]._id);
         await deleteFromDatabase(id);
         
-        // Refresh data
         if (showHistoryView) {
           await loadHistoryData();
         } else {
           await loadLatestEntry();
         }
       } catch (error) {
-        // Error already handled in API functions
       }
     }
   };
@@ -399,7 +393,6 @@ function CultivatingField() {
   };
 
   const handleExportExcel = () => {
-    // Use CSV format since we removed XLSX dependency
     handleExportCSV();
   };
 

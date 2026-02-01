@@ -174,7 +174,6 @@ function Schemes() {
 
   return (
     <div className="schemes-wrapper">
-      {/* Header */}
       <div className="schemes-header-container">
         <div className="schemes-header">
           <div className="header-icon"></div>
@@ -183,10 +182,10 @@ function Schemes() {
         </div>
       </div>
 
-      {/* Controls */}
+      
       <div className="schemes-controls-container">
         <div className="schemes-controls">
-          {/* Search and Add Button */}
+          
           <div className="search-add-section">
             <div className="search-wrapper">
               <div className="search-input-container">
@@ -206,7 +205,7 @@ function Schemes() {
             </div>
           </div>
 
-          {/* Filters */}
+          
           <div className="filters-section">
             <select 
               value={selectedCategory} 
@@ -234,14 +233,14 @@ function Schemes() {
             </div>
           </div>
 
-          {/* Stats */}
+          
           <div className="schemes-stats">
             Showing {filtered.length} of {schemes.length} schemes
           </div>
         </div>
       </div>
 
-      {/* Schemes Grid */}
+     
       <div className="schemes-grid-container">
         <div className="schemes-grid">
           {filtered.map((scheme) => (
@@ -291,7 +290,7 @@ function Schemes() {
                           rel="noopener noreferrer"
                           className="action-btn website-btn"
                         >
-                          🌐 Website
+                          Website
                         </a>
                       )}
                     </div>
@@ -304,7 +303,7 @@ function Schemes() {
 
         {filtered.length === 0 && (
           <div className="no-results">
-            <div className="no-results-icon">📭</div>
+            <div className="no-results-icon"></div>
             <h3>No schemes found</h3>
             <p>Try adjusting your search terms or filters.</p>
           </div>

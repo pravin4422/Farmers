@@ -297,7 +297,7 @@ const FarmerLibrary = () => {
                 <option value="Critical">Critical</option>
               </select>
               <button onClick={() => setShowAddForm(!showAddForm)} className="add-toggle-btn">
-                {showAddForm ? '❌ Cancel' : '➕ Add New Problem'}
+                {showAddForm ? 'Cancel' : 'Add New Problem'}
               </button>
             </div>
           </div>

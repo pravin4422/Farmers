@@ -25,8 +25,7 @@ function AgromedicalProducts() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Replace with your actual API base URL
-  const API_BASE_URL = 'http://localhost:5000/api'; // Update this to your backend URL
+  const API_BASE_URL = 'http://localhost:5000/api'; 
 
   const translations = {
     en: {
@@ -97,7 +96,6 @@ function AgromedicalProducts() {
 
   const t = translations[language];
 
-  // API Functions
   const saveToDatabase = async (productData) => {
     try {
       setLoading(true);
@@ -233,7 +231,6 @@ function AgromedicalProducts() {
     }
   };
 
-  // Load latest entry on component mount
   useEffect(() => {
     loadLatestEntry();
   }, []);
@@ -324,7 +321,7 @@ function AgromedicalProducts() {
     setName(item.name);
     setQuantity(item.quantity.toString());
     setCost(item.cost.toString());
-    setEditingId(item.id || item._id); // Handle both SQL and MongoDB IDs
+    setEditingId(item.id || item._id); 
     setEditingIndex(item.id || item._id);
   };
 
@@ -333,7 +330,6 @@ function AgromedicalProducts() {
       try {
         await deleteFromDatabase(item.id || item._id);
         
-        // Refresh data
         if (showHistoryView) {
           await loadHistoryData();
         } else {

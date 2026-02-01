@@ -125,7 +125,6 @@ function CreatorHistory() {
         </div>
         
         <div className="entry-sections-container">
-          {/* Seed Sowing Details */}
           {(entry.seedWeight || entry.seedCost || entry.seedingCount || entry.peopleCount) && (
             <div className="entry-section">
               <h4>{t('Seed Sowing Details', 'விதை விதைக்கும் விவரம்')}</h4>
@@ -140,7 +139,6 @@ function CreatorHistory() {
             </div>
           )}
 
-          {/* Taking Seeding */}
           {entry.seedingTakers && entry.seedingTakers.length > 0 && (
             <div className="entry-section">
               <h4>{t('Taking Seeding', 'விதைப்புகளை எடுத்தல்')}</h4>
@@ -156,7 +154,6 @@ function CreatorHistory() {
             </div>
           )}
 
-          {/* Planted Cost */}
           {entry.workers && entry.workers.length > 0 && (
             <div className="entry-section">
               <h4>{t('Planted Cost (Natta Kooli)', 'நட்ட கூலி')}</h4>

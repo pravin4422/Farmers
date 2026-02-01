@@ -12,15 +12,11 @@ function CreatorDetail() {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  // Filter states
   const [filterSeason, setFilterSeason] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [filterDay, setFilterDay] = useState('');
   
-  // Season and Year states
-  // Removed - now using context
-  
-  // Form states
+ 
   const [seedDate, setSeedDate] = useState('');
   const [seedWeight, setSeedWeight] = useState('');
   const [seedCost, setSeedCost] = useState('');
@@ -28,18 +24,15 @@ function CreatorDetail() {
   const [peopleCount, setPeopleCount] = useState('');
   const [moneyPerPerson, setMoneyPerPerson] = useState('');
   
-  // Data states
   const [lastEntry, setLastEntry] = useState(null);
   const [historyEntries, setHistoryEntries] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   
-  // Seeding taker states
   const [seedingTakers, setSeedingTakers] = useState([]);
   const [seedingPerson, setSeedingPerson] = useState('');
   const [seedingTakenCount, setSeedingTakenCount] = useState('');
   const [seedingPersonMoney, setSeedingPersonMoney] = useState('');
   
-  // Worker states
   const [plantingDate, setPlantingDate] = useState('');
   const [workerName, setWorkerName] = useState('');
   const [moneyGiven, setMoneyGiven] = useState('yes');
@@ -65,14 +58,12 @@ function CreatorDetail() {
     checkAuthentication();
     fetchLastEntry();
     
-    // Handle edit from history page
     if (window.history.state?.usr?.editEntry) {
       const entry = window.history.state.usr.editEntry;
       handleEdit(entry);
     }
   }, []);
 
-  // Refetch latest entry when season or year changes
   useEffect(() => {
     if (season && year) {
       fetchLastEntry();
@@ -90,7 +81,6 @@ function CreatorDetail() {
     try {
       let url = `${API_BASE_URL}/creator-details/latest`;
       
-      // Add season and year parameters if available
       if (season && year) {
         url += `?season=${encodeURIComponent(season)}&year=${encodeURIComponent(year)}`;
       }
@@ -108,7 +98,6 @@ function CreatorDetail() {
         const data = await response.json();
         setLastEntry(data);
       } else if (response.status === 404) {
-        // No entry found for this season/year combination
         setLastEntry(null);
       }
     } catch (error) {
@@ -219,7 +208,6 @@ function CreatorDetail() {
 
     setLoading(true);
     
-    // Check if entry exists for this season and year
     let existingEntryId = editingId;
     if (!existingEntryId && lastEntry && lastEntry.season === season && lastEntry.year === parseInt(year)) {
       existingEntryId = lastEntry._id || lastEntry.id;
@@ -256,7 +244,6 @@ function CreatorDetail() {
   };
 
   const resetForm = () => {
-    // Season and year are not reset - they persist across forms
     setSeedDate('');
     setSeedWeight('');
     setSeedCost('');
@@ -269,7 +256,6 @@ function CreatorDetail() {
   };
 
   const handleEdit = (entry) => {
-    // Season and year are set in context, not in form
     setSeedDate(entry.seedDate);
     setSeedWeight(entry.seedWeight);
     setSeedCost(entry.seedCost);

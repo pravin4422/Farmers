@@ -80,7 +80,7 @@ const PublicProfile = () => {
         ) : (
           <div className="public-profile-grid">
             <div className="public-profile-card">
-              <div className="card-icon">🌾</div>
+              <div className="card-icon"></div>
               <div className="card-content">
                 <label>Agriculture Experience</label>
                 <p>{profile.agricultureExperience} years</p>
