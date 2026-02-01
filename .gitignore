@@ -1,0 +1,7 @@
+# =========================
+# ML / Python (NEWLY ADDED)
+# =========================
+ML/crop_model.pkl
+*.pkl
+__pycache__/
+*.pyc
