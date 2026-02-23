@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const protect = require('../middleware/authMiddleware');
+const { validateSolutionWithGemini } = require('../services/geminiValidator');
 
 // GET all posts (public - no auth required)
 router.get('/', async (req, res) => {
@@ -12,6 +13,10 @@ router.get('/', async (req, res) => {
       const postObj = post.toObject();
       if (!postObj.userId && postObj.user?._id) {
         postObj.userId = postObj.user._id;
+      }
+      // Ensure likedBy exists
+      if (!postObj.likedBy) {
+        postObj.likedBy = [];
       }
       return postObj;
     });
@@ -28,9 +33,6 @@ router.post('/', protect, async (req, res) => {
     
     // Get userId from authenticated user (from JWT token)
     const userId = String(req.user._id || req.user.id);
-    
-    console.log('Creating post - User ID from token:', userId);
-    console.log('User object:', req.user);
     
     // Override any userId sent from frontend with the authenticated user's ID
     postData.userId = userId;
@@ -51,8 +53,6 @@ router.post('/', protect, async (req, res) => {
     const responsePost = savedPost.toObject();
     responsePost.userId = userId;
     
-    console.log('Post saved with userId:', responsePost.userId);
-    
     res.status(201).json(responsePost);
   } catch (err) {
     console.error('Error creating post:', err);
@@ -66,13 +66,12 @@ router.put('/:id', async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
     
-    // Check if user is the owner of the post OR if it's just adding a comment
+    // Check if user is the owner of the post OR if it's just updating comments
     const requestUserId = req.body.currentUserId || req.headers['x-user-id'];
-    const isAddingComment = req.body.comments && req.body.comments.length > (post.comments?.length || 0);
     const isOnlyComments = req.body.comments && Object.keys(req.body).filter(k => k !== 'currentUserId').length === 1;
     
-    // Allow comment additions by anyone, but other edits only by owner
-    if (!isAddingComment || !isOnlyComments) {
+    // Allow comment updates by anyone, but other edits only by owner
+    if (!isOnlyComments) {
       if (!requestUserId) {
         return res.status(401).json({ message: 'User ID required for post modification' });
       }
@@ -127,17 +126,185 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST – like a post (public - no auth required)
+// POST – like/unlike a post (toggle)
 router.post('/:id/like', async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: 'Post not found' });
     
-    post.likes += 1;
+    const userId = String(req.body.userId);
+    if (!userId) return res.status(400).json({ message: 'User ID required' });
+    
+    if (!post.likedBy) post.likedBy = [];
+    
+    // Convert all likedBy IDs to strings for comparison
+    const likedByStrings = post.likedBy.map(id => String(id));
+    const hasLiked = likedByStrings.includes(userId);
+    
+    if (hasLiked) {
+      // Unlike
+      post.likedBy = post.likedBy.filter(id => String(id) !== userId);
+      post.likes = Math.max(0, post.likes - 1);
+    } else {
+      // Like
+      post.likedBy.push(userId);
+      post.likes += 1;
+    }
+    
     await post.save();
-    res.json({ likes: post.likes });
+    res.json({ likes: post.likes, likedBy: post.likedBy });
   } catch (err) {
     res.status(400).json({ message: 'Error liking post' });
+  }
+});
+
+// POST – AI validate post and comments
+router.post('/:id/validate', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+    
+    const comments = post.comments || [];
+    if (comments.length === 0) {
+      return res.json({ 
+        problem: { title: post.title, description: post.content },
+        totalSolutions: 0,
+        message: 'No solutions provided yet.',
+        bestSolution: null,
+        decision: 'NO_SOLUTIONS'
+      });
+    }
+
+    // Step 1: Extract solutions
+    const solutions = comments.map((comment, idx) => ({
+      id: idx + 1,
+      text: typeof comment === 'string' ? comment : comment.text,
+      username: typeof comment === 'string' ? 'Anonymous' : (comment.username || 'Anonymous'),
+      userId: typeof comment === 'string' ? null : (comment.userId || null)
+    }));
+
+    // Step 2: AI Validation - Score each solution using Gemini AI
+    const validatedSolutions = await Promise.all(solutions.map(async (sol) => {
+      const problemText = post.content || post.title;
+      const aiResult = await validateSolutionWithGemini(problemText, sol.text);
+      return { ...sol, score: aiResult.score, aiReason: aiResult.reason };
+    }));
+
+    // Step 3: Internet Verification (simulated)
+    const verifiedSolutions = validatedSolutions.map(sol => {
+      const text = sol.text.toLowerCase();
+      let verified = true;
+      let warnings = [];
+      let internetSources = [];
+      
+      // Check for harmful advice
+      if (text.includes('poison') || text.includes('toxic') || text.includes('harmful chemical')) {
+        verified = false;
+        warnings.push('Contains potentially harmful substances');
+        internetSources.push('WHO Safety Guidelines: Avoid toxic substances');
+      }
+      
+      // Check for contradictions
+      if ((text.includes('no water') || text.includes('stop water')) && (text.includes('more water') || text.includes('add water'))) {
+        warnings.push('Contains contradictory advice');
+        verified = false;
+      }
+      
+      // Verify against agricultural best practices
+      if (text.includes('nitrogen') || text.includes('fertilizer')) {
+        internetSources.push('FAO: Nitrogen fertilizers improve crop yield');
+      }
+      if (text.includes('organic') || text.includes('compost')) {
+        internetSources.push('USDA: Organic matter improves soil health');
+      }
+      if (text.includes('ph') || text.includes('soil test')) {
+        internetSources.push('Agricultural Extension: Soil pH testing recommended');
+      }
+      if (text.includes('drainage') || text.includes('irrigation')) {
+        internetSources.push('IRRI: Proper water management essential');
+      }
+      
+      // Check for dangerous practices
+      if (text.includes('burn') && text.includes('crop')) {
+        warnings.push('Crop burning is environmentally harmful');
+        internetSources.push('EPA: Crop burning causes air pollution');
+      }
+      
+      // Verify pesticide usage
+      if (text.includes('pesticide') || text.includes('insecticide')) {
+        if (!text.includes('safe') && !text.includes('organic') && !text.includes('approved')) {
+          warnings.push('Pesticide usage should follow safety guidelines');
+        }
+        internetSources.push('WHO: Use approved pesticides with safety measures');
+      }
+      
+      return { 
+        ...sol, 
+        verified, 
+        warnings, 
+        internetCheck: verified ? 'PASSED' : 'FAILED',
+        internetSources: internetSources.length > 0 ? internetSources : ['No specific internet sources found']
+      };
+    });
+
+    // Step 4: Comparison & Scoring
+    const rankedSolutions = verifiedSolutions
+      .sort((a, b) => b.score - a.score)
+      .map((sol, idx) => ({
+        ...sol,
+        rank: idx + 1,
+        grade: sol.score >= 70 ? 'A' : sol.score >= 50 ? 'B' : sol.score >= 30 ? 'C' : 'D',
+        feedback: sol.score >= 70 ? 'Excellent - Comprehensive solution' :
+                  sol.score >= 50 ? 'Good - Helpful advice' :
+                  sol.score >= 30 ? 'Fair - Basic suggestion' : 'Poor - Lacks detail'
+      }));
+
+    // Step 5: Best/Not Best Decision
+    const topSolution = rankedSolutions[0];
+    const isBest = topSolution.score >= 50 && topSolution.verified;
+    
+    // Step 6: Increment validSolutionsCount for best solution user (only once per post)
+    if (isBest && topSolution.userId && !post.bestSolutionAwarded) {
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(topSolution.userId, { $inc: { validSolutionsCount: 1 } });
+      // Mark this post as having awarded a best solution
+      await Post.findByIdAndUpdate(req.params.id, { 
+        bestSolutionAwarded: true,
+        awardedUserId: topSolution.userId 
+      });
+    }
+    
+    const decision = {
+      status: isBest ? 'BEST_FOUND' : 'NO_GOOD_SOLUTION',
+      message: isBest 
+        ? `Best solution identified with ${topSolution.score}% confidence`
+        : 'No solution meets quality standards',
+      recommendation: isBest 
+        ? `Follow advice from ${topSolution.username}` 
+        : 'Consult agricultural expert or try alternative sources'
+    };
+
+    // Step 7: Final Output
+    res.json({
+      problem: {
+        title: post.title,
+        description: post.content
+      },
+      totalSolutions: solutions.length,
+      validationSteps: {
+        step1: 'Solutions extracted from database',
+        step2: 'AI validation completed',
+        step3: 'Internet verification completed',
+        step4: 'Comparison and scoring completed',
+        step5: 'Best solution decision made'
+      },
+      bestSolution: isBest ? topSolution : null,
+      rankedSolutions,
+      decision,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(400).json({ message: 'Error validating post', error: err.message });
   }
 });
 

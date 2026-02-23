@@ -250,17 +250,65 @@ function Forum() {
   };
 
   const likePost = async (id) => {
+    const currentUserId = localStorage.getItem('userId');
+    if (!currentUserId) {
+      alert('Please login to like posts');
+      return;
+    }
+
     try {
-      const response = await fetch(`${BACKEND_URL}/api/posts/${id}/like`, { method: 'POST' });
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}/like`, { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: currentUserId })
+      });
       if (!response.ok) throw new Error('Failed to like post');
 
       const updated = await response.json();
       setPosts((prev) =>
-        prev.map((post) => (post._id === id ? { ...post, likes: updated.likes } : post))
+        prev.map((post) => (post._id === id ? { ...post, likes: updated.likes, likedBy: updated.likedBy } : post))
       );
     } catch (err) {
       setError(err.message);
       console.error('Error liking post:', err);
+    }
+  };
+
+  const validatePost = async (id) => {
+    const currentPost = posts.find(p => p._id === id);
+    
+    // If validation is already shown, hide it
+    if (currentPost?.aiValidation && !currentPost?.validating) {
+      setPosts((prev) =>
+        prev.map((post) => (post._id === id ? { ...post, aiValidation: null } : post))
+      );
+      return;
+    }
+
+    // Otherwise, run validation
+    setPosts((prev) =>
+      prev.map((post) => (post._id === id ? { ...post, validating: true } : post))
+    );
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/posts/${id}/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to validate post');
+
+      const result = await response.json();
+      setPosts((prev) =>
+        prev.map((post) => (post._id === id ? { ...post, validating: false, aiValidation: result } : post))
+      );
+    } catch (err) {
+      setError(err.message);
+      console.error('Error validating post:', err);
+      setPosts((prev) =>
+        prev.map((post) => (post._id === id ? { ...post, validating: false } : post))
+      );
     }
   };
 
@@ -453,6 +501,7 @@ function Forum() {
                 onEditToggle={toggleEditPost}
                 onUpdate={updatePost}
                 onLike={likePost}
+                onValidate={validatePost}
                 language={language}
               />
             ))

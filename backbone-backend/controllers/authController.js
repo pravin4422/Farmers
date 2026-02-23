@@ -2,10 +2,11 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { isAdminUser } = require('../validators/solutionValidators');
 
 // ======================= SIGNUP =======================
 exports.signup = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, cropExperience, isAgriculturalOfficer } = req.body;
 
   try {
     // Check if user already exists
@@ -17,7 +18,7 @@ exports.signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create new user
-    user = new User({ name, email, password: hashedPassword });
+    user = new User({ name, email, password: hashedPassword, cropExperience, isAgriculturalOfficer });
     await user.save();
 
     // Create JWT token (expires in 7 days)
@@ -42,10 +43,17 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
+    // Check if user has admin access
+    const isAdmin = await isAdminUser(user._id);
+
     // Create JWT token (expires in 7 days)
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(200).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.status(200).json({ 
+      token, 
+      user: { id: user._id, name: user.name, email: user.email },
+      isAdmin
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

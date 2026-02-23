@@ -4,6 +4,16 @@ const Price = require('../models/Price');
 const axios = require('axios');
 const auth = require('../middleware/authMiddleware');
 
+// Get all prices from all users (public)
+router.get('/all', async (req, res) => {
+  try {
+    const prices = await Price.find().sort({ arrival_date: -1 });
+    res.json(prices);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get user's prices
 router.get('/my-prices', auth, async (req, res) => {
   try {

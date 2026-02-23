@@ -176,6 +176,42 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Radio group */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.radio-options {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.radio-option input[type="radio"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+.radio-option span {
+  color: #555;
+}
+
 /* Dark theme for input fields */
 .signup-container.dark .signup-input {
   background-color: #2a2a2a;
@@ -190,6 +226,14 @@
 
 .signup-container.dark .signup-input::placeholder {
   color: #888;
+}
+
+.signup-container.dark .radio-label {
+  color: #e0e0e0;
+}
+
+.signup-container.dark .radio-option span {
+  color: #ccc;
 }
 
 /* Button */

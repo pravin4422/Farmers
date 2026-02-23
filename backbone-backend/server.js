@@ -19,6 +19,8 @@ const expiryRoutes = require('./routes/expiryRoutes'); // ✅ Expiry routes
 const problemRoutes = require('./routes/problemRoutes'); // ✅ Problem routes
 const libraryRoutes = require('./routes/libraryRoutes'); // ✅ Library routes
 const predictionRoutes = require('./routes/predictionRoutes'); // ✅ Prediction routes
+const validatorTestRoutes = require('./routes/validatorTest'); // ✅ Validator test routes
+const schemeRoutes = require('./routes/schemeRoutes'); // ✅ Scheme routes
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +59,8 @@ app.use('/api/expiries', expiryRoutes); // ✅ Expiry routes
 app.use('/api/problems', problemRoutes); // ✅ Problem routes
 app.use('/api/library', libraryRoutes); // ✅ Library routes
 app.use('/api/predict', predictionRoutes); // ✅ Prediction routes
+app.use('/api/validator', validatorTestRoutes); // ✅ Validator test routes
+app.use('/api/schemes', schemeRoutes); // ✅ Scheme routes
 
 
 // Test routes

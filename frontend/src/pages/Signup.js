@@ -9,7 +9,9 @@ function Signup({ setUser }) {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    cropExperience: '',
+    isAgriculturalOfficer: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,10 @@ function Signup({ setUser }) {
       emailPlaceholder: "மின்னஞ்சல்",
       passwordPlaceholder: "கடவுச்சொல்",
       confirmPasswordPlaceholder: "கடவுச்சொல்லை உறுதிப்படுத்தவும்",
+      cropExperiencePlaceholder: "பயிர் அனுபவம் (ஆண்டுகள்)",
+      agriculturalOfficerLabel: "விவசாய அதிகாரியா?",
+      yes: "ஆம்",
+      no: "இல்லை",
       signupButton: "பதிவு செய்யவும்",
       loading: "தயவுசெய்து காத்திருக்கவும்...",
       loginPrompt: "ஏற்கனவே கணக்கு உள்ளதா?",
@@ -36,6 +42,10 @@ function Signup({ setUser }) {
       emailPlaceholder: "Email",
       passwordPlaceholder: "Password",
       confirmPasswordPlaceholder: "Confirm Password",
+      cropExperiencePlaceholder: "Crop Experience (years)",
+      agriculturalOfficerLabel: "Agricultural Officer?",
+      yes: "Yes",
+      no: "No",
       signupButton: "Sign Up",
       loading: "Please wait...",
       loginPrompt: "Already have an account?",
@@ -90,7 +100,9 @@ function Signup({ setUser }) {
       const response = await api.post('/auth/signup', {
         name: formData.name,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        cropExperience: formData.cropExperience,
+        isAgriculturalOfficer: formData.isAgriculturalOfficer === 'yes'
       });
 
       localStorage.setItem('token', response.data.token);
@@ -187,6 +199,45 @@ function Signup({ setUser }) {
             minLength={6}
             disabled={loading}
           />
+          <input 
+            type="text"
+            name="cropExperience"
+            value={formData.cropExperience}
+            onChange={handleInputChange}
+            placeholder={currentContent.cropExperiencePlaceholder} 
+            className="signup-input"
+            required
+            disabled={loading}
+          />
+          <div className="radio-group">
+            <label className="radio-label">{currentContent.agriculturalOfficerLabel}</label>
+            <div className="radio-options">
+              <label className="radio-option">
+                <input 
+                  type="radio"
+                  name="isAgriculturalOfficer"
+                  value="yes"
+                  checked={formData.isAgriculturalOfficer === 'yes'}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+                <span>{currentContent.yes}</span>
+              </label>
+              <label className="radio-option">
+                <input 
+                  type="radio"
+                  name="isAgriculturalOfficer"
+                  value="no"
+                  checked={formData.isAgriculturalOfficer === 'no'}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+                <span>{currentContent.no}</span>
+              </label>
+            </div>
+          </div>
           <button 
             type="submit" 
             className="signup-button"

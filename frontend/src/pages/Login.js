@@ -57,6 +57,9 @@ function Login({ setUser }) {
     try {
       const response = await api.post("/auth/login", formData);
 
+      console.log('Login response:', response.data);
+      console.log('isAdmin:', response.data.isAdmin);
+
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userEmail", formData.email);
       
@@ -85,6 +88,14 @@ function Login({ setUser }) {
         displayName: displayName
       });
 
+      // Store admin status for frontend use
+      if (response.data.isAdmin) {
+        localStorage.setItem("isAdmin", "true");
+      } else {
+        localStorage.removeItem("isAdmin");
+      }
+
+      // All users go to home page
       navigate("/home");
     } catch (err) {
       const errorMessage =

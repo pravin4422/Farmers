@@ -32,7 +32,7 @@ exports.createProfile = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id || req.userId;
-    const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email');
+    const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email validSolutionsCount');
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
@@ -46,17 +46,17 @@ exports.getProfileByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
     
-    const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email');
+    const profile = await UserProfile.findOne({ userId }).populate('userId', 'name email validSolutionsCount');
     
     if (!profile) {
       // If no profile exists, still return basic user info
       const User = require('../models/User');
-      const user = await User.findById(userId).select('name email');
+      const user = await User.findById(userId).select('name email validSolutionsCount');
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
       return res.json({ 
-        userId: { _id: userId, name: user.name, email: user.email },
+        userId: { _id: userId, name: user.name, email: user.email, validSolutionsCount: user.validSolutionsCount || 0 },
         noProfile: true 
       });
     }
