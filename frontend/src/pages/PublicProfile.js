@@ -71,6 +71,20 @@ const PublicProfile = () => {
           </div>
           <h2>{userName}</h2>
           {userEmail && <p className="public-profile-email">{userEmail}</p>}
+          {profile.userId?.validSolutionsCount !== undefined && (
+            <div style={{
+              marginTop: '10px',
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '20px',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              display: 'inline-block'
+            }}>
+              🏆 Best Solutions: {profile.userId.validSolutionsCount}
+            </div>
+          )}
         </div>
 
         {profile.noProfile ? (

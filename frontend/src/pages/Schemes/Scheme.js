@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, Search, Calendar, X } from 'lucide-react';
 import '../../css/Schemes/Scheme.css';
 
@@ -7,7 +7,7 @@ const initialSchemes = [
     id: 1,
     name: "Sub‑Mission on Agricultural Mechanization",
     category: "Farm Mechanization",
-    image: "/assets/schemes/mechanization.jpg",
+    image: "/agri.jpg",
     startDate: "2014-01-01",
     endDate: null,
     details: {
@@ -25,7 +25,7 @@ const initialSchemes = [
     id: 2,
     name: "Pradhan Mantri Kisan Samman Nidhi",
     category: "Income Support",
-    image: "/assets/schemes/pm-kisan.jpg",
+    image: "/agri.jpg",
     startDate: "2019-02-01",
     endDate: null,
     details: {
@@ -43,7 +43,7 @@ const initialSchemes = [
     id: 3,
     name: "Pradhan Mantri Fasal Bima Yojana",
     category: "Insurance",
-    image: "/assets/schemes/pmfby.jpg",
+    image: "/agri.jpg",
     startDate: "2016-01-01",
     endDate: null,
     details: {
@@ -61,7 +61,7 @@ const initialSchemes = [
     id: 4,
     name: "Old Agricultural Scheme",
     category: "Farm Mechanization",
-    image: "/assets/schemes/old.jpg",
+    image: "/agri.jpg",
     startDate: "2010-01-01",
     endDate: "2020-12-31",
     details: {
@@ -78,7 +78,8 @@ const initialSchemes = [
 ];
 
 function Schemes() {
-  const [schemes, setSchemes] = useState(initialSchemes);
+  const [schemes, setSchemes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -89,6 +90,7 @@ function Schemes() {
     category: "",
     startDate: "",
     endDate: "",
+    image: "",
     details: {
       launch: "",
       objective: "",
@@ -101,7 +103,25 @@ function Schemes() {
     }
   });
 
-  const categories = ["All", ...new Set(schemes.map(s => s.category))];
+  const categories = ["All", ...new Set(schemes.map(s => s.category).filter(Boolean))];
+
+  useEffect(() => {
+    fetchSchemes();
+  }, []);
+
+  const fetchSchemes = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/schemes/all');
+      if (response.ok) {
+        const data = await response.json();
+        setSchemes(data);
+      }
+    } catch (error) {
+      console.error('Error fetching schemes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const isSchemeActive = (scheme) => {
     if (!scheme.endDate) return true;
@@ -126,39 +146,60 @@ function Schemes() {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(name + " farmer scheme India")}`, '_blank');
   };
 
-  const handleAddScheme = () => {
-    if (!newScheme.name || !newScheme.startDate || !newScheme.endDate) {
-      alert('Please fill in Scheme Name, Start Date, and End Date (required fields)');
+  const handleAddScheme = async () => {
+    if (!newScheme.name || !newScheme.startDate) {
+      alert('Please fill in Scheme Name and Start Date (required fields)');
       return;
     }
 
-    const newId = Math.max(...schemes.map(s => s.id), 0) + 1;
-    setSchemes([...schemes, { 
-      ...newScheme, 
-      id: newId,
-      image: "/assets/schemes/default.jpg",
-      details: {
-        ...newScheme.details,
-        launch: newScheme.startDate ? new Date(newScheme.startDate).getFullYear().toString() : ""
+    try {
+      const token = localStorage.getItem('token');
+      const websiteUrl = newScheme.details.website;
+      const imageUrl = newScheme.image || (websiteUrl ? `https://www.google.com/s2/favicons?domain=${websiteUrl}&sz=128` : "/agri.jpg");
+      
+      const schemeData = {
+        ...newScheme,
+        image: imageUrl,
+        details: {
+          ...newScheme.details,
+          launch: newScheme.startDate ? new Date(newScheme.startDate).getFullYear().toString() : ""
+        }
+      };
+
+      const response = await fetch('http://localhost:5000/api/schemes/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(schemeData)
+      });
+
+      if (response.ok) {
+        fetchSchemes();
+        setShowAddModal(false);
+        setNewScheme({
+          name: "",
+          category: "",
+          startDate: "",
+          endDate: "",
+          image: "",
+          details: {
+            launch: "",
+            objective: "",
+            benefit: "",
+            eligibility: "",
+            apply: "",
+            documents: "",
+            website: "",
+            applicationMode: "Offline"
+          }
+        });
       }
-    }]);
-    setShowAddModal(false);
-    setNewScheme({
-      name: "",
-      category: "",
-      startDate: "",
-      endDate: "",
-      details: {
-        launch: "",
-        objective: "",
-        benefit: "",
-        eligibility: "",
-        apply: "",
-        documents: "",
-        website: "",
-        applicationMode: "Offline"
-      }
-    });
+    } catch (error) {
+      console.error('Error adding scheme:', error);
+      alert('Failed to add scheme. Please try again.');
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -174,6 +215,12 @@ function Schemes() {
 
   return (
     <div className="schemes-wrapper">
+      {loading ? (
+        <div className="loading-container">
+          <p>Loading schemes...</p>
+        </div>
+      ) : (
+        <>
       <div className="schemes-header-container">
         <div className="schemes-header">
           <div className="header-icon"></div>
@@ -243,62 +290,67 @@ function Schemes() {
      
       <div className="schemes-grid-container">
         <div className="schemes-grid">
-          {filtered.map((scheme) => (
-            <div key={scheme.id} className="scheme-card">
-              <div className="scheme-image" onClick={() => toggle(scheme.id)}>
-                <div className="scheme-category-badge">{scheme.category}</div>
-                <div className="expand-indicator">
-                  {expandedId === scheme.id ? '−' : '+'}
+          {filtered.map((scheme) => {
+            const isExpanded = expandedId === (scheme._id || scheme.id);
+            return (
+              <div key={scheme._id || scheme.id} className="scheme-card">
+                <div className="scheme-image" onClick={() => toggle(scheme._id || scheme.id)}>
+                  <div className="scheme-category-badge">{scheme.category}</div>
+                  <div className="expand-indicator">
+                    {isExpanded ? '−' : '+'}
+                  </div>
+                  <img 
+                    src={scheme.image || '/agri.jpg'} 
+                    alt="Scheme"
+                    className="scheme-icon"
+                  />
                 </div>
-                <div className="scheme-icon">📋</div>
-              </div>
 
-              <div className="scheme-content">
-                <h3 className="scheme-title" onClick={() => toggle(scheme.id)}>
-                  {scheme.name}
-                </h3>
+                <div className="scheme-content">
+                  <h3 className="scheme-title" onClick={() => toggle(scheme._id || scheme.id)}>
+                    {scheme.name}
+                  </h3>
 
-                {scheme.startDate && (
-                  <div className="scheme-dates">
-                    <Calendar size={14} />
-                    <span>Start: {new Date(scheme.startDate).toLocaleDateString()}</span>
-                    {scheme.endDate && (
-                      <span>• End: {new Date(scheme.endDate).toLocaleDateString()}</span>
-                    )}
-                  </div>
-                )}
-
-                {expandedId === scheme.id && (
-                  <div className="scheme-details">
-                    {Object.entries(scheme.details).map(([key, value]) => value && (
-                      <div key={key} className="detail-item">
-                        <span className="detail-label">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}:
-                        </span>
-                        <p className="detail-value">{value}</p>
-                      </div>
-                    ))}
-
-                    <div className="scheme-actions">
-                      <button onClick={() => searchGoogle(scheme.name)} className="action-btn search-btn">
-                        🔍 Search
-                      </button>
-                      {scheme.details.website && (
-                        <a
-                          href={scheme.details.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="action-btn website-btn"
-                        >
-                          Website
-                        </a>
-                      )}
+                  {scheme.startDate && (
+                    <div className="scheme-dates">
+                      <Calendar size={14} />
+                      <span>Start: {new Date(scheme.startDate).toLocaleDateString()}</span>
+                      <span>• End: {scheme.endDate ? new Date(scheme.endDate).toLocaleDateString() : 'Ongoing'}</span>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {isExpanded && (
+                    <div className="scheme-details">
+                      {Object.entries(scheme.details).map(([key, value]) => value && (
+                        <div key={key} className="detail-item">
+                          <span className="detail-label">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}:
+                          </span>
+                          <p className="detail-value">{value}</p>
+                        </div>
+                      ))}
+
+                      <div className="scheme-actions">
+                        <button onClick={() => searchGoogle(scheme.name)} className="action-btn search-btn">
+                          🔍 Search
+                        </button>
+                        {scheme.details.website && (
+                          <a
+                            href={scheme.details.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="action-btn website-btn"
+                          >
+                            Website
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {filtered.length === 0 && (
@@ -359,7 +411,7 @@ function Schemes() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">
-                    End Date <span className="required">*</span>
+                    End Date (Optional - Leave blank for ongoing schemes)
                   </label>
                   <input
                     type="date"
@@ -422,6 +474,8 @@ function Schemes() {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

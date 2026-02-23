@@ -2,21 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { CommonForum, Discussion } = require('../models/CommonForum');
 const jwt = require('jsonwebtoken');
+const { adminAccessMiddleware } = require('../middleware/solutionValidator');
+const authMiddleware = require('../middleware/authMiddleware');
+const { validateSolutionWithGemini } = require('../services/geminiValidator');
 
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Unauthorized' });
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid token' });
-  }
-};
-
-const verifyAdmin = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ message: 'Unauthorized' });
   
@@ -38,7 +28,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', verifyAdmin, async (req, res) => {
+router.post('/', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     const post = new CommonForum(req.body);
     await post.save();
@@ -48,7 +38,7 @@ router.post('/', verifyAdmin, async (req, res) => {
   }
 });
 
-router.delete('/:id', verifyAdmin, async (req, res) => {
+router.delete('/:id', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     await CommonForum.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });
@@ -76,7 +66,7 @@ router.post('/discussions', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/discussions/:id/reply', verifyAdmin, async (req, res) => {
+router.post('/discussions/:id/reply', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     const discussion = await Discussion.findByIdAndUpdate(
       req.params.id,
@@ -95,15 +85,35 @@ router.post('/discussions/:id/solution', verifyToken, async (req, res) => {
     if (discussion.solutions.length >= 10) {
       return res.status(400).json({ message: 'Maximum 10 solutions reached' });
     }
-    discussion.solutions.push({ userName: req.body.userName, solution: req.body.solution });
+
+    // AI Validation for user solutions
+    const aiValidation = await validateSolutionWithGemini(discussion.question, req.body.solution);
+    
+    if (!aiValidation.isValid || aiValidation.score < 60) {
+      return res.status(400).json({ 
+        message: 'Solution quality too low', 
+        aiScore: aiValidation.score,
+        aiReason: aiValidation.reason 
+      });
+    }
+
+    discussion.solutions.push({ 
+      userName: req.body.userName, 
+      solution: req.body.solution,
+      aiScore: aiValidation.score,
+      aiReason: aiValidation.reason
+    });
     await discussion.save();
-    res.json(discussion);
+    res.json({ 
+      ...discussion.toObject(), 
+      aiValidation 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post('/discussions/:id/validate', verifyAdmin, async (req, res) => {
+router.post('/discussions/:id/validate', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     const discussion = await Discussion.findByIdAndUpdate(
       req.params.id,
@@ -125,8 +135,19 @@ router.post('/discussions/:id/validate', verifyAdmin, async (req, res) => {
   }
 });
 
-router.post('/validated-post', verifyAdmin, async (req, res) => {
+router.post('/validated-post', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
+    // AI Validation using Gemini
+    const aiValidation = await validateSolutionWithGemini(req.body.problem, req.body.solution);
+    
+    if (!aiValidation.isValid || aiValidation.score < 70) {
+      return res.status(400).json({ 
+        message: 'AI validation failed', 
+        aiScore: aiValidation.score,
+        aiReason: aiValidation.reason 
+      });
+    }
+
     const post = new Discussion({
       userName: 'Admin',
       question: req.body.problem,
@@ -140,12 +161,17 @@ router.post('/validated-post', verifyAdmin, async (req, res) => {
         cons: req.body.cons,
         consAudio: req.body.consAudio,
         validatedBy: 'Admin',
-        validatedAt: new Date()
+        validatedAt: new Date(),
+        aiScore: aiValidation.score,
+        aiReason: aiValidation.reason
       },
       status: 'validated'
     });
     await post.save();
-    res.status(201).json(post);
+    res.status(201).json({ 
+      ...post.toObject(), 
+      aiValidation 
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -160,7 +186,7 @@ router.get('/validated', async (req, res) => {
   }
 });
 
-router.put('/validated/:id', verifyAdmin, async (req, res) => {
+router.put('/validated/:id', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     const discussion = await Discussion.findByIdAndUpdate(
       req.params.id,
@@ -182,7 +208,7 @@ router.put('/validated/:id', verifyAdmin, async (req, res) => {
   }
 });
 
-router.delete('/validated/:id', verifyAdmin, async (req, res) => {
+router.delete('/validated/:id', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     await Discussion.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });
@@ -191,7 +217,7 @@ router.delete('/validated/:id', verifyAdmin, async (req, res) => {
   }
 });
 
-router.delete('/discussions/:id', verifyAdmin, async (req, res) => {
+router.delete('/discussions/:id', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
     await Discussion.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });

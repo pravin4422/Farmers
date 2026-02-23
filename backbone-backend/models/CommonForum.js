@@ -13,7 +13,14 @@ const discussionSchema = new mongoose.Schema({
   userName: { type: String, required: true },
   question: { type: String },
   questionAudio: { type: String },
-  solutions: [{ userName: String, solution: String, solutionAudio: String, createdAt: { type: Date, default: Date.now } }],
+  solutions: [{ 
+    userName: String, 
+    solution: String, 
+    solutionAudio: String, 
+    aiScore: Number,
+    aiReason: String,
+    createdAt: { type: Date, default: Date.now } 
+  }],
   validatedSolution: { 
     solution: String, 
     solutionAudio: String,
@@ -22,7 +29,9 @@ const discussionSchema = new mongoose.Schema({
     cons: String,
     consAudio: String,
     validatedBy: String, 
-    validatedAt: Date 
+    validatedAt: Date,
+    aiScore: Number,
+    aiReason: String
   },
   status: { type: String, enum: ['open', 'validated'], default: 'open' },
   createdAt: { type: Date, default: Date.now }

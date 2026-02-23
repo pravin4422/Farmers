@@ -30,6 +30,7 @@ import AiHome from "./pages/AiHome.js";
 import UserProfile from "./pages/UserProfile.js";
 import PublicProfile from "./pages/PublicProfile.js";
 import Review from "./pages/Review.js";
+import AdminDashboard from "./pages/AdminDashboard.js";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -172,6 +173,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Review user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

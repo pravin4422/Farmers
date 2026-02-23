@@ -161,6 +161,20 @@ const UserProfile = () => {
           </div>
           <h2>{profileUserInfo?.name || userName}</h2>
           {profileUserInfo?.email && <p className="profile-email">{profileUserInfo.email}</p>}
+          {profileUserInfo?.validSolutionsCount !== undefined && (
+            <div style={{
+              marginTop: '10px',
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '20px',
+              color: '#fff',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              display: 'inline-block'
+            }}>
+              🏆 Best Solutions: {profileUserInfo.validSolutionsCount}
+            </div>
+          )}
           <p className="profile-subtitle">{currentContent.subtitle}</p>
         </div>
 

@@ -3,6 +3,7 @@ import '../css/Prices/Prices.css';
 
 function Prices() {
   const [userPrices, setUserPrices] = useState([]);
+  const [allUserPrices, setAllUserPrices] = useState([]);
   const [apiPrices, setApiPrices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +28,7 @@ function Prices() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchUserPrices(), fetchApiPrices()]);
+      await Promise.all([fetchUserPrices(), fetchAllUserPrices(), fetchApiPrices()]);
       setLoading(false);
     };
     loadData();
@@ -49,6 +50,20 @@ function Prices() {
       }
     } catch (error) {
       setUserPrices([]);
+    }
+  };
+
+  const fetchAllUserPrices = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/prices/all');
+      if (response.ok) {
+        const data = await response.json();
+        setAllUserPrices(data);
+      } else {
+        setAllUserPrices([]);
+      }
+    } catch (error) {
+      setAllUserPrices([]);
     }
   };
 
@@ -92,6 +107,7 @@ function Prices() {
       });
       if (response.ok) {
         fetchUserPrices();
+        fetchAllUserPrices();
         setFormData({ commodity: '', market: '', state: '', min_price: '', max_price: '', arrival_date: '' });
       }
     } catch (error) {
@@ -108,7 +124,10 @@ function Prices() {
           'Authorization': `Bearer ${token}`,
         },
       });
-      if (response.ok) fetchUserPrices();
+      if (response.ok) {
+        fetchUserPrices();
+        fetchAllUserPrices();
+      }
     } catch (error) {
       console.error('Error deleting price:', error);
     }
@@ -162,7 +181,7 @@ function Prices() {
     }
   };
 
-  const combinedPrices = [...userPrices, ...apiPrices].filter(item => {
+  const combinedPrices = [...allUserPrices, ...apiPrices].filter(item => {
     const matchesSearch = !searchQuery || 
       item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -218,7 +237,7 @@ function Prices() {
 
   const handleRefresh = async () => {
     setLoading(true);
-    await Promise.all([fetchUserPrices(), fetchApiPrices()]);
+    await Promise.all([fetchUserPrices(), fetchAllUserPrices(), fetchApiPrices()]);
     setLoading(false);
   };
 
@@ -383,6 +402,63 @@ function Prices() {
               }) : (
                 <tr>
                   <td colSpan="8" className="no-data">No manually entered prices</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <h3>All Users' Market Prices ({allUserPrices.length} items)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Commodity</th>
+                <th>Market</th>
+                <th>State</th>
+                <th>Min Price (₹)</th>
+                <th>Max Price (₹)</th>
+                <th>Date</th>
+                <th>Today?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allUserPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).length > 0 ? allUserPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).map((item, idx) => {
+                const itemIsToday = isToday(item.arrival_date);
+                return (
+                  <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
+                    <td><strong>{item.commodity}</strong></td>
+                    <td>{item.market}</td>
+                    <td>{item.state}</td>
+                    <td>₹{item.min_price}</td>
+                    <td>₹{item.max_price}</td>
+                    <td>{formatDateWithDay(item.arrival_date)}</td>
+                    <td>
+                      <span className="status-badge">
+                        {itemIsToday ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" className="no-data">No prices from other users</td>
                 </tr>
               )}
             </tbody>

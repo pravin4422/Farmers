@@ -10,10 +10,12 @@ const Navbar = ({ user, setUser }) => {
     localStorage.removeItem("userEmail");
     localStorage.removeItem("displayName");
     localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("isAdmin");
     
     setUser(null);
     
-    navigate("/dashboard");
+    navigate("/login");
   };
 
   const handleHomeClick = () => {

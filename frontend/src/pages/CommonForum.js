@@ -17,8 +17,9 @@ function CommonForum() {
   const timerRef = useRef({});
 
   useEffect(() => {
-    const userEmail = localStorage.getItem('userEmail');
-    setIsAdmin(userEmail === 'admin@gmail.com');
+    const adminStatus = localStorage.getItem('isAdmin') === 'true';
+    console.log('CommonForum - isAdmin status:', adminStatus);
+    setIsAdmin(adminStatus);
     fetchDiscussions();
     fetchValidatedSolutions();
   }, []);
@@ -76,13 +77,28 @@ function CommonForum() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ solution: solutionData[discussionId], userName })
       });
+      
       if (response.ok) {
+        const result = await response.json();
         fetchDiscussions();
         setSolutionData({ ...solutionData, [discussionId]: '' });
-        alert('Solution submitted!');
+        
+        if (result.aiValidation) {
+          alert(`✅ Solution submitted!\n\n🤖 AI Score: ${result.aiValidation.score}/100\nFeedback: ${result.aiValidation.reason}`);
+        } else {
+          alert('Solution submitted!');
+        }
+      } else {
+        const error = await response.json();
+        if (error.aiScore !== undefined) {
+          alert(`❌ Solution rejected by AI\n\nScore: ${error.aiScore}/100\nReason: ${error.aiReason}\n\nPlease improve your solution.`);
+        } else {
+          alert('Error: ' + error.message);
+        }
       }
     } catch (error) {
       console.error('Error adding solution:', error);
+      alert('Error: ' + error.message);
     }
   };
 
@@ -190,10 +206,8 @@ function CommonForum() {
   const handleAdminPost = async (e) => {
     e.preventDefault();
     
-    
-    const userEmail = localStorage.getItem('userEmail');
-    if (userEmail !== 'admin@gmail.com') {
-      alert('Only admin can post solutions. Please login as admin@gmail.com');
+    if (!isAdmin) {
+      alert('Only validated users can post solutions.');
       return;
     }
     
@@ -272,15 +286,23 @@ function CommonForum() {
       });
       
       if (response.ok) {
+        const result = await response.json();
         fetchValidatedSolutions();
         setAdminPostData({ problem: '', solution: '', pros: '', cons: '' });
         setAudioBlob({});
         setEditingId(null);
-        alert(editingId ? 'Solution updated!' : 'Solution posted successfully!');
+        
+        if (result.aiValidation) {
+          alert(`✅ Solution posted successfully!\n\n🤖 AI Validation:\nScore: ${result.aiValidation.score}/100\nReason: ${result.aiValidation.reason}`);
+        } else {
+          alert(editingId ? 'Solution updated!' : 'Solution posted successfully!');
+        }
       } else {
         const error = await response.json();
         console.error('Server error:', error);
-        if (error.message === 'Admin access required') {
+        if (error.aiScore !== undefined) {
+          alert(`❌ AI Validation Failed\n\nScore: ${error.aiScore}/100\nReason: ${error.aiReason}\n\nPlease improve your solution.`);
+        } else if (error.message === 'Admin access required') {
           alert('Admin access required. Please login as admin@gmail.com');
         } else {
           alert('Error: ' + (error.message || 'Failed to post'));
@@ -336,7 +358,12 @@ function CommonForum() {
       
       {!isAdmin && (
         <div style={{background: '#fff3cd', padding: '15px', borderRadius: '8px', marginBottom: '20px', color: '#856404'}}>
-          <strong> Information:</strong> Only administrators can post solutions. Please login as admin to post.
+          <strong>ℹ️ Information:</strong> You can view all solutions. To post/edit/delete solutions, you need to meet one of these criteria:
+          <ul style={{marginTop: '10px', marginBottom: '0'}}>
+            <li>Agricultural Officer (with education experience)</li>
+            <li>Senior Expert (Age 40+ with 10+ years experience)</li>
+            <li>Crop Expert (5+ years experience with main crop)</li>
+          </ul>
         </div>
       )}
       
