@@ -4,7 +4,18 @@ const { CommonForum, Discussion } = require('../models/CommonForum');
 const jwt = require('jsonwebtoken');
 const { adminAccessMiddleware } = require('../middleware/solutionValidator');
 const authMiddleware = require('../middleware/authMiddleware');
-const { validateSolutionWithGemini } = require('../services/geminiValidator');
+const { validateSolutionWithGroq } = require('../services/groqValidator');
+
+// Helper function to decode HTML entities
+const decodeHtmlEntities = (text) => {
+  if (!text) return text;
+  return text
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+};
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -50,7 +61,28 @@ router.delete('/:id', authMiddleware, adminAccessMiddleware, async (req, res) =>
 router.get('/discussions', async (req, res) => {
   try {
     const discussions = await Discussion.find().sort({ createdAt: -1 });
-    res.json(discussions);
+    
+    // Decode HTML entities
+    const decodedDiscussions = discussions.map(doc => {
+      const obj = doc.toObject();
+      if (obj.question) obj.question = decodeHtmlEntities(obj.question);
+      if (obj.solutions) {
+        obj.solutions = obj.solutions.map(sol => ({
+          ...sol,
+          solution: decodeHtmlEntities(sol.solution),
+          aiReason: decodeHtmlEntities(sol.aiReason)
+        }));
+      }
+      if (obj.validatedSolution?.solution) {
+        obj.validatedSolution.solution = decodeHtmlEntities(obj.validatedSolution.solution);
+      }
+      if (obj.validatedSolution?.aiReason) {
+        obj.validatedSolution.aiReason = decodeHtmlEntities(obj.validatedSolution.aiReason);
+      }
+      return obj;
+    });
+    
+    res.json(decodedDiscussions);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -87,7 +119,9 @@ router.post('/discussions/:id/solution', verifyToken, async (req, res) => {
     }
 
     // AI Validation for user solutions
-    const aiValidation = await validateSolutionWithGemini(discussion.question, req.body.solution);
+    const problemText = discussion.question || 'Audio-based problem (no text)';
+    const solutionText = req.body.solution || 'Audio-based solution (no text)';
+    const aiValidation = await validateSolutionWithGroq(problemText, solutionText);
     
     if (!aiValidation.isValid || aiValidation.score < 60) {
       return res.status(400).json({ 
@@ -137,8 +171,8 @@ router.post('/discussions/:id/validate', authMiddleware, adminAccessMiddleware, 
 
 router.post('/validated-post', authMiddleware, adminAccessMiddleware, async (req, res) => {
   try {
-    // AI Validation using Gemini
-    const aiValidation = await validateSolutionWithGemini(req.body.problem, req.body.solution);
+    // AI Validation using Groq
+    const aiValidation = await validateSolutionWithGroq(req.body.problem, req.body.solution);
     
     if (!aiValidation.isValid || aiValidation.score < 70) {
       return res.status(400).json({ 
@@ -180,7 +214,27 @@ router.post('/validated-post', authMiddleware, adminAccessMiddleware, async (req
 router.get('/validated', async (req, res) => {
   try {
     const validated = await Discussion.find({ status: 'validated' }).sort({ 'validatedSolution.validatedAt': -1 });
-    res.json(validated);
+    
+    // Decode HTML entities in the response
+    const decodedValidated = validated.map(doc => {
+      const obj = doc.toObject();
+      if (obj.question) obj.question = decodeHtmlEntities(obj.question);
+      if (obj.validatedSolution?.solution) {
+        obj.validatedSolution.solution = decodeHtmlEntities(obj.validatedSolution.solution);
+      }
+      if (obj.validatedSolution?.pros) {
+        obj.validatedSolution.pros = decodeHtmlEntities(obj.validatedSolution.pros);
+      }
+      if (obj.validatedSolution?.cons) {
+        obj.validatedSolution.cons = decodeHtmlEntities(obj.validatedSolution.cons);
+      }
+      if (obj.validatedSolution?.aiReason) {
+        obj.validatedSolution.aiReason = decodeHtmlEntities(obj.validatedSolution.aiReason);
+      }
+      return obj;
+    });
+    
+    res.json(decodedValidated);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

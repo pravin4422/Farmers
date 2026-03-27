@@ -35,6 +35,11 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
@@ -43,8 +48,14 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // Check if user has admin access
-    const isAdmin = await isAdminUser(user._id);
+    // Check if user has admin access (with error handling)
+    let isAdmin = false;
+    try {
+      isAdmin = await isAdminUser(user._id);
+    } catch (adminError) {
+      console.error('Error checking admin status:', adminError);
+      // Continue with isAdmin = false
+    }
 
     // Create JWT token (expires in 7 days)
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -55,6 +66,7 @@ exports.login = async (req, res) => {
       isAdmin
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

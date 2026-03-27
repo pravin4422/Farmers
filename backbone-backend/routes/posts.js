@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
 const protect = require('../middleware/authMiddleware');
-const { validateSolutionWithGemini } = require('../services/geminiValidator');
+const { validateSolutionWithGroq } = require('../services/groqValidator');
 
 // GET all posts (public - no auth required)
 router.get('/', async (req, res) => {
@@ -183,10 +183,10 @@ router.post('/:id/validate', async (req, res) => {
       userId: typeof comment === 'string' ? null : (comment.userId || null)
     }));
 
-    // Step 2: AI Validation - Score each solution using Gemini AI
+    // Step 2: AI Validation - Score each solution using Groq AI
     const validatedSolutions = await Promise.all(solutions.map(async (sol) => {
       const problemText = post.content || post.title;
-      const aiResult = await validateSolutionWithGemini(problemText, sol.text);
+      const aiResult = await validateSolutionWithGroq(problemText, sol.text);
       return { ...sol, score: aiResult.score, aiReason: aiResult.reason };
     }));
 

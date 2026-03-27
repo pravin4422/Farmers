@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Check, Plus, Calendar, CheckCircle, Clock, Filter } from 'lucide-react';
+import { Trash2, Check, Plus, Calendar, CheckCircle, Clock, Filter, Bell, BellOff } from 'lucide-react';
 import '../../css/Remainders/remainders.css';
+import { requestNotificationPermission, subscribeUserToPush, unsubscribeUserFromPush, checkNotificationSubscription } from '../../utils/notificationUtils';
 
 function Reminder() {
   const [tasks, setTasks] = useState([]);
@@ -10,7 +11,9 @@ function Reminder() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [language, setLanguage] = useState('english');
-  const [userId, setUserId] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [taskDate, setTaskDate] = useState('');
+  const [taskTime, setTaskTime] = useState('');
 
   const translations = {
     english: {
@@ -35,7 +38,11 @@ function Reminder() {
       thisYear: 'This Year',
       thisMonth: 'This Month',
       selectYear: 'Select Year',
-      selectMonth: 'Select Month'
+      selectMonth: 'Select Month',
+      enableNotifications: 'Enable Notifications',
+      disableNotifications: 'Disable Notifications',
+      selectDate: 'Select Date',
+      selectTime: 'Select Time'
     },
     tamil: {
       title: 'பணி மேலாளர்',
@@ -59,7 +66,11 @@ function Reminder() {
       thisYear: 'இந்த ஆண்டு',
       thisMonth: 'இந்த மாதம்',
       selectYear: 'வருடத்தைத் தேர்ந்தெடுக்கவும்',
-      selectMonth: 'மாதத்தைத் தேர்ந்தெடுக்கவும்'
+      selectMonth: 'மாதத்தைத் தேர்ந்தெடுக்கவும்',
+      enableNotifications: 'அறிவிப்புகளை இயக்கு',
+      disableNotifications: 'அறிவிப்புகளை முடக்கு',
+      selectDate: 'தேதியைத் தேர்ந்தெடுக்கவும்',
+      selectTime: 'நேரத்தைத் தேர்ந்தெடுக்கவும்'
     }
   };
 
@@ -77,19 +88,43 @@ function Reminder() {
   const t = translations[language];
 
   useEffect(() => {
-    let storedUserId = sessionStorage.getItem('userId');
-    if (!storedUserId) {
-      storedUserId = 'user_' + Date.now();
-      sessionStorage.setItem('userId', storedUserId);
-    }
-    setUserId(storedUserId);
-    fetchTasks(storedUserId);
+    fetchTasks();
+    checkNotificationStatus();
+    registerServiceWorker();
   }, []);
 
-  const fetchTasks = async (uid) => {
+  const registerServiceWorker = async () => {
+    if ('serviceWorker' in navigator) {
+      try {
+        await navigator.serviceWorker.register('/service-worker.js');
+      } catch (error) {
+        console.error('Service worker registration failed:', error);
+      }
+    }
+  };
+
+  const checkNotificationStatus = async () => {
+    const isSubscribed = await checkNotificationSubscription();
+    setNotificationsEnabled(isSubscribed);
+  };
+
+  const toggleNotifications = async () => {
+    if (notificationsEnabled) {
+      await unsubscribeUserFromPush();
+      setNotificationsEnabled(false);
+    } else {
+      const granted = await requestNotificationPermission();
+      if (granted) {
+        const subscribed = await subscribeUserToPush();
+        setNotificationsEnabled(subscribed);
+      }
+    }
+  };
+
+  const fetchTasks = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/tasks/${uid}`, {
+      const response = await fetch('http://localhost:5000/api/tasks', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -109,10 +144,17 @@ function Reminder() {
     
     try {
       const token = localStorage.getItem('token');
+      let taskDateTime;
+      
+      if (taskDate && taskTime) {
+        taskDateTime = new Date(`${taskDate}T${taskTime}`);
+      } else {
+        taskDateTime = new Date();
+      }
+      
       const taskData = {
-        userId,
         text: newTask,
-        date: new Date().toISOString(),
+        date: taskDateTime.toISOString(),
         completed: false
       };
       
@@ -129,6 +171,8 @@ function Reminder() {
         const data = await response.json();
         setTasks([...tasks, data]);
         setNewTask('');
+        setTaskDate('');
+        setTaskTime('');
       }
     } catch (err) {
       console.error('Error adding task:', err);
@@ -231,12 +275,21 @@ function Reminder() {
         <div className="header-card">
           <div className="header-top">
             <h1 className="main-title">{t.title}</h1>
-            <button
-              onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
-              className="lang-btn active"
-            >
-              {language === 'english' ? 'தமிழ்' : 'English'}
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={toggleNotifications}
+                className={`lang-btn ${notificationsEnabled ? 'active' : ''}`}
+                title={notificationsEnabled ? t.disableNotifications : t.enableNotifications}
+              >
+                {notificationsEnabled ? <Bell size={20} /> : <BellOff size={20} />}
+              </button>
+              <button
+                onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
+                className="lang-btn active"
+              >
+                {language === 'english' ? 'தமிழ்' : 'English'}
+              </button>
+            </div>
           </div>
 
           <div className="add-task-section">
@@ -247,6 +300,20 @@ function Reminder() {
               onKeyPress={(e) => e.key === 'Enter' && addTask()}
               placeholder={t.placeholder}
               className="task-input"
+            />
+            <input
+              type="date"
+              value={taskDate}
+              onChange={(e) => setTaskDate(e.target.value)}
+              className="task-input"
+              style={{ width: '150px' }}
+            />
+            <input
+              type="time"
+              value={taskTime}
+              onChange={(e) => setTaskTime(e.target.value)}
+              className="task-input"
+              style={{ width: '120px' }}
             />
             <button onClick={addTask} className="add-btn">
               <Plus size={20} />

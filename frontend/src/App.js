@@ -65,6 +65,7 @@ function App() {
         <Route path="/" element={<Dashboard user={user} />} />
         <Route path="/home" element={<Home />} />
         <Route path="/prices" element={<Prices />} />
+        <Route path="/schemes" element={<Schemes user={user} />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/common-forum" element={<CommonForum />} />
 
@@ -120,14 +121,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-           <Route
-          path="/schemes"
-          element={
-            <ProtectedRoute>
-              <Schemes user={user} />
-            </ProtectedRoute>
-          }
-        />
                 <Route
           path="/weather"
           element={
@@ -154,6 +147,14 @@ function App() {
         />
         <Route
           path="/ai-chat"
+          element={
+            <ProtectedRoute>
+              <AiChat user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-home"
           element={
             <ProtectedRoute>
               <AiHome user={user} />

@@ -1,0 +1,98 @@
+{
+  "problem": {
+    "title": "My tomato plants have yellow leaves and stunted growth",
+    "content": "I'm growing tomatoes in my field. The leaves are turning yellow from bottom to top, and the plants are not growing well. The soil is clay-heavy and I water them every day. What should I do?"
+  },
+  "solutions": [
+    {
+      "id": 1,
+      "category": "BEST",
+      "expectedScore": "85-95",
+      "text": "This is nitrogen deficiency. Add organic compost or well-rotted cow manure (5kg per plant). Mix neem cake (200g per plant) into soil. Test soil pH - tomatoes need 6.0-6.8. Reduce watering to every 2-3 days as clay soil retains water. Apply foliar spray of 19:19:19 NPK (2g per liter) weekly for 3 weeks. Mulch with dry leaves to prevent nutrient loss."
+    },
+    {
+      "id": 2,
+      "category": "BEST",
+      "expectedScore": "80-90",
+      "text": "Your soil lacks nitrogen and has poor drainage. Stop daily watering immediately - clay soil needs water only when top 2 inches are dry. Add vermicompost (3-4 kg per plant) and mix sand or coco peat to improve drainage. Apply DAP fertilizer (50g per plant) around the base. Spray liquid seaweed extract every 10 days. Check for root rot by examining roots - if brown and mushy, reduce water more."
+    },
+    {
+      "id": 3,
+      "category": "MEDIUM",
+      "expectedScore": "55-65",
+      "text": "Add fertilizer to your plants. Use NPK and water them properly. Yellow leaves mean nutrients are missing."
+    },
+    {
+      "id": 4,
+      "category": "MEDIUM",
+      "expectedScore": "50-60",
+      "text": "This looks like nitrogen deficiency. Add some compost or manure to the soil. Also check if you're overwatering."
+    },
+    {
+      "id": 5,
+      "category": "MEDIUM",
+      "expectedScore": "45-55",
+      "text": "Try using organic fertilizer. Tomatoes need good soil. Maybe add some cow dung."
+    },
+    {
+      "id": 6,
+      "category": "MEDIUM",
+      "expectedScore": "55-65",
+      "text": "Your plants need nitrogen. You can use urea fertilizer or organic compost. Also improve soil drainage because clay soil holds too much water."
+    },
+    {
+      "id": 7,
+      "category": "MEDIUM",
+      "expectedScore": "50-60",
+      "text": "Yellow leaves are usually nutrient deficiency. Add fertilizer and reduce watering frequency. Clay soil doesn't need daily water."
+    },
+    {
+      "id": 8,
+      "category": "MEDIUM",
+      "expectedScore": "45-55",
+      "text": "Use neem cake and compost. Water less often. Test your soil pH."
+    },
+    {
+      "id": 9,
+      "category": "MEDIUM",
+      "expectedScore": "40-50",
+      "text": "Add manure and fertilizer. Your soil needs nutrients."
+    },
+    {
+      "id": 10,
+      "category": "MEDIUM",
+      "expectedScore": "55-65",
+      "text": "This is nitrogen deficiency combined with overwatering. Add organic matter to soil and water only when needed. Clay soil retains moisture so daily watering causes root problems."
+    },
+    {
+      "id": 11,
+      "category": "BAD",
+      "expectedScore": "15-25",
+      "text": "Just add more water. Plants need water to grow."
+    },
+    {
+      "id": 12,
+      "category": "BAD",
+      "expectedScore": "10-20",
+      "text": "Use chemical pesticides. Spray every day."
+    },
+    {
+      "id": 13,
+      "category": "BAD",
+      "expectedScore": "5-15",
+      "text": "Burn the affected leaves and add salt to the soil to kill bacteria."
+    },
+    {
+      "id": 14,
+      "category": "BAD",
+      "expectedScore": "20-30",
+      "text": "This is a virus. Remove all plants and burn them. Don't grow tomatoes again."
+    },
+    {
+      "id": 15,
+      "category": "BAD",
+      "expectedScore": "15-25",
+      "text": "Add bleach to water to kill germs. Water twice a day with this solution."
+    }
+  ]
+}

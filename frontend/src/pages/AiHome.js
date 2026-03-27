@@ -374,6 +374,16 @@ const AiHome = () => {
   const [aiChatMessage, setAiChatMessage] = useState('');
   const navigate = useNavigate();
 
+  React.useEffect(() => {
+    const prompt = localStorage.getItem('aiChatPrompt');
+    if (prompt) {
+      setAiChatMessage(prompt);
+      setShowAiChat(true);
+      setCurrentView('');
+      localStorage.removeItem('aiChatPrompt');
+    }
+  }, []);
+
   const handlePredictionClick = (view) => {
     setCurrentView(view);
     setShowPredictions(false);

@@ -147,8 +147,9 @@
   border-radius: 0.5rem;
   font-size: 1rem;
   font-family: inherit;
-  resize: none;
-  max-height: 150px;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 300px;
   outline: none;
   min-width: 200px;
 }
@@ -294,6 +295,44 @@
   align-items: center;
 }
 
+.refresh-btn {
+  padding: 0.5rem 1rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.refresh-btn:hover {
+  background: #4f46e5;
+}
+
+.predictions-btn {
+  padding: 0.5rem 1rem;
+  background: #ec4899;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.predictions-btn:hover {
+  background: #db2777;
+}
+
 .yield-btn {
   padding: 0.5rem 1rem;
   background: #f59e0b;
@@ -308,6 +347,22 @@
 
 .yield-btn:hover {
   background: #d97706;
+}
+
+.recommend-btn {
+  padding: 0.5rem 1rem;
+  background: #8b5cf6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.recommend-btn:hover {
+  background: #7c3aed;
 }
 
 .yield-form-overlay {

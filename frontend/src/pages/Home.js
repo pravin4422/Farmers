@@ -94,8 +94,15 @@ function Home() {
   };
 
   const routes = [
-    "/creator", "/ai-chat", "/prices", "/common-forum",
-    "/forum", "/weather", "/schemes", "/reminder", "/farmer-library"
+    "/creator",
+    "/ai-chat",
+    "/prices",
+    "/common-forum",
+    "/forum",
+    "/weather",
+    "/schemes",
+    "/reminder",
+    "/farmer-library"
   ];
 
   const currentContent = content[language];

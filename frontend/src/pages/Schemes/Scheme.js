@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, Search, Calendar, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import '../../css/Schemes/Scheme.css';
 
 const initialSchemes = [
@@ -77,7 +78,8 @@ const initialSchemes = [
   }
 ];
 
-function Schemes() {
+function Schemes({ user }) {
+  const navigate = useNavigate();
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -146,6 +148,22 @@ function Schemes() {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(name + " farmer scheme India")}`, '_blank');
   };
 
+  const askAI = (scheme) => {
+    const prompt = `Explain the ${scheme.name} government scheme in detail. Include:
+- Launch year: ${scheme.details.launch || 'N/A'}
+- Objective: ${scheme.details.objective || 'N/A'}
+- Benefits: ${scheme.details.benefit || 'N/A'}
+- Eligibility criteria: ${scheme.details.eligibility || 'N/A'}
+- How to apply: ${scheme.details.apply || 'N/A'}
+- Required documents: ${scheme.details.documents || 'N/A'}
+- Application mode: ${scheme.details.applicationMode || 'N/A'}
+
+Please provide a comprehensive explanation with practical guidance for farmers.`;
+    
+    localStorage.setItem('aiChatPrompt', prompt);
+    navigate('/ai-chat');
+  };
+
   const handleAddScheme = async () => {
     if (!newScheme.name || !newScheme.startDate) {
       alert('Please fill in Scheme Name and Start Date (required fields)');
@@ -153,7 +171,6 @@ function Schemes() {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const websiteUrl = newScheme.details.website;
       const imageUrl = newScheme.image || (websiteUrl ? `https://www.google.com/s2/favicons?domain=${websiteUrl}&sz=128` : "/agri.jpg");
       
@@ -169,8 +186,7 @@ function Schemes() {
       const response = await fetch('http://localhost:5000/api/schemes/add', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(schemeData)
       });
@@ -195,6 +211,7 @@ function Schemes() {
             applicationMode: "Offline"
           }
         });
+        alert('Scheme added successfully! Thank you for contributing.');
       }
     } catch (error) {
       console.error('Error adding scheme:', error);
@@ -319,6 +336,10 @@ function Schemes() {
                     </div>
                   )}
 
+                  <button onClick={() => askAI(scheme)} className="ai-btn-compact">
+                    🤖 Ask AI
+                  </button>
+
                   {isExpanded && (
                     <div className="scheme-details">
                       {Object.entries(scheme.details).map(([key, value]) => value && (
@@ -331,6 +352,9 @@ function Schemes() {
                       ))}
 
                       <div className="scheme-actions">
+                        <button onClick={() => askAI(scheme)} className="action-btn ai-btn">
+                          🤖 Ask AI
+                        </button>
                         <button onClick={() => searchGoogle(scheme.name)} className="action-btn search-btn">
                           🔍 Search
                         </button>

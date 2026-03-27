@@ -83,15 +83,17 @@
 @media (min-width: 640px) {
   .add-task-section {
     flex-direction: row;
+    flex-wrap: wrap;
   }
 }
 
 .task-input {
   flex: 1;
-  padding: 0rem 16rem;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
   border: 2px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 1.5rem;
+  font-size: 1rem;
   transition: all 0.2s;
 }
 

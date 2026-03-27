@@ -1,51 +1,54 @@
-const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const validateSolutionWithGemini = async (problem, solution) => {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash',
+      generationConfig: {
+        temperature: 0.7,
+      }
+    });
 
-    const prompt = `You are an agricultural expert. Analyze this farming problem and solution.
+    const prompt = `You are an expert agricultural scientist. Analyze this farming problem and solution critically.
 
 Problem: ${problem}
 Solution: ${solution}
 
-Validate if the solution is:
-1. Relevant to the problem
-2. Scientifically correct
-3. Safe for crops and environment
-4. Practical for farmers
+Score the solution from 0-100 based on:
+1. Completeness (25 points): Does it cover immediate actions, root cause, prevention?
+2. Specificity (25 points): Specific measurements, timelines, dosages?
+3. Scientific accuracy (25 points): Correct diagnosis and treatment?
+4. Practicality (25 points): Affordable, safe, easy to implement?
 
-Respond ONLY with valid JSON in this exact format:
-{"isValid": true, "score": 85, "reason": "Good solution for nitrogen deficiency"}
+Scoring guide:
+- 90-100: Exceptional - Complete, specific, scientific, with timeline and prevention
+- 70-89: Good - Addresses problem well with specific details
+- 50-69: Average - Basic advice, lacks detail or specificity
+- 30-49: Poor - Vague or incomplete
+- 0-29: Bad - Wrong, harmful, or irrelevant
 
-Score should be 0-100. isValid should be true if score >= 70.`;
+Respond ONLY with valid JSON:
+{"isValid": true, "score": 85, "reason": "Brief reason"}
 
-    const response = await axios.post(url, {
-      contents: [{
-        parts: [{
-          text: prompt
-        }]
-      }]
-    }, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+isValid should be true if score >= 70.`;
 
-    const aiResponse = response.data.candidates[0].content.parts[0].text;
+    const result = await model.generateContent(prompt);
+    const aiResponse = result.response.text();
     const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
     
     if (jsonMatch) {
-      const result = JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]);
       return {
-        isValid: result.isValid || false,
-        score: result.score || 0,
-        reason: result.reason || 'No reason provided'
+        isValid: parsed.isValid || false,
+        score: parsed.score || 0,
+        reason: parsed.reason || 'No reason provided'
       };
     }
 
     return { isValid: true, score: 50, reason: 'AI response format error' };
   } catch (error) {
-    console.error('Gemini AI validation error:', error.response?.data || error.message);
+    console.error('Gemini AI validation error:', error.message);
     return { isValid: true, score: 50, reason: 'AI service unavailable' };
   }
 };

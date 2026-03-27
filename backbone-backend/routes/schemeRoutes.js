@@ -13,10 +13,10 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// Add new scheme (authenticated)
-router.post('/add', auth, async (req, res) => {
+// Add new scheme (public - anyone can add)
+router.post('/add', async (req, res) => {
   try {
-    const newScheme = new Scheme({ ...req.body, userId: req.user.id });
+    const newScheme = new Scheme(req.body);
     const savedScheme = await newScheme.save();
     res.status(201).json(savedScheme);
   } catch (err) {
@@ -24,8 +24,8 @@ router.post('/add', auth, async (req, res) => {
   }
 });
 
-// Update scheme (authenticated)
-router.put('/:id', auth, async (req, res) => {
+// Update scheme (public - anyone can update)
+router.put('/:id', async (req, res) => {
   try {
     const updatedScheme = await Scheme.findByIdAndUpdate(
       req.params.id,

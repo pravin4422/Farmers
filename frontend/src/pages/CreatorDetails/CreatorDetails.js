@@ -79,6 +79,13 @@ function CreatorDetail() {
 
   const fetchLastEntry = async () => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        console.error('No authentication token found');
+        navigate('/login', { replace: true });
+        return;
+      }
+
       let url = `${API_BASE_URL}/creator-details/latest`;
       
       if (season && year) {
@@ -90,6 +97,8 @@ function CreatorDetail() {
       });
       
       if (response.status === 401) {
+        console.error('Authentication failed - redirecting to login');
+        localStorage.removeItem('token');
         navigate('/login', { replace: true });
         return;
       }
