@@ -25,6 +25,9 @@ const validatorTestRoutes = require('./routes/validatorTest'); // ✅ Validator 
 const schemeRoutes = require('./routes/schemeRoutes'); // ✅ Scheme routes
 const chatbotRoutes = require('./routes/chatbotRoutes'); // ✅ Chatbot routes
 const cropRecommendationRoutes = require('./routes/cropRecommendationRoutes'); // ✅ Crop recommendation routes
+const adminRoutes = require('./routes/adminRoutes'); // ✅ Admin routes
+
+const adminRoutes = require('./routes/adminRoutes'); // ✅ Admin routes
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +42,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
+
+// Serve static audio files
+app.use('/audio', express.static('public/audio'));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -69,6 +75,7 @@ app.use('/api/validator', validatorTestRoutes); // ✅ Validator test routes
 app.use('/api/schemes', schemeRoutes); // ✅ Scheme routes
 app.use('/api/chatbot', chatbotRoutes); // ✅ Chatbot routes
 app.use('/api/crop-recommendation', cropRecommendationRoutes); // ✅ Crop recommendation routes
+app.use('/api/admin', adminRoutes); // ✅ Admin routes
 
 
 // Test routes
@@ -89,4 +96,9 @@ app.listen(PORT, () => {
   const { startReminderScheduler } = require('./services/notificationService');
   startReminderScheduler();
   console.log('✅ Notification scheduler started');
+  
+  // Start price auto-save scheduler
+  const { startPriceAutoSaveScheduler } = require('./services/priceAutoSaveService');
+  startPriceAutoSaveScheduler();
+  console.log('✅ Price auto-save scheduler started');
 });

@@ -404,7 +404,7 @@ function CreatorDetail() {
       <div className="top-bar">
         <h1>{t('Creator Detail', 'உருவாக்குநர் விவரம்')}</h1>
         <div className="top-actions">
-          <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} style={{background: 'blue'}}>
+          <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
              {t('தமிழ்', 'English')}
           </button>
           <button className="print-btn" onClick={() => window.print()}>

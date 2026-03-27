@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import '../css/Prices/Prices.css';
 
 function Prices() {
+  const navigate = useNavigate();
   const [userPrices, setUserPrices] = useState([]);
   const [allUserPrices, setAllUserPrices] = useState([]);
   const [apiPrices, setApiPrices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showGraph, setShowGraph] = useState(false);
+  const [graphData, setGraphData] = useState(null);
+  const [analyzingCommodity, setAnalyzingCommodity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [filterMinPrice, setFilterMinPrice] = useState('');
@@ -241,15 +247,70 @@ function Prices() {
     setLoading(false);
   };
 
+  const handleSyncPrices = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/admin/sync-prices', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        alert('✅ Government prices synced successfully! Data will be available for graph analysis.');
+        await handleRefresh();
+      } else {
+        alert('❌ Failed to sync prices');
+      }
+    } catch (error) {
+      console.error('Error syncing prices:', error);
+      alert('❌ Error syncing prices');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGraphAnalysis = async (commodity) => {
+    setAnalyzingCommodity(commodity);
+    setShowGraph(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/price-analysis/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ commodity, timeRange: 365 })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setGraphData({
+          ...data,
+          chartData: data.chartData.map(d => ({
+            ...d,
+            date: new Date(d.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }),
+            avgPrice: parseFloat(d.avgPrice.toFixed(2))
+          }))
+        });
+      }
+    } catch (error) {
+      console.error('Graph analysis error:', error);
+    }
+  };
+
   return (
     <div className="prices-container">
       <h2>Market Prices Dashboard</h2>
       <p>Today: {formatDateWithDay(today)}</p>
 
       <div className="button-group">
-        <button onClick={handleRefresh} disabled={loading}>Refresh</button>
-        <button onClick={handleExportCSV}>Export to CSV</button>
-        <button onClick={handlePrint}>Print Report</button>
+        <button onClick={handleRefresh} disabled={loading}>🔄 Refresh</button>
+        <button onClick={handleSyncPrices} disabled={loading}>📥 Sync Gov Data</button>
+        <button onClick={handleExportCSV}>📊 Export CSV</button>
+        <button onClick={handlePrint}>🖨️ Print</button>
+        <button onClick={() => navigate('/price-graph-analysis')}>📈 Graph Analysis</button>
       </div>
 
       {loading ? (
@@ -332,7 +393,16 @@ function Prices() {
               <tbody>
                 {todayPrices.map((item, idx) => (
                   <tr key={idx} className="today-row">
-                    <td><strong>{item.commodity}</strong></td>
+                    <td>
+                      <strong>{item.commodity}</strong>
+                      <button 
+                        className="graph-btn" 
+                        onClick={() => handleGraphAnalysis(item.commodity)}
+                        title="View price trend"
+                      >
+                        📈
+                      </button>
+                    </td>
                     <td>{item.market}</td>
                     <td>{item.state}</td>
                     <td>₹{item.min_price}</td>
@@ -383,7 +453,16 @@ function Prices() {
                 const itemIsToday = isToday(item.arrival_date);
                 return (
                   <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
-                    <td><strong>{item.commodity}</strong></td>
+                    <td>
+                      <strong>{item.commodity}</strong>
+                      <button 
+                        className="graph-btn" 
+                        onClick={() => handleGraphAnalysis(item.commodity)}
+                        title="View price trend"
+                      >
+                        📈
+                      </button>
+                    </td>
                     <td>{item.market}</td>
                     <td>{item.state}</td>
                     <td>₹{item.min_price}</td>
@@ -443,7 +522,16 @@ function Prices() {
                 const itemIsToday = isToday(item.arrival_date);
                 return (
                   <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
-                    <td><strong>{item.commodity}</strong></td>
+                    <td>
+                      <strong>{item.commodity}</strong>
+                      <button 
+                        className="graph-btn" 
+                        onClick={() => handleGraphAnalysis(item.commodity)}
+                        title="View price trend"
+                      >
+                        📈
+                      </button>
+                    </td>
                     <td>{item.market}</td>
                     <td>{item.state}</td>
                     <td>₹{item.min_price}</td>
@@ -540,7 +628,16 @@ function Prices() {
                 const itemIsToday = isToday(item.arrival_date);
                 return (
                   <tr key={idx} className={itemIsToday ? 'today-row' : ''}>
-                    <td><strong>{item.commodity}</strong></td>
+                    <td>
+                      <strong>{item.commodity}</strong>
+                      <button 
+                        className="graph-btn" 
+                        onClick={() => handleGraphAnalysis(item.commodity)}
+                        title="View price trend"
+                      >
+                        📈
+                      </button>
+                    </td>
                     <td>{item.market}</td>
                     <td>{item.state}</td>
                     <td>₹{item.min_price}</td>
@@ -561,6 +658,57 @@ function Prices() {
             </tbody>
           </table>
         </>
+      )}
+
+      {showGraph && graphData && (
+        <div className="graph-modal">
+          <div className="graph-content">
+            <button className="close-btn" onClick={() => setShowGraph(false)}>✖</button>
+            <h3>📈 {analyzingCommodity} - Price Trend Analysis</h3>
+            
+            <div className="analysis-stats">
+              <div className={`stat-box ${graphData.analysis.isProfitable ? 'profit' : 'loss'}`}>
+                <label>Price Change</label>
+                <div className="stat-value">₹{graphData.analysis.priceDifference}</div>
+                <div className="stat-percent">{graphData.analysis.percentChange}</div>
+              </div>
+              <div className="stat-box">
+                <label>Trend</label>
+                <div className="stat-value">{graphData.analysis.trend}</div>
+              </div>
+              <div className="stat-box">
+                <label>Oldest Price</label>
+                <div className="stat-value">₹{graphData.analysis.oldestPrice.price}</div>
+                <div className="stat-date">{new Date(graphData.analysis.oldestPrice.date).toLocaleDateString('en-IN')}</div>
+              </div>
+              <div className="stat-box">
+                <label>Latest Price</label>
+                <div className="stat-value">₹{graphData.analysis.latestPrice.price}</div>
+                <div className="stat-date">{new Date(graphData.analysis.latestPrice.date).toLocaleDateString('en-IN')}</div>
+              </div>
+            </div>
+
+            <div className="chart-wrapper">
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={graphData.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="avgPrice" stroke="#2563eb" strokeWidth={3} name="Avg Price (₹)" />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="data-info">📊 {graphData.analysis.dataPoints} data points from last year</p>
+            </div>
+
+            {graphData.aiInsight && graphData.aiInsight !== 'AI analysis unavailable' && (
+              <div className="ai-insight">
+                <h4>🤖 AI Recommendation</h4>
+                <p>{graphData.aiInsight}</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

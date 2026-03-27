@@ -109,17 +109,13 @@ function Home() {
 
   return (
     <div className="home-container">
-      <div className="home-header">
-        <div className="theme-language-controls">
-          <button 
-            onClick={toggleLanguage} 
-            className="control-btn language-btn"
-            aria-label={`Switch to ${language === 'tamil' ? 'English' : 'Tamil'}`}
-          >
-            {language === 'tamil' ? 'EN' : 'தமிழ்'}
-          </button>
-        </div>
-      </div>
+      <button 
+        onClick={toggleLanguage} 
+        className="language-btn"
+        aria-label={`Switch to ${language === 'tamil' ? 'English' : 'Tamil'}`}
+      >
+        {language === 'tamil' ? 'EN' : 'தமிழ்'}
+      </button>
 
       <div className="home-content">
         <h1 className="home-title">{currentContent.title}</h1>         

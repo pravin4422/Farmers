@@ -547,9 +547,17 @@ function Tractor() {
   const toggleMoneyGiven = async (entry) => {
     const entryId = entry._id || entry.id;
     const updatedEntry = {
-      ...entry,
+      date: entry.date,
+      day: entry.day,
+      work: entry.work,
+      tractorName: entry.tractorName,
+      timeSegments: entry.timeSegments,
+      totalHours: entry.totalHours,
+      rate: entry.rate,
+      total: entry.total,
       moneyGiven: entry.moneyGiven === 'Okay' ? 'Not' : 'Okay',
-      updatedAt: new Date().toISOString()
+      year: entry.year,
+      season: entry.season
     };
 
     setLoading(true);
@@ -796,16 +804,14 @@ function Tractor() {
 
   return (
     <div className="tracker-container">
-      <div className="language-toggle">
-        <button 
-          onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} 
-          className="language-btn"
-        >
-          {language === 'en' ? 'தமிழ்' : 'EN'}
-        </button>
-      </div>
-
-      <h1> {t('Tractor Tracker', 'டிராக்டர் ட்ராக்கர்')}</h1>
+      <button 
+        onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} 
+        className="language-btn"
+      >
+        {language === 'en' ? 'தமிழ்' : 'EN'}
+      </button>
+      
+      <h1>{t('Tractor Tracker', 'டிராக்டர் ட்ராக்கர்')}</h1>
 
       {/* Tractor Entry Form */}
       <div className="form-container">
@@ -1036,7 +1042,7 @@ function Tractor() {
           onClick={handleAddEntry} 
           disabled={loading}
         >
-          {loading ? '⏳' : (editingId ? '✅' : '➕')} {editingId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Tractor Entry', 'டிராக்டர் பதிவை சேர்க்க')}
+          {loading ? '⏳' : (editingId ? '' : '')} {editingId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Tractor Entry', 'டிராக்டர் பதிவை சேர்க்க')}
         </button>
       </div>
 
@@ -1203,7 +1209,7 @@ function Tractor() {
           onClick={handleAddKamittyEntry}
           disabled={loading}
         >
-          {loading ? '⏳' : (editingKamittyId ? '✅' : '➕')} {editingKamittyId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Mandi Entry', 'மண்டி பதிவை சேர்க்க')}
+          {loading ? '⏳' : (editingKamittyId ? '' : '')} {editingKamittyId ? t('Update Entry', 'பதிவை புதுப்பிக்க') : t('Add Mandi Entry', 'மண்டி பதிவை சேர்க்க')}
         </button>
       </div>
 

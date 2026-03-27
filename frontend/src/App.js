@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import Prices from "./pages/Prices";
+import PriceGraphAnalysis from "./pages/PriceGraphAnalysis";
 import Forum from "./pages/Forums/Forum.js";
 import CommonForum from "./pages/CommonForum";
 
@@ -65,6 +66,7 @@ function App() {
         <Route path="/" element={<Dashboard user={user} />} />
         <Route path="/home" element={<Home />} />
         <Route path="/prices" element={<Prices />} />
+        <Route path="/price-graph-analysis" element={<PriceGraphAnalysis />} />
         <Route path="/schemes" element={<Schemes user={user} />} />
         <Route path="/forum" element={<Forum />} />
         <Route path="/common-forum" element={<CommonForum />} />

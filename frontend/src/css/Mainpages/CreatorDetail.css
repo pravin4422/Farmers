@@ -2,77 +2,84 @@
 .entry-form {
   background: white;
   padding: 30px;
-  border-radius: 15px;
+  border-radius: 12px;
   margin-bottom: 30px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+  border: 2px solid #e8f5e9;
 }
 
 .entry-form h2 {
-  color: #2c3e50;
+  color: #2e7d32;
   margin-bottom: 25px;
-  font-size: 24px;
+  font-size: 26px;
   text-align: center;
+  font-weight: 800;
 }
 
 .entry-form label {
   display: block;
   margin: 15px 0 5px;
-  font-weight: bold;
-  color: #34495e;
+  font-weight: 700;
+  color: #2e7d32;
 }
 
 .entry-form input, .entry-form select {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #ecf0f1;
+  padding: 14px;
+  border: 2px solid #e8f5e9;
   border-radius: 8px;
   font-size: 16px;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  background: #fafafa;
 }
 
 .entry-form input:focus, .entry-form select:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+  background: white;
 }
 
 /* Taking Seeding Section */
 .taking-seeding-inline {
-  background: #f8f9fa;
+  background: #f1f8e9;
   padding: 20px;
   border-radius: 10px;
   margin: 20px 0;
+  border: 2px solid #e8f5e9;
 }
 
 .taking-seeding-inline h4 {
-  color: #e74c3c;
+  color: #2e7d32;
   margin-bottom: 15px;
-  font-size: 18px;
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .taking-seeding-inline button,
 .planting-section button {
-  padding: 10px 20px;
-  background: #4CAF50;
+  padding: 12px 24px;
+  background: #2e7d32;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
   transition: all 0.3s ease;
   margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
 }
 
 .taking-seeding-inline button:hover,
 .planting-section button:hover {
-  background: #45a049;
+  background: #1b5e20;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
 .seeding-takers-list {
@@ -84,16 +91,17 @@
 
 .taker-card {
   background: white;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  border-radius: 10px;
+  border: 2px solid #e8f5e9;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.08);
   transition: transform 0.2s ease;
 }
 
 .taker-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+  border-color: #2e7d32;
 }
 
 .taker-card p {
@@ -102,30 +110,33 @@
 }
 
 .seeding-summary, .planting-summary {
-  background: #e8f5e8;
-  padding: 15px;
-  border-radius: 8px;
+  background: #e8f5e9;
+  padding: 18px;
+  border-radius: 10px;
   margin-top: 15px;
+  border: 2px solid #c8e6c9;
 }
 
 .seeding-summary p, .planting-summary p {
   margin: 5px 0;
-  color: #27ae60;
-  font-weight: bold;
+  color: #2e7d32;
+  font-weight: 700;
 }
 
 /* Planting Section */
 .planting-section {
-  background: #f0f8ff;
+  background: #f1f8e9;
   padding: 20px;
   border-radius: 10px;
   margin: 20px 0;
+  border: 2px solid #e8f5e9;
 }
 
 .planting-section h4 {
-  color: #27ae60;
+  color: #2e7d32;
   margin-bottom: 15px;
-  font-size: 18px;
+  font-size: 19px;
+  font-weight: 700;
 }
 
 .worker-list {
@@ -140,22 +151,24 @@
   max-width: 300px;
   margin-left: auto;
   margin-right: auto;
-  padding: 15px;
-  background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+  padding: 16px;
+  background: #2e7d32;
   color: white;
   border: none;
   border-radius: 10px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 700;
   cursor: pointer;
   margin-top: 20px;
   transition: all 0.3s ease;
   display: block;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
 }
 
 .save-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+  background: #1b5e20;
 }
 
 .save-button:disabled {
@@ -172,10 +185,11 @@
 }
 
 .last-entry-section h2 {
-  color: #2c3e50;
+  color: #2e7d32;
   margin-bottom: 20px;
   text-align: center;
-  font-size: 24px;
+  font-size: 26px;
+  font-weight: 800;
 }
 
 .last-entry {
@@ -187,30 +201,32 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #4CAF50;
+  background: #2e7d32;
   color: white;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
 }
 
 /* Entry Cards */
 .entry-card {
   background: white;
-  padding: 25px;
+  padding: 28px;
   border-radius: 12px;
   margin-bottom: 20px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
   transition: all 0.3s ease;
   position: relative;
   border-left: none;
+  border: 2px solid #e8f5e9;
 }
 
 .entry-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.15);
+  border-color: #2e7d32;
 }
 
 .entry-card p {
@@ -219,7 +235,7 @@
 }
 
 .entry-card strong {
-  color: #2c3e50;
+  color: #2e7d32;
 }
 
 .entry-actions {
@@ -241,22 +257,22 @@
 }
 
 .entry-actions button:first-child {
-  background: #3498db;
+  background: #2e7d32;
   color: white;
 }
 
 .entry-actions button:first-child:hover {
-  background: #2980b9;
+  background: #1b5e20;
   transform: translateY(-1px);
 }
 
 .entry-actions button:last-child {
-  background: #e74c3c;
+  background: #d32f2f;
   color: white;
 }
 
 .entry-actions button:last-child:hover {
-  background: #c0392b;
+  background: #b71c1c;
   transform: translateY(-1px);
 }
 
@@ -267,11 +283,11 @@
 }
 
 .entry-timestamp {
-  font-size: 12px;
-  color: #7f8c8d;
+  font-size: 13px;
+  color: #8d6e63;
   font-style: italic;
   margin-top: 15px;
-  border-top: 1px solid #ecf0f1;
+  border-top: 1px solid #e8f5e9;
   padding-top: 10px;
 }
 
@@ -534,7 +550,7 @@
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: #fff8e1;
   min-height: 100vh;
 }
 
@@ -542,18 +558,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #d0e2dc;
+  background: #2e7d32;
   color: white;
   padding: 20px 30px;
   width: 100%;
   margin: 0 0 25px 0;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .top-bar h1 {
   margin: 0;
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 30px;
+  font-weight: 800;
   text-align: left;
   flex: 0 0 auto;
 }
@@ -565,68 +581,75 @@
 }
 
 .top-actions button {
-  padding: 10px 15px;
+  padding: 12px 20px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
   transition: all 0.3s ease;
   color: white;
-  font-size: 14px;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.2);
 }
 
 .toggle-btn {
-  background: blue;
+  background: #2e7d32 !important;
 }
 
 .toggle-btn:hover {
-  background: blue;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 .print-btn {
-  background: #007bff;
+  background: #2e7d32 !important;
 }
 
 .print-btn:hover {
-  background: #7f8c8d;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 .tracker-btn {
-  background: #007bff;
+  background: #2e7d32 !important;
 }
 
 .tracker-btn:hover {
-  background: #007bff;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 .agromedical-btn {
-  background: #007bff;
+  background: #2e7d32 !important;
 }
 
 .agromedical-btn:hover {
-  background: #007bff;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 .cultivating-btn {
-  background: #007bff;
+  background: #2e7d32 !important;
 }
 
 .cultivating-btn:hover {
-  background: #007bff;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 .review-btn {
-  background: #007bff;
+  background: #2e7d32 !important;
 }
 
 .review-btn:hover {
-  background: #0056b3;
+  background: #1b5e20 !important;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
 }
 
 /* Action Buttons */
@@ -639,34 +662,36 @@
 }
 
 .add-button, .history-button {
-  padding: 15px 25px;
+  padding: 16px 28px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 16px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
 }
 
 .add-button {
-  background: linear-gradient(#007bff);
+  background: #2e7d32 !important;
   color: white;
 }
 
 .add-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+  background: #1b5e20 !important;
 }
 
 .history-button {
-  background: linear-gradient(#007bff);
+  background: #2e7d32 !important;
   color: white;
 }
 
 .history-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+  background: #1b5e20 !important;
 }
 
 .action-buttons button:disabled {

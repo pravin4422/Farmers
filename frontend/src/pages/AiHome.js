@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AiChat from './AiChat';
 import '../css/AiHome.css';
 
-const CropPrediction = ({ onAskAI }) => {
+const CropPrediction = () => {
   const districts = ['ARIYALUR', 'CHENNAI', 'COIMBATORE', 'CUDDALORE', 'DHARMAPURI', 'DINDIGUL', 'ERODE', 'KANCHIPURAM', 'KANNIYAKUMARI', 'KARUR', 'KRISHNAGIRI', 'MADURAI', 'NAGAPATTINAM', 'NAMAKKAL', 'PERAMBALUR', 'PUDUKKOTTAI', 'RAMANATHAPURAM', 'SALEM', 'SIVAGANGA', 'THANJAVUR', 'THE NILGIRIS', 'THENI', 'THIRUVALLUR', 'THIRUVARUR', 'TIRUCHIRAPPALLI', 'TIRUNELVELI', 'TIRUPPUR', 'TIRUVANNAMALAI', 'TUTICORIN', 'VELLORE'];
   const seasons = ['AUTUMN', 'KHARIF', 'RABI', 'SUMMER', 'WHOLE YEAR', 'WINTER'];
   
@@ -51,7 +50,9 @@ const CropPrediction = ({ onAskAI }) => {
   };
 
   const handleAskAI = () => {
-    onAskAI(`Tell me more about ${prediction} crop cultivation and how was my previous cultivation for ${prediction} crop`);
+    const message = `Tell me more about ${prediction} crop cultivation and how was my previous cultivation for ${prediction} crop`;
+    localStorage.setItem('aiChatPrompt', message);
+    window.location.href = '/ai-chat';
   };
 
   return (
@@ -116,7 +117,7 @@ const CropPrediction = ({ onAskAI }) => {
   );
 };
 
-const YieldPrediction = ({ onAskAI }) => {
+const YieldPrediction = () => {
   const crops = ['Arecanut', 'Arhar/Tur', 'Castor seed', 'Coconut ', 'Cotton(lint)', 'Dry chillies', 'Gram', 'Jute', 'Linseed', 'Maize', 'Mesta', 'Niger seed', 'Onion', 'Other  Rabi pulses', 'Potato', 'Rapeseed &Mustard', 'Rice', 'Sesamum', 'Small millets', 'Sugarcane', 'Sweet potato', 'Tapioca', 'Tobacco', 'Turmeric', 'Wheat', 'Bajra', 'Black pepper', 'Cardamom', 'Coriander', 'Garlic', 'Ginger', 'Groundnut', 'Horse-gram', 'Jowar', 'Ragi', 'Cashewnut', 'Banana', 'Soyabean', 'Barley', 'Khesari', 'Masoor', 'Moong(Green Gram)', 'Other Kharif pulses', 'Safflower', 'Sannhamp', 'Sunflower', 'Urad', 'Peas & beans (Pulses)', 'other oilseeds', 'Other Cereals', 'Cowpea(Lobia)', 'Oilseeds total', 'Guar seed', 'Other Summer Pulses', 'Moth'];
   const seasons = ['Whole Year ', 'Kharif     ', 'Rabi       ', 'Autumn     ', 'Summer     ', 'Winter     '];
   const [states, setStates] = useState([]);
@@ -185,7 +186,8 @@ const YieldPrediction = ({ onAskAI }) => {
 
   const handleAskAI = () => {
     const message = `Is the yield of ${prediction.predicted_yield} okay for ${formData.crop} in ${formData.state}, ${formData.season} season, ${formData.area} hectares with ${formData.annual_rainfall}mm rainfall?`;
-    onAskAI(message);
+    localStorage.setItem('aiChatPrompt', message);
+    window.location.href = '/ai-chat';
   };
 
   return (
@@ -272,7 +274,7 @@ const YieldPrediction = ({ onAskAI }) => {
   );
 };
 
-const DiseasePrediction = ({ onAskAI }) => {
+const DiseasePrediction = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [prediction, setPrediction] = useState(null);
@@ -322,7 +324,9 @@ const DiseasePrediction = ({ onAskAI }) => {
   };
 
   const handleAskAI = () => {
-    onAskAI(`Tell me more about ${prediction.disease} disease in plants`);
+    const message = `Tell me more about ${prediction.disease} disease in plants`;
+    localStorage.setItem('aiChatPrompt', message);
+    window.location.href = '/ai-chat';
   };
 
   return (
@@ -368,32 +372,13 @@ const DiseasePrediction = ({ onAskAI }) => {
 };
 
 const AiHome = () => {
-  const [showAiChat, setShowAiChat] = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
   const [currentView, setCurrentView] = useState('crop');
-  const [aiChatMessage, setAiChatMessage] = useState('');
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    const prompt = localStorage.getItem('aiChatPrompt');
-    if (prompt) {
-      setAiChatMessage(prompt);
-      setShowAiChat(true);
-      setCurrentView('');
-      localStorage.removeItem('aiChatPrompt');
-    }
-  }, []);
 
   const handlePredictionClick = (view) => {
     setCurrentView(view);
     setShowPredictions(false);
-    setShowAiChat(false);
-  };
-
-  const handleAskAI = (message) => {
-    setAiChatMessage(message);
-    setShowAiChat(true);
-    setCurrentView('');
   };
 
   const gridItems = [
@@ -419,22 +404,18 @@ const AiHome = () => {
               </div>
             )}
           </div>
-          <button className="ai-chat-btn" onClick={() => setShowAiChat(!showAiChat)}>
-            {showAiChat ? 'Close AI Chat' : 'AI Chat'}
+          <button className="ai-chat-btn" onClick={() => navigate('/ai-chat')}>
+            AI Chat
           </button>
         </div>
       </header>
 
-      {showAiChat ? (
-        <div className="ai-chat-wrapper">
-          <AiChat initialMessage={aiChatMessage} />
-        </div>
-      ) : currentView === 'crop' ? (
-        <CropPrediction onAskAI={handleAskAI} />
+      {currentView === 'crop' ? (
+        <CropPrediction />
       ) : currentView === 'disease' ? (
-        <DiseasePrediction onAskAI={handleAskAI} />
+        <DiseasePrediction />
       ) : currentView === 'yield' ? (
-        <YieldPrediction onAskAI={handleAskAI} />
+        <YieldPrediction />
       ) : (
         <div className="grid-container">
           {gridItems.map(item => (

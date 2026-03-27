@@ -470,7 +470,7 @@ function Weather() {
         <div className="news-section-header">
           <h3 className="news-section-title">{t.newsTitle}</h3>
           <button onClick={refreshAllNews} className="refresh-btn">
-            {t.refreshNews}
+            🔄 {t.refreshNews}
           </button>
         </div>
 
@@ -608,10 +608,10 @@ function Weather() {
               className="weather-icon"
             />
             <div className="weather-details">
-              <p><strong>{t.temp}:</strong> {weather.main.temp.toFixed(1)} °C</p>
-              <p><strong>{t.cond}:</strong> {weather.weather[0].description}</p>
-              <p><strong>{t.hum}:</strong> {weather.main.humidity} %</p>
-              <p><strong>{t.wind}:</strong> {weather.wind.speed} km/h</p>
+              <p><span className="weather-icon-label">🌡️</span> <strong>{t.temp}:</strong> {weather.main.temp.toFixed(1)} °C</p>
+              <p><span className="weather-icon-label">☁️</span> <strong>{t.cond}:</strong> {weather.weather[0].description}</p>
+              <p><span className="weather-icon-label">💧</span> <strong>{t.hum}:</strong> {weather.main.humidity} %</p>
+              <p><span className="weather-icon-label">💨</span> <strong>{t.wind}:</strong> {weather.wind.speed} km/h</p>
             </div>
           </div>
         )}

@@ -54,13 +54,12 @@ const Dashboard = () => {
 
   return (
     <>
-      <button onClick={toggleLanguage} className="language-toggle">
-        {language === 'tamil' ? 'EN' : 'தமிழ்'}
-      </button>
-      
       <div className="landing-container">
-
-      <div className="hero-section">
+        <button onClick={toggleLanguage} className="language-btn">
+          {language === 'tamil' ? 'EN' : 'தமிழ்'}
+        </button>
+        
+        <div className="hero-section">
         <h1>{currentContent.title}</h1>
         <p>{currentContent.subtitle}</p>
         <button className="cta-btn" onClick={() => navigate("/login")}>

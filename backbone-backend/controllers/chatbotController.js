@@ -1,4 +1,5 @@
 const { chatWithAI } = require('../services/chatbotService');
+const { generateAudio } = require('../services/audioService');
 const ChatHistory = require('../models/ChatHistory');
 const User = require('../models/User');
 const UserProfile = require('../models/UserProfile');
@@ -22,7 +23,7 @@ const decodeHtmlEntities = (text) => {
 
 const chat = async (req, res) => {
   try {
-    const { message, conversationHistory, language } = req.body;
+    const { message, conversationHistory, language, audioMode } = req.body;
     const userId = req.user.id || req.user._id;
 
     if (!message || message.trim() === '') {
@@ -245,7 +246,15 @@ const chat = async (req, res) => {
 
     const result = await chatWithAI(message, conversationHistory || [], language || 'english', userContext);
 
+    console.log('🤖 AI Result:', { success: result.success, hasResponse: !!result.response, responseLength: result.response?.length });
+
     if (result.success) {
+      // Generate audio if audio mode is enabled
+      let audioData = null;
+      if (audioMode) {
+        audioData = await generateAudio(result.response, language || 'english');
+      }
+
       // Save to database
       await ChatHistory.findOneAndUpdate(
         { userId },
@@ -263,9 +272,17 @@ const chat = async (req, res) => {
 
       res.json({
         response: decodeHtmlEntities(result.response),
-        conversationHistory: result.conversationHistory
+        conversationHistory: result.conversationHistory,
+        audio: audioData
+      });
+      
+      console.log('✅ Response sent to frontend:', { 
+        responseLength: result.response?.length, 
+        hasConversationHistory: !!result.conversationHistory,
+        firstChars: result.response?.substring(0, 50)
       });
     } else {
+      console.error('❌ AI result failed:', result.error);
       res.status(500).json({
         message: 'Failed to get AI response',
         error: result.error

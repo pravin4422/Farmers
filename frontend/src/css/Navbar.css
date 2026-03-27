@@ -1,8 +1,9 @@
 /* Navbar main container */
 .navbar {
-  background-color: #019f01; /* Green background for navbar */
-  padding: 25px 30px;         /* Space inside navbar */
+  background-color: #2e7d32; /* Green background for navbar */
+  padding: 20px 40px;         /* Space inside navbar */
   color: white;               /* Default text color */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Soft shadow */
 }
 
 /* Flex container to align logo and buttons */
@@ -14,72 +15,86 @@
 
 /* Logo styling */
 .logo {
-  font-size: 24px;            /* Logo font size */
-  font-weight: bold;          /* Bold text */
+  font-size: 28px;            /* Logo font size */
+  font-weight: 800;          /* Bold text */
   color: white;               /* White text for logo */
   margin: 0;                  /* Remove default margin */
+  letter-spacing: 0.5px;      /* Slight letter spacing */
 }
 
 /* Container for buttons */
 .nav-buttons {
   display: flex;              /* Display buttons in a row */
-  gap: 10px;                  /* Space between buttons */
+  gap: 15px;                  /* Space between buttons */
   align-items: center;        /* Center items vertically - ADDED */
 }
 
 /* Profile icon styling */
 .profile-icon {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
-  background-color: white;
-  color: #019f01;
+  background-color: #fff8e1;
+  color: #2e7d32;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .profile-icon:hover {
-  background-color: #cccccc;
-  transform: scale(1.05);
+  background-color: #8d6e63;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Normal buttons (Home, About Us, Signup) */
 .nav-btn {
-  background-color: white;    /* White button background */
-  color: #019f01;             /* Green text */
+  background-color: #fff8e1;    /* Light yellow button background */
+  color: #2e7d32;             /* Green text */
   border: none;               /* Remove border */
-  padding: 8px 15px;          /* Button padding */
-  border-radius: 5px;         /* Rounded corners */
+  padding: 12px 24px;          /* Button padding */
+  border-radius: 8px;         /* Rounded corners */
   cursor: pointer;            /* Mouse pointer on hover */
-  font-weight: bold;          /* Bold text */
+  font-weight: 700;          /* Bold text */
+  font-size: 15px;            /* Font size */
+  transition: all 0.3s ease;  /* Smooth transition */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); /* Soft shadow */
 }
 
 /* Hover effect for normal buttons */
 .nav-btn:hover {
-  background-color: #cccccc;  /* Light gray on hover */
-  color: #019f01;             /* Keep text green */
+  background-color: #8d6e63;  /* Brown on hover */
+  color: white;             /* White text */
+  transform: translateY(-2px); /* Lift effect */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
 }
 
 /* Login button styling */
 .login-btn {
-  background-color: white;    /* White background */
-  color: #019f01;             /* Green text */
+  background-color: #fff8e1;    /* Light yellow background */
+  color: #2e7d32;             /* Green text */
   border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
+  padding: 12px 24px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Hover effect for login button */
 .login-btn:hover {
-  background-color: #cccccc;  /* Light gray on hover */
-  color: #019f01;             /* Green text on hover */
+  background-color: #8d6e63;  /* Brown on hover */
+  color: white;             /* White text on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
 
 /* User display name styling - ADDED */
@@ -96,15 +111,15 @@
   }
   
   .logo {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .nav-buttons {
-    gap: 8px;
+    gap: 12px;
   }
   
   .nav-btn, .login-btn {
-    padding: 6px 12px;
+    padding: 10px 18px;
     font-size: 14px;
   }
   
@@ -125,7 +140,7 @@
   }
   
   .logo {
-    font-size: 18px;
+    font-size: 20px;
   }
   
   .nav-buttons {
@@ -133,8 +148,8 @@
   }
   
   .nav-btn, .login-btn {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
   }
   
   /* User name responsive - ADDED */

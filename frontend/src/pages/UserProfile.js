@@ -150,11 +150,11 @@ const UserProfile = () => {
 
   return (
     <div className="profile-page">
+      <button onClick={() => setLanguage(language === 'tamil' ? 'english' : 'tamil')} className="language-toggle">
+        {language === 'tamil' ? 'EN' : 'தமிழ்'}
+      </button>
+      
       <div className="profile-container">
-        <button onClick={() => setLanguage(language === 'tamil' ? 'english' : 'tamil')} className="language-toggle">
-          {language === 'tamil' ? 'EN' : 'தமிழ்'}
-        </button>
-
         <div className="profile-header">
           <div className="profile-avatar">
             {(profileUserInfo?.name || userName).charAt(0).toUpperCase()}
