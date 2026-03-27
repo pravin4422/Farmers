@@ -1,7 +1,56 @@
 # =========================
-# ML / Python (NEWLY ADDED)
+# ML / Python
 # =========================
 ML/crop_model.pkl
 *.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.safetensors
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# =========================
+# Backend (Node.js)
+# =========================
+node_modules/
+.env
+backbone-backend/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# =========================
+# Build / Dist
+# =========================
+dist/
+build/
+
+# =========================
+# Large ML folders
+# =========================
+pretrained model/
+models/
