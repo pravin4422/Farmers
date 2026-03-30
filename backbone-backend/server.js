@@ -27,8 +27,6 @@ const chatbotRoutes = require('./routes/chatbotRoutes'); // ✅ Chatbot routes
 const cropRecommendationRoutes = require('./routes/cropRecommendationRoutes'); // ✅ Crop recommendation routes
 const adminRoutes = require('./routes/adminRoutes'); // ✅ Admin routes
 
-const adminRoutes = require('./routes/adminRoutes'); // ✅ Admin routes
-
 // Load environment variables
 dotenv.config();
 

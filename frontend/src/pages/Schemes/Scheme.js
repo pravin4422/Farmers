@@ -337,7 +337,7 @@ Please provide a comprehensive explanation with practical guidance for farmers.`
                   )}
 
                   <button onClick={() => askAI(scheme)} className="ai-btn-compact">
-                    🤖 Ask AI
+                    Ask AI
                   </button>
 
                   {isExpanded && (
@@ -353,10 +353,10 @@ Please provide a comprehensive explanation with practical guidance for farmers.`
 
                       <div className="scheme-actions">
                         <button onClick={() => askAI(scheme)} className="action-btn ai-btn">
-                          🤖 Ask AI
+                          Ask AI
                         </button>
                         <button onClick={() => searchGoogle(scheme.name)} className="action-btn search-btn">
-                          🔍 Search
+                          Search
                         </button>
                         {scheme.details.website && (
                           <a

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../css/Mainpages/CreatorHistory.css';
+import '../../css/Mainpages/SeasonTotals.css';
 
 function CreatorHistory() {
   const [language, setLanguage] = useState('en');
@@ -15,6 +16,8 @@ function CreatorHistory() {
   const [cultivationEntries, setCultivationEntries] = useState([]);
   const [kamittyEntries, setKamittyEntries] = useState([]);
   const [reviewEntries, setReviewEntries] = useState([]);
+  const [showSeasonTotals, setShowSeasonTotals] = useState(false);
+  const [selectedSeasonDetail, setSelectedSeasonDetail] = useState(null);
 
   const navigate = useNavigate();
   const API_BASE_URL = 'http://localhost:5000/api';
@@ -120,7 +123,7 @@ function CreatorHistory() {
     historyEntries.map(entry => (
       <div key={entry._id || entry.id} className="entry-card">
         <div className="entry-header">
-          <span className="entry-season">🌾 {entry.season} {entry.year}</span>
+          <span className="entry-season">{entry.season} {entry.year}</span>
           {entry.seedDate && <span className="entry-date"> {formatDate(entry.seedDate)}</span>}
         </div>
         
@@ -145,7 +148,7 @@ function CreatorHistory() {
               <div className="entry-details">
                 {entry.seedingTakers.map((taker, i) => (
                   <div key={i} className="taker-info">
-                    <p>👤 <strong>{taker.name}</strong></p>
+                    <p><strong>{taker.name}</strong></p>
                     <p>{t('Seedings Taken:', 'விதைப்புகள்:')} {taker.taken}</p>
                     <p>{t('Money:', 'தொகை:')} ₹{taker.money}</p>
                   </div>
@@ -260,7 +263,7 @@ function CreatorHistory() {
         <div key={entry._id || entry.id} className={`entry-card ${isProblem ? 'problem-card' : ''}`}>
           <div className="entry-header">
             <span className="entry-season">
-              {isProblem ? '🔴' : '🟢'} {entry.season} {entry.year}
+              {entry.season} {entry.year}
             </span>
             <span className="entry-date"> {formatDate(entry.createdAt)}</span>
           </div>
@@ -284,6 +287,154 @@ function CreatorHistory() {
       );
     })
   );
+
+  const calculateSeasonTotal = (season, year) => {
+    let total = 0;
+
+    // Seed Sowing costs
+    historyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        total += e.seedCost || 0;
+        total += e.totalSeedingCost || 0;
+        if (e.workers) {
+          e.workers.forEach(w => total += parseInt(w.cost || 0));
+        }
+      });
+
+    // Tractor costs
+    tractorEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => total += e.total || 0);
+
+    // Product costs
+    productEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => total += e.total || 0);
+
+    // Cultivation costs
+    cultivationEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => total += e.total || 0);
+
+    // Mandi costs
+    kamittyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => total += parseFloat(e.totalKamitty || 0));
+
+    return total;
+  };
+
+  const getSeasonBreakdown = (season, year) => {
+    const breakdown = {
+      seedSowing: 0,
+      tractor: 0,
+      products: 0,
+      cultivation: 0,
+      mandi: 0
+    };
+
+    historyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        breakdown.seedSowing += (e.seedCost || 0) + (e.totalSeedingCost || 0);
+        if (e.workers) {
+          e.workers.forEach(w => breakdown.seedSowing += parseInt(w.cost || 0));
+        }
+      });
+
+    tractorEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => breakdown.tractor += e.total || 0);
+
+    productEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => breakdown.products += e.total || 0);
+
+    cultivationEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => breakdown.cultivation += e.total || 0);
+
+    kamittyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => breakdown.mandi += parseFloat(e.totalKamitty || 0));
+
+    return breakdown;
+  };
+
+  const getSeasonDetails = (season, year) => {
+    const details = {
+      seedSowing: [],
+      tractor: [],
+      products: [],
+      cultivation: [],
+      mandi: []
+    };
+
+    historyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        if (e.seedCost) {
+          details.seedSowing.push({ name: t('Seed Cost', 'விதை செலவு'), amount: e.seedCost, date: e.seedDate });
+        }
+        if (e.totalSeedingCost) {
+          details.seedSowing.push({ name: t('Total Seeding Cost', 'மொத்த விதைப்பு செலவு'), amount: e.totalSeedingCost, date: e.seedDate });
+        }
+        if (e.workers && e.workers.length > 0) {
+          e.workers.forEach(w => {
+            details.seedSowing.push({ name: `${t('Worker', 'தொழிலாளி')}: ${w.name}`, amount: parseInt(w.cost || 0), date: e.plantingDate });
+          });
+        }
+      });
+
+    tractorEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        details.tractor.push({ name: `${e.work} - ${e.tractorName}`, amount: e.total, date: e.date, hours: e.totalHours });
+      });
+
+    productEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        details.products.push({ name: e.name, amount: e.total, date: e.date, quantity: e.quantity });
+      });
+
+    cultivationEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        details.cultivation.push({ name: e.title, amount: e.total, date: e.date, note: e.note });
+      });
+
+    kamittyEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        details.mandi.push({ name: t('Mandi Cost', 'மண்டி செலவு'), amount: parseFloat(e.totalKamitty || 0), date: e.date, bags: e.numBags });
+      });
+
+    return details;
+  };
+
+  const handleSeasonClick = (season, year) => {
+    setSelectedSeasonDetail({ season, year });
+  };
+
+  const closeSeasonDetail = () => {
+    setSelectedSeasonDetail(null);
+  };
+
+  const getUniqueSeasons = () => {
+    const seasons = new Set();
+    [...historyEntries, ...tractorEntries, ...productEntries, ...cultivationEntries, ...kamittyEntries]
+      .forEach(e => {
+        if (e.season && e.year) {
+          seasons.add(`${e.season}-${e.year}`);
+        }
+      });
+    return Array.from(seasons).map(s => {
+      const [season, year] = s.split('-');
+      return { season, year: parseInt(year) };
+    });
+  };
 
   const getCurrentEntries = () => {
     switch(activeTab) {
@@ -364,6 +515,197 @@ function CreatorHistory() {
           </button>
         </div>
       </div>
+
+      {!loading && getUniqueSeasons().length > 0 && (
+        <div className="season-totals-section">
+          <div className="season-totals-header">
+            <h3>{t('Season Totals', 'பருவ மொத்தம்')}</h3>
+            <button 
+              className="toggle-totals-btn" 
+              onClick={() => setShowSeasonTotals(!showSeasonTotals)}
+            >
+              {showSeasonTotals ? '▼' : '▶'} {t('View Totals', 'மொத்தங்களைக் காண்க')}
+            </button>
+          </div>
+          
+          {showSeasonTotals && (
+            <div className="season-totals-grid">
+              {getUniqueSeasons().map(({ season, year }) => (
+                <button 
+                  key={`${season}-${year}`} 
+                  className="season-total-card"
+                  onClick={() => handleSeasonClick(season, year)}
+                >
+                  <div className="season-total-header">
+                    <span>{season} {year}</span>
+                  </div>
+                  <div className="season-total-amount">
+                    <strong>{t('Total Amount:', 'மொத்த தொகை:')}</strong>
+                    <span className="total-value">₹{calculateSeasonTotal(season, year).toLocaleString()}</span>
+                  </div>
+                  <div className="click-hint">{t('Click for details', 'விவரங்களுக்கு கிளிக் செய்க')}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {selectedSeasonDetail && (
+        <div className="modal-overlay" onClick={closeSeasonDetail}>
+          <div className="season-detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedSeasonDetail.season} {selectedSeasonDetail.year}</h2>
+              <button className="close-btn" onClick={closeSeasonDetail}>✕</button>
+            </div>
+            
+            <div className="breakdown-section">
+                <h3>{t('Cost Breakdown', 'செலவு விவரம்')}</h3>
+                
+                {(() => {
+                  const breakdown = getSeasonBreakdown(selectedSeasonDetail.season, selectedSeasonDetail.year);
+                  return (
+                    <div className="breakdown-list">
+                      <div className="breakdown-item">
+                        <span className="breakdown-label">{t('Seed Sowing Tracker', 'விதை விதைப்பு')}</span>
+                        <span className="breakdown-value">₹{breakdown.seedSowing.toLocaleString()}</span>
+                      </div>
+                      <div className="breakdown-item">
+                        <span className="breakdown-label">{t('Tracker', 'டிராக்டர்')}</span>
+                        <span className="breakdown-value">₹{breakdown.tractor.toLocaleString()}</span>
+                      </div>
+                      <div className="breakdown-item">
+                        <span className="breakdown-label">{t('Agromedical Products', 'வேளாண் மருத்துவ பொருட்கள்')}</span>
+                        <span className="breakdown-value">₹{breakdown.products.toLocaleString()}</span>
+                      </div>
+                      <div className="breakdown-item">
+                        <span className="breakdown-label">{t('Cultivating Field', 'வயல் உழுது')}</span>
+                        <span className="breakdown-value">₹{breakdown.cultivation.toLocaleString()}</span>
+                      </div>
+                      <div className="breakdown-item">
+                        <span className="breakdown-label">{t('Mandi', 'மண்டி')}</span>
+                        <span className="breakdown-value">₹{breakdown.mandi.toLocaleString()}</span>
+                      </div>
+                      <div className="breakdown-item total-row">
+                        <span className="breakdown-label"><strong>{t('Total', 'மொத்தம்')}</strong></span>
+                        <span className="breakdown-value total"><strong>₹{calculateSeasonTotal(selectedSeasonDetail.season, selectedSeasonDetail.year).toLocaleString()}</strong></span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              <div className="detailed-breakdown-section">
+                <h3>{t('Detailed Expenses', 'விரிவான செலவுகள்')}</h3>
+                
+                {(() => {
+                  const details = getSeasonDetails(selectedSeasonDetail.season, selectedSeasonDetail.year);
+                  
+                  return (
+                    <div className="details-container">
+                      {details.seedSowing.length > 0 && (
+                        <div className="detail-category">
+                          <h4>{t('Seed Sowing Tracker', 'விதை விதைப்பு')}</h4>
+                          <div className="detail-items">
+                            {details.seedSowing.map((item, idx) => (
+                              <div key={idx} className="detail-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                {item.date && <div className="detail-date">{formatDate(item.date)}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {details.tractor.length > 0 && (
+                        <div className="detail-category">
+                          <h4>{t('Tracker', 'டிராக்டர்')}</h4>
+                          <div className="detail-items">
+                            {details.tractor.map((item, idx) => (
+                              <div key={idx} className="detail-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="detail-meta">
+                                  {item.date && <span>{formatDate(item.date)}</span>}
+                                  {item.hours && <span>{item.hours} {t('hours', 'மணி')}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {details.products.length > 0 && (
+                        <div className="detail-category">
+                          <h4>{t('Agromedical Products', 'வேளாண் மருத்துவ பொருட்கள்')}</h4>
+                          <div className="detail-items">
+                            {details.products.map((item, idx) => (
+                              <div key={idx} className="detail-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="detail-meta">
+                                  {item.date && <span>{item.date}</span>}
+                                  {item.quantity && <span>{t('Qty', 'அளவு')}: {item.quantity}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {details.cultivation.length > 0 && (
+                        <div className="detail-category">
+                          <h4>{t('Cultivating Field', 'வயல் உழுது')}</h4>
+                          <div className="detail-items">
+                            {details.cultivation.map((item, idx) => (
+                              <div key={idx} className="detail-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="detail-meta">
+                                  {item.date && <span>{item.date}</span>}
+                                </div>
+                                {item.note && <div className="detail-note">{item.note}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {details.mandi.length > 0 && (
+                        <div className="detail-category">
+                          <h4>{t('Mandi', 'மண்டி')}</h4>
+                          <div className="detail-items">
+                            {details.mandi.map((item, idx) => (
+                              <div key={idx} className="detail-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="detail-meta">
+                                  {item.date && <span>{item.date}</span>}
+                                  {item.bags && <span>{item.bags} {t('bags', 'பைகள்')}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+          </div>
+        </div>
+      )}
 
       <div className="results-section">
         <div className="tabs-section">

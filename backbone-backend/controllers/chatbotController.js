@@ -9,6 +9,7 @@ const Product = require('../models/Product');
 const Tractor = require('../models/Tractor');
 const Expiry = require('../models/Expiry');
 const Problem = require('../models/Problem');
+const Kamitty = require('../models/Kamitty');
 
 // Decode HTML entities
 const decodeHtmlEntities = (text) => {
@@ -68,6 +69,12 @@ const chat = async (req, res) => {
     const problemRecords = await Problem.find({ userId })
       .sort({ createdAt: -1 })
       .select('title description season year status solution')
+      .lean();
+
+    // Get Kamitty (Mandi) records
+    const kamittyRecords = await Kamitty.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .select('season year date description numBags costPerBag otherCost totalKamitty')
       .lean();
 
     // Create user context for AI
@@ -241,6 +248,32 @@ const chat = async (req, res) => {
         if (record.year) userContext += `   Year: ${record.year}\n`;
         if (record.status) userContext += `   Status: ${record.status}\n`;
         if (record.solution) userContext += `   Solution: ${record.solution}\n`;
+      });
+    }
+
+    // Add Kamitty (Mandi) records
+    if (kamittyRecords && kamittyRecords.length > 0) {
+      userContext += `\n\nKAMITTY/MANDI RECORDS (${kamittyRecords.length} entries):\n`;
+      
+      // Calculate total mandi costs
+      const totalMandiCost = kamittyRecords.reduce((sum, record) => {
+        const cost = parseFloat(record.totalKamitty) || 0;
+        return sum + cost;
+      }, 0);
+      
+      userContext += `Total Mandi Cost (All Time): ₹${totalMandiCost}\n\n`;
+      
+      kamittyRecords.forEach((record, index) => {
+        userContext += `${index + 1}. Mandi Entry\n`;
+        userContext += `   Date: ${record.date}\n`;
+        if (record.season) userContext += `   Season: ${record.season}\n`;
+        if (record.year) userContext += `   Year: ${record.year}\n`;
+        if (record.description) userContext += `   Description: ${record.description}\n`;
+        if (record.numBags) userContext += `   Number of Bags: ${record.numBags}\n`;
+        if (record.costPerBag) userContext += `   Cost per Bag: ₹${record.costPerBag}\n`;
+        if (record.otherCost) userContext += `   Other Costs: ₹${record.otherCost}\n`;
+        if (record.totalKamitty) userContext += `   Total Mandi Cost: ₹${record.totalKamitty}\n`;
+        userContext += `\n`;
       });
     }
 

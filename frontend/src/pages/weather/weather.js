@@ -470,7 +470,7 @@ function Weather() {
         <div className="news-section-header">
           <h3 className="news-section-title">{t.newsTitle}</h3>
           <button onClick={refreshAllNews} className="refresh-btn">
-            🔄 {t.refreshNews}
+            {t.refreshNews}
           </button>
         </div>
 

@@ -78,7 +78,11 @@ const autoSaveGovernmentPrices = async () => {
       }
     }
 
-    console.log(`✅ Auto-save complete: ${savedCount} saved, ${skippedCount} skipped`);
+    console.log(`✅ Auto-save complete: ${savedCount} new records saved, ${skippedCount} duplicates/old records skipped`);
+
+    if (savedCount === 0 && skippedCount > 0) {
+      console.log('ℹ️ All records already exist in database - no new data to save');
+    }
 
     // Clean up old data (older than 30 days)
     await cleanupOldPrices();
@@ -100,7 +104,9 @@ const cleanupOldPrices = async () => {
     });
 
     if (result.deletedCount > 0) {
-      console.log(`🗑️ Cleaned up ${result.deletedCount} old government price records`);
+      console.log(`🗑️ Cleaned up ${result.deletedCount} old government price records (older than 30 days)`);
+    } else {
+      console.log('ℹ️ No old records to clean up');
     }
   } catch (error) {
     console.error('❌ Error cleaning up old prices:', error.message);

@@ -44,6 +44,10 @@ const AiChat = ({ initialMessage = '' }) => {
   const [audioMode, setAudioMode] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const [selectionPosition, setSelectionPosition] = useState(null);
+  const [playingMessageIndex, setPlayingMessageIndex] = useState(null);
+  const [isPlayingSelected, setIsPlayingSelected] = useState(false);
   const currentAudioRef = useRef(null);
   const audioQueueRef = useRef([]);
   const isProcessingQueueRef = useRef(false);
@@ -126,6 +130,47 @@ const AiChat = ({ initialMessage = '' }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle text selection
+  useEffect(() => {
+    const handleSelection = () => {
+      const selection = window.getSelection();
+      const text = selection.toString().trim();
+      
+      if (text && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        
+        // Check if selection is within an assistant message
+        let node = selection.anchorNode;
+        while (node && node !== document.body) {
+          if (node.classList && node.classList.contains('message-content')) {
+            const messageDiv = node.closest('.message.assistant');
+            if (messageDiv) {
+              setSelectedText(text);
+              setSelectionPosition({
+                top: rect.bottom + window.scrollY,
+                left: rect.left + window.scrollX + (rect.width / 2)
+              });
+              return;
+            }
+          }
+          node = node.parentNode;
+        }
+      }
+      
+      setSelectedText('');
+      setSelectionPosition(null);
+    };
+
+    document.addEventListener('mouseup', handleSelection);
+    document.addEventListener('selectionchange', handleSelection);
+    
+    return () => {
+      document.removeEventListener('mouseup', handleSelection);
+      document.removeEventListener('selectionchange', handleSelection);
+    };
+  }, []);
 
   // Load voices when component mounts
   useEffect(() => {
@@ -533,10 +578,12 @@ const AiChat = ({ initialMessage = '' }) => {
     window.speechSynthesis.cancel();
     setIsPlayingAudio(false);
     setIsGeneratingAudio(false);
+    setPlayingMessageIndex(null);
+    setIsPlayingSelected(false);
     console.log('✅ All audio stopped');
   };
 
-  const playAudioResponse = async (text, skipQueue = false) => {
+  const playAudioResponse = async (text, skipQueue = false, messageIndex = null, isSelected = false) => {
     console.log('🎵 playAudioResponse called with text length:', text?.length, 'skipQueue:', skipQueue);
     
     // If not skipping queue, add to queue and process
@@ -561,6 +608,8 @@ const AiChat = ({ initialMessage = '' }) => {
     
     setIsGeneratingAudio(true);
     setIsPlayingAudio(false);
+    setPlayingMessageIndex(messageIndex);
+    setIsPlayingSelected(isSelected);
     
     try {
       // Check if Puter.js is available
@@ -584,6 +633,8 @@ const AiChat = ({ initialMessage = '' }) => {
         audio.onended = () => {
           console.log('✅ Audio playback ended');
           setIsPlayingAudio(false);
+          setPlayingMessageIndex(null);
+          setIsPlayingSelected(false);
           currentAudioRef.current = null;
           // Process next in queue if any
           if (audioQueueRef.current.length > 0) {
@@ -595,6 +646,8 @@ const AiChat = ({ initialMessage = '' }) => {
           console.error('❌ Audio playback error:', error);
           setIsPlayingAudio(false);
           setIsGeneratingAudio(false);
+          setPlayingMessageIndex(null);
+          setIsPlayingSelected(false);
           currentAudioRef.current = null;
           // Process next in queue if any
           if (audioQueueRef.current.length > 0) {
@@ -639,6 +692,8 @@ const AiChat = ({ initialMessage = '' }) => {
           utterance.onend = () => {
             console.log('✅ Browser TTS ended');
             setIsPlayingAudio(false);
+            setPlayingMessageIndex(null);
+            setIsPlayingSelected(false);
             // Process next in queue if any
             if (audioQueueRef.current.length > 0) {
               processAudioQueue();
@@ -647,6 +702,8 @@ const AiChat = ({ initialMessage = '' }) => {
           utterance.onerror = (error) => {
             console.error('❌ Browser TTS error:', error);
             setIsPlayingAudio(false);
+            setPlayingMessageIndex(null);
+            setIsPlayingSelected(false);
             // Process next in queue if any
             if (audioQueueRef.current.length > 0) {
               processAudioQueue();
@@ -660,6 +717,8 @@ const AiChat = ({ initialMessage = '' }) => {
       console.error('❌ TTS error:', error);
       setIsPlayingAudio(false);
       setIsGeneratingAudio(false);
+      setPlayingMessageIndex(null);
+      setIsPlayingSelected(false);
       currentAudioRef.current = null;
       // Process next in queue if any
       if (audioQueueRef.current.length > 0) {
@@ -888,15 +947,35 @@ const AiChat = ({ initialMessage = '' }) => {
             {msg.role === 'assistant' && (
               <button 
                 className="play-message-btn"
-                onClick={() => playAudioResponse(msg.content)}
-                disabled={isPlayingAudio || isGeneratingAudio}
+                onClick={() => playAudioResponse(msg.content, false, index, false)}
+                disabled={(isPlayingAudio && playingMessageIndex === index && !isPlayingSelected) || isGeneratingAudio}
                 title={isGeneratingAudio ? (language === 'tamil' ? 'ஆடியோ உருவாக்கப்படுகிறது...' : 'Generating audio...') : (language === 'tamil' ? 'இந்த செய்தியை கேட்க' : 'Play this message')}
               >
-                {isGeneratingAudio ? '⏳' : (isPlayingAudio ? '🔊' : '🔉')}
+                {(playingMessageIndex === index && !isPlayingSelected) ? (isGeneratingAudio ? '⏳' : (isPlayingAudio ? '🔊' : '🔉')) : '🔉'}
               </button>
             )}
           </div>
         ))}
+
+        {/* Selected Text Audio Button */}
+        {selectedText && selectionPosition && (
+          <button
+            className="play-selected-btn"
+            style={{
+              position: 'absolute',
+              top: `${selectionPosition.top}px`,
+              left: `${selectionPosition.left}px`,
+              transform: 'translateX(-50%)'
+            }}
+            onClick={() => {
+              playAudioResponse(selectedText, false, null, true);
+            }}
+            disabled={(isPlayingAudio && isPlayingSelected) || isGeneratingAudio}
+            title={language === 'tamil' ? 'தேர்ந்தெடுத்ததை கேட்க' : 'Play selected text'}
+          >
+            {isPlayingSelected ? (isGeneratingAudio ? '⏳' : (isPlayingAudio ? '🔊' : '🔉')) : '🔉'} {language === 'tamil' ? 'தேர்ந்தெடுத்ததை கேட்க' : 'Play Selected'}
+          </button>
+        )}
 
         {loading && (
           <div className="message assistant">

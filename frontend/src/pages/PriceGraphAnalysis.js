@@ -9,6 +9,9 @@ function PriceGraphAnalysis() {
   const [chartData, setChartData] = useState([]);
   const [priceStats, setPriceStats] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [customDateRange, setCustomDateRange] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchAvailableCommodities();
@@ -19,12 +22,18 @@ function PriceGraphAnalysis() {
       const response = await fetch('http://localhost:5000/api/prices/all');
       if (response.ok) {
         const data = await response.json();
+        console.log(' Fetched all prices:', data.length);
+        
         // Normalize commodity names (capitalize first letter, trim spaces)
         const normalizedCommodities = data.map(item => {
           const name = item.commodity.trim();
           return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
         });
-        const uniqueCommodities = [...new Set(normalizedCommodities)];
+        const uniqueCommodities = [...new Set(normalizedCommodities)].sort();
+        
+        console.log(' Available commodities:', uniqueCommodities);
+        console.log(' Total unique commodities:', uniqueCommodities.length);
+        
         setCommodities(uniqueCommodities);
         if (uniqueCommodities.length > 0) {
           setSelectedCommodity(uniqueCommodities[0]);
@@ -44,7 +53,15 @@ function PriceGraphAnalysis() {
   const fetchPriceData = async () => {
     setLoading(true);
     try {
-      const days = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : timeRange === '3months' ? 90 : 365;
+      let days, startDateCalc, endDateCalc;
+      
+      if (customDateRange && startDate && endDate) {
+        startDateCalc = new Date(startDate);
+        endDateCalc = new Date(endDate);
+        endDateCalc.setHours(23, 59, 59, 999);
+      } else {
+        days = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : timeRange === '3months' ? 90 : 365;
+      }
       
       // Fetch all prices for the commodity
       const response = await fetch('http://localhost:5000/api/prices/all');
@@ -76,12 +93,18 @@ function PriceGraphAnalysis() {
           const maxDataDate = new Date(Math.max(...allDates));
           const minDataDate = new Date(Math.min(...allDates));
           
-          // Use the latest date in data as end date, go back by selected days
-          const endDate = new Date(maxDataDate);
-          endDate.setHours(23, 59, 59, 999);
-          const startDate = new Date(endDate);
-          startDate.setDate(startDate.getDate() - (days - 1));
-          startDate.setHours(0, 0, 0, 0);
+          // Use custom date range or calculate from days
+          let endDate, startDate;
+          if (customDateRange && startDateCalc && endDateCalc) {
+            startDate = startDateCalc;
+            endDate = endDateCalc;
+          } else {
+            endDate = new Date(maxDataDate);
+            endDate.setHours(23, 59, 59, 999);
+            startDate = new Date(endDate);
+            startDate.setDate(startDate.getDate() - (days - 1));
+            startDate.setHours(0, 0, 0, 0);
+          }
           
           console.log('Using date range:', startDate.toDateString(), 'to', endDate.toDateString());
           
@@ -247,7 +270,7 @@ function PriceGraphAnalysis() {
   return (
     <div className="price-graph-container">
       <div className="graph-header">
-        <h1>📈 Market Price Analysis</h1>
+        <h1>Market Price Analysis</h1>
         <p>Track commodity price trends like stock market</p>
       </div>
 
@@ -265,30 +288,59 @@ function PriceGraphAnalysis() {
           <label>Time Range:</label>
           <div className="time-buttons">
             <button 
-              className={timeRange === 'week' ? 'active' : ''} 
-              onClick={() => setTimeRange('week')}
+              className={timeRange === 'week' && !customDateRange ? 'active' : ''} 
+              onClick={() => { setTimeRange('week'); setCustomDateRange(false); }}
             >
               1 Week
             </button>
             <button 
-              className={timeRange === 'month' ? 'active' : ''} 
-              onClick={() => setTimeRange('month')}
+              className={timeRange === 'month' && !customDateRange ? 'active' : ''} 
+              onClick={() => { setTimeRange('month'); setCustomDateRange(false); }}
             >
               1 Month
             </button>
             <button 
-              className={timeRange === '3months' ? 'active' : ''} 
-              onClick={() => setTimeRange('3months')}
+              className={timeRange === '3months' && !customDateRange ? 'active' : ''} 
+              onClick={() => { setTimeRange('3months'); setCustomDateRange(false); }}
             >
               3 Months
             </button>
             <button 
-              className={timeRange === 'year' ? 'active' : ''} 
-              onClick={() => setTimeRange('year')}
+              className={timeRange === 'year' && !customDateRange ? 'active' : ''} 
+              onClick={() => { setTimeRange('year'); setCustomDateRange(false); }}
             >
               1 Year
             </button>
+            <button 
+              className={customDateRange ? 'active' : ''} 
+              onClick={() => setCustomDateRange(!customDateRange)}
+            >
+              Custom
+            </button>
           </div>
+          {customDateRange && (
+            <div style={{ marginTop: '15px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input 
+                type="date" 
+                value={startDate} 
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e0e0e0' }}
+              />
+              <span>to</span>
+              <input 
+                type="date" 
+                value={endDate} 
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{ padding: '8px', borderRadius: '6px', border: '2px solid #e0e0e0' }}
+              />
+              <button 
+                onClick={fetchPriceData}
+                style={{ padding: '8px 16px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Apply
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -449,11 +501,11 @@ function PriceGraphAnalysis() {
                 </div>
                 <div className="chart-legend-info">
                   <p className="chart-note">
-                    📌 Showing all {chartData.length} dates in the selected range. Lines connect dates with available price data.
+                    Showing all {chartData.length} dates in the selected range. Lines connect dates with available price data.
                   </p>
                   <div style={{ display: 'flex', gap: '20px', marginTop: '10px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <span style={{ fontSize: '20px' }}>📍</span>
+                      <span style={{ fontSize: '20px' }}></span>
                       <span>Your manually entered prices</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -469,14 +521,14 @@ function PriceGraphAnalysis() {
               </>
             ) : (
               <div className="no-data-message">
-                <p>📊 No price data available for {selectedCommodity} in the selected time range</p>
+                <p>No price data available for {selectedCommodity} in the selected time range</p>
               </div>
             )}
           </div>
 
           {chartData.length > 0 && (
             <div className="price-table-section">
-              <h3>📋 Detailed Price History</h3>
+              <h3> Detailed Price History</h3>
               <div className="table-wrapper">
                 <table>
                   <thead>
@@ -497,7 +549,7 @@ function PriceGraphAnalysis() {
                       return (
                         <tr key={index} className={item.hasUserEntry ? 'user-entry-row' : ''}>
                           <td>
-                            {item.hasUserEntry && <span style={{ marginRight: '5px' }}>📍</span>}
+                            {item.hasUserEntry && <span style={{ marginRight: '5px' }}></span>}
                             {item.date}
                             {item.hasUserEntry && <span style={{ marginLeft: '5px', fontSize: '0.8em', color: '#ff6b35' }}>(Your Entry)</span>}
                           </td>

@@ -82,6 +82,7 @@ function Prices() {
       }
       const data = await response.json();
       const prices = (data.records || []).filter(item => {
+        // Validate date
         if (item.arrival_date?.includes('/')) {
           const [day] = item.arrival_date.split('/');
           const dayNum = parseInt(day);
@@ -258,7 +259,7 @@ function Prices() {
         },
       });
       if (response.ok) {
-        alert('✅ Government prices synced successfully! Data will be available for graph analysis.');
+        alert('Government prices synced successfully! Data will be available for graph analysis.');
         await handleRefresh();
       } else {
         alert('❌ Failed to sync prices');
@@ -306,11 +307,11 @@ function Prices() {
       <p>Today: {formatDateWithDay(today)}</p>
 
       <div className="button-group">
-        <button onClick={handleRefresh} disabled={loading}>🔄 Refresh</button>
-        <button onClick={handleSyncPrices} disabled={loading}>📥 Sync Gov Data</button>
-        <button onClick={handleExportCSV}>📊 Export CSV</button>
-        <button onClick={handlePrint}>🖨️ Print</button>
-        <button onClick={() => navigate('/price-graph-analysis')}>📈 Graph Analysis</button>
+        <button onClick={handleRefresh} disabled={loading}>Refresh</button>
+        <button onClick={handleSyncPrices} disabled={loading}>Sync Gov Data</button>
+        <button onClick={handleExportCSV}>Export CSV</button>
+        <button onClick={handlePrint}>Print</button>
+        <button onClick={() => navigate('/price-graph-analysis')}>Graph Analysis</button>
       </div>
 
       {loading ? (
@@ -400,7 +401,7 @@ function Prices() {
                         onClick={() => handleGraphAnalysis(item.commodity)}
                         title="View price trend"
                       >
-                        📈
+                        📊
                       </button>
                     </td>
                     <td>{item.market}</td>
@@ -460,7 +461,7 @@ function Prices() {
                         onClick={() => handleGraphAnalysis(item.commodity)}
                         title="View price trend"
                       >
-                        📈
+                        📊
                       </button>
                     </td>
                     <td>{item.market}</td>
@@ -481,72 +482,6 @@ function Prices() {
               }) : (
                 <tr>
                   <td colSpan="8" className="no-data">No manually entered prices</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          <h3>All Users' Market Prices ({allUserPrices.length} items)</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Commodity</th>
-                <th>Market</th>
-                <th>State</th>
-                <th>Min Price (₹)</th>
-                <th>Max Price (₹)</th>
-                <th>Date</th>
-                <th>Today?</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allUserPrices.filter(item => {
-                const matchesSearch = !searchQuery || 
-                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesDate = !filterDate || item.arrival_date === filterDate;
-                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
-                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
-                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
-              }).length > 0 ? allUserPrices.filter(item => {
-                const matchesSearch = !searchQuery || 
-                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
-                const matchesDate = !filterDate || item.arrival_date === filterDate;
-                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
-                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
-                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
-              }).map((item, idx) => {
-                const itemIsToday = isToday(item.arrival_date);
-                return (
-                  <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
-                    <td>
-                      <strong>{item.commodity}</strong>
-                      <button 
-                        className="graph-btn" 
-                        onClick={() => handleGraphAnalysis(item.commodity)}
-                        title="View price trend"
-                      >
-                        📈
-                      </button>
-                    </td>
-                    <td>{item.market}</td>
-                    <td>{item.state}</td>
-                    <td>₹{item.min_price}</td>
-                    <td>₹{item.max_price}</td>
-                    <td>{formatDateWithDay(item.arrival_date)}</td>
-                    <td>
-                      <span className="status-badge">
-                        {itemIsToday ? 'Yes' : 'No'}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr>
-                  <td colSpan="7" className="no-data">No prices from other users</td>
                 </tr>
               )}
             </tbody>
@@ -635,7 +570,7 @@ function Prices() {
                         onClick={() => handleGraphAnalysis(item.commodity)}
                         title="View price trend"
                       >
-                        📈
+                        📊
                       </button>
                     </td>
                     <td>{item.market}</td>
@@ -657,6 +592,72 @@ function Prices() {
               )}
             </tbody>
           </table>
+
+          <h3>All Users' Market Prices ({allUserPrices.length} items)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Commodity</th>
+                <th>Market</th>
+                <th>State</th>
+                <th>Min Price (₹)</th>
+                <th>Max Price (₹)</th>
+                <th>Date</th>
+                <th>Today?</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allUserPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).length > 0 ? allUserPrices.filter(item => {
+                const matchesSearch = !searchQuery || 
+                  item.commodity?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.market?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  item.state?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesDate = !filterDate || item.arrival_date === filterDate;
+                const matchesMinPrice = !filterMinPrice || parseFloat(item.min_price) >= parseFloat(filterMinPrice);
+                const matchesMaxPrice = !filterMaxPrice || parseFloat(item.max_price) <= parseFloat(filterMaxPrice);
+                return matchesSearch && matchesDate && matchesMinPrice && matchesMaxPrice;
+              }).map((item, idx) => {
+                const itemIsToday = isToday(item.arrival_date);
+                return (
+                  <tr key={item._id || idx} className={itemIsToday ? 'today-row' : ''}>
+                    <td>
+                      <strong>{item.commodity}</strong>
+                      <button 
+                        className="graph-btn" 
+                        onClick={() => handleGraphAnalysis(item.commodity)}
+                        title="View price trend"
+                      >
+                        📊
+                      </button>
+                    </td>
+                    <td>{item.market}</td>
+                    <td>{item.state}</td>
+                    <td>₹{item.min_price}</td>
+                    <td>₹{item.max_price}</td>
+                    <td>{formatDateWithDay(item.arrival_date)}</td>
+                    <td>
+                      <span className="status-badge">
+                        {itemIsToday ? 'Yes' : 'No'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan="7" className="no-data">No prices from other users</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </>
       )}
 
@@ -664,7 +665,7 @@ function Prices() {
         <div className="graph-modal">
           <div className="graph-content">
             <button className="close-btn" onClick={() => setShowGraph(false)}>✖</button>
-            <h3>📈 {analyzingCommodity} - Price Trend Analysis</h3>
+            <h3>{analyzingCommodity} - Price Trend Analysis</h3>
             
             <div className="analysis-stats">
               <div className={`stat-box ${graphData.analysis.isProfitable ? 'profit' : 'loss'}`}>
@@ -698,12 +699,12 @@ function Prices() {
                   <Line type="monotone" dataKey="avgPrice" stroke="#2563eb" strokeWidth={3} name="Avg Price (₹)" />
                 </LineChart>
               </ResponsiveContainer>
-              <p className="data-info">📊 {graphData.analysis.dataPoints} data points from last year</p>
+              <p className="data-info"> {graphData.analysis.dataPoints} data points from last year</p>
             </div>
 
             {graphData.aiInsight && graphData.aiInsight !== 'AI analysis unavailable' && (
               <div className="ai-insight">
-                <h4>🤖 AI Recommendation</h4>
+                <h4> AI Recommendation</h4>
                 <p>{graphData.aiInsight}</p>
               </div>
             )}

@@ -5,35 +5,39 @@ const chatWithAI = async (userMessage, conversationHistory = [], language = 'eng
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const systemPrompts = {
-      english: `You are a helpful AI assistant with farming expertise. Answer ANY question concisely.
+      english: `You are a helpful AI assistant with farming expertise. Answer questions naturally and provide detailed explanations when asked.
 
 ⚠️ RESPOND ONLY IN ENGLISH.
 
 For farming questions:
 - Give exact amounts and steps
-- Include costs (₹) only when relevant
+- Include costs (₹) when relevant
 - Provide natural and chemical options
-- Use simple language
+- Use clear, simple language
+- When user asks for "more details", "explain more", or similar, provide comprehensive information
 
 For general questions:
-- Answer directly and concisely
-- No cost analysis unless asked
+- Answer directly and clearly
+- Provide more details when specifically requested
+- If user asks to "explain more" or "tell me more", expand on the previous topic with additional information
 
 ${userContext ? userContext : ''}`,
       
-      tamil: `நீங்கள் விவசாய நிபுணத்துவம் கொண்ட உதவிகரமான AI. எந்த கேள்விக்கும் சுருக்கமாக பதிலளிக்கவும்.
+      tamil: `நீங்கள் விவசாய நிபுணத்துவம் கொண்ட உதவிகரமான AI. கேள்விகளுக்கு இயல்பாகவும், கேட்கும்போது விரிவான விளக்கங்களையும் கொடுங்கள்.
 
 ⚠️ தமிழில் மட்டும் பதிலளிக்கவும்.
 
 விவசாய கேள்விகளுக்கு:
 - சரியான அளவு மற்றும் படிகள் கொடுங்கள்
-- தொடர்புடையதாக இருந்தால் மட்டும் செலவு (₹) சேர்க்கவும்
+- தொடர்புடையதாக இருந்தால் செலவு (₹) சேர்க்கவும்
 - இயற்கை மற்றும் ரசாயன வழிகள் கொடுங்கள்
-- எளிய மொழி பயன்படுத்துங்கள்
+- தெளிவான, எளிய மொழி பயன்படுத்துங்கள்
+- "மேலும் விவரங்கள்", "மேலும் விளக்கு" போன்று கேட்டால், முழுமையான தகவல் கொடுங்கள்
 
 பொது கேள்விகளுக்கு:
-- நேரடியாகவும் சுருக்கமாகவும் பதிலளிக்கவும்
-- கேட்காவிட்டால் செலவு பகுப்பாய்வு வேண்டாம்
+- நேரடியாகவும் தெளிவாகவும் பதிலளிக்கவும்
+- குறிப்பாக கேட்கும்போது மேலும் விவரங்கள் கொடுங்கள்
+- "மேலும் விளக்கு" அல்லது "மேலும் சொல்" என்று கேட்டால், முந்தைய தலைப்பை விரிவாக்குங்கள்
 
 ${userContext ? userContext : ''}`
     };
@@ -54,7 +58,7 @@ ${userMessage}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.slice(-4), // Only keep last 4 messages to save tokens
+      ...conversationHistory.slice(-8), // Keep last 8 messages for better context
       { role: 'user', content: finalUserMessage }
     ];
 
@@ -64,8 +68,8 @@ ${userMessage}`;
       completion = await groq.chat.completions.create({
         messages,
         model: 'llama-3.3-70b-versatile',
-        temperature: 0.5,
-        max_tokens: 800, // Reduced from 1500
+        temperature: 0.7,
+        max_tokens: 1500, // Increased for detailed responses
         top_p: 0.9
       });
     } catch (error) {
@@ -75,8 +79,8 @@ ${userMessage}`;
         completion = await groq.chat.completions.create({
           messages,
           model: 'llama-3.1-8b-instant', // Faster, uses fewer tokens
-          temperature: 0.5,
-          max_tokens: 800,
+          temperature: 0.7,
+          max_tokens: 1500,
           top_p: 0.9
         });
       } else {
@@ -96,7 +100,7 @@ ${userMessage}`;
       success: true,
       response: response,
       conversationHistory: [
-        ...conversationHistory.slice(-4), // Only keep last 4 messages
+        ...conversationHistory.slice(-8), // Keep last 8 messages for context
         { role: 'user', content: userMessage },
         { role: 'assistant', content: response }
       ]
