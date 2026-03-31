@@ -16,6 +16,7 @@ function CreatorHistory() {
   const [cultivationEntries, setCultivationEntries] = useState([]);
   const [kamittyEntries, setKamittyEntries] = useState([]);
   const [reviewEntries, setReviewEntries] = useState([]);
+  const [seasonReportEntries, setSeasonReportEntries] = useState([]);
   const [showSeasonTotals, setShowSeasonTotals] = useState(false);
   const [selectedSeasonDetail, setSelectedSeasonDetail] = useState(null);
 
@@ -54,14 +55,15 @@ function CreatorHistory() {
       const queryString = params.length > 0 ? `?${params.join('&')}` : '';
       
       // Fetch all module data
-      const [creatorRes, tractorRes, productRes, cultivationRes, kamittyRes, expiriesRes, problemsRes] = await Promise.all([
+      const [creatorRes, tractorRes, productRes, cultivationRes, kamittyRes, expiriesRes, problemsRes, seasonReportRes] = await Promise.all([
         fetch(`${API_BASE_URL}/creator-details/history${queryString}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/tractor${queryString}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/products${queryString}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/cultivation-activities${queryString}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/kamitty${queryString}`, { headers: getAuthHeaders() }),
         fetch(`${API_BASE_URL}/expiries${queryString}`, { headers: getAuthHeaders() }),
-        fetch(`${API_BASE_URL}/problems${queryString}`, { headers: getAuthHeaders() })
+        fetch(`${API_BASE_URL}/problems${queryString}`, { headers: getAuthHeaders() }),
+        fetch(`${API_BASE_URL}/season-reports${queryString}`, { headers: getAuthHeaders() })
       ]);
       
       if (creatorRes.ok) setHistoryEntries(await creatorRes.json());
@@ -69,6 +71,7 @@ function CreatorHistory() {
       if (productRes.ok) setProductEntries(await productRes.json());
       if (cultivationRes.ok) setCultivationEntries(await cultivationRes.json());
       if (kamittyRes.ok) setKamittyEntries(await kamittyRes.json());
+      if (seasonReportRes.ok) setSeasonReportEntries(await seasonReportRes.json());
       
       const expiries = expiriesRes.ok ? await expiriesRes.json() : [];
       const problems = problemsRes.ok ? await problemsRes.json() : [];
@@ -195,9 +198,9 @@ function CreatorHistory() {
         <div className="entry-details">
           <p><strong>{t('Work:', 'வேலை:')}</strong> {entry.work}</p>
           <p><strong>{t('Tractor:', 'டிராக்டர்:')}</strong> {entry.tractorName}</p>
-          <p><strong>{t('Total Hours:', 'மொத்த மணி:')}</strong> {entry.totalHours}</p>
-          <p><strong>{t('Rate:', 'விலை:')}</strong> ₹{entry.rate}</p>
-          <p><strong>{t('Total:', 'மொத்தம்:')}</strong> ₹{entry.total}</p>
+          <p><strong>{t('Total Hours:', 'மொத்த மணி:')}</strong> {entry.totalHours} {t('hours', 'மணி')}</p>
+          <p><strong>{t('Rate per Hour:', 'ஒரு மணிக்கு:')}</strong> ₹{entry.rate ? entry.rate.toLocaleString() : 0}</p>
+          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total ? entry.total.toLocaleString() : 0}</p>
         </div>
       </div>
     ))
@@ -212,10 +215,11 @@ function CreatorHistory() {
         </div>
         
         <div className="entry-details">
-          <p><strong>{t('Product:', 'பொருள்:')}</strong> {entry.name}</p>
+          <p><strong>{t('Product Name:', 'பொருள் பெயர்:')}</strong> {entry.name}</p>
+          <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
           <p><strong>{t('Quantity:', 'அளவு:')}</strong> {entry.quantity}</p>
-          <p><strong>{t('Cost:', 'விலை:')}</strong> ₹{entry.cost}</p>
-          <p><strong>{t('Total:', 'மொத்தம்:')}</strong> ₹{entry.total}</p>
+          <p><strong>{t('Cost per Unit:', 'ஒரு அளவுக்கு:')}</strong> ₹{entry.cost ? entry.cost.toLocaleString() : 0}</p>
+          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total ? entry.total.toLocaleString() : 0}</p>
         </div>
       </div>
     ))
@@ -230,11 +234,12 @@ function CreatorHistory() {
         </div>
         
         <div className="entry-details">
-          <p><strong>{t('Title:', 'தலைப்பு:')}</strong> {entry.title}</p>
-          <p><strong>{t('Note:', 'குறிப்பு:')}</strong> {entry.note}</p>
+          <p><strong>{t('Activity:', 'செயல்:')}</strong> {entry.title}</p>
+          <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
+          {entry.note && <p><strong>{t('Note:', 'குறிப்பு:')}</strong> {entry.note}</p>}
           {entry.driver && <p><strong>{t('Driver:', 'ஓட்டுநர்:')}</strong> {entry.driver}</p>}
-          {entry.totalHours && <p><strong>{t('Hours:', 'மணி:')}</strong> {entry.totalHours}</p>}
-          {entry.total && <p><strong>{t('Total:', 'மொத்தம்:')}</strong> ₹{entry.total}</p>}
+          {entry.totalHours && <p><strong>{t('Hours:', 'மணி:')}</strong> {entry.totalHours} {t('hours', 'மணி')}</p>}
+          {entry.total && <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total.toLocaleString()}</p>}
         </div>
       </div>
     ))
@@ -250,6 +255,12 @@ function CreatorHistory() {
         
         <div className="entry-details">
           <p><strong>{t('Date:', 'தேதி:')}</strong> {entry.date}</p>
+          <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
+          {entry.numBags && <p><strong>{t('Number of Bags:', 'மூட்டைகள்:')}</strong> {entry.numBags}</p>}
+          {entry.totalKamitty && <p><strong>{t('Total Mandi Cost:', 'மொத்த மண்டி செலவு:')}</strong> ₹{parseFloat(entry.totalKamitty).toLocaleString()}</p>}
+          {entry.numBags && entry.totalKamitty && (
+            <p><strong>{t('Per Bag Cost:', 'ஒரு மூட்டைக்கு:')}</strong> ₹{(parseFloat(entry.totalKamitty) / entry.numBags).toFixed(2)}</p>
+          )}
           <p><strong>{t('Created:', 'உருவாக்கப்பட்டது:')}</strong> {formatDate(entry.createdAt)}</p>
         </div>
       </div>
@@ -288,41 +299,65 @@ function CreatorHistory() {
     })
   );
 
+  const renderSeasonReportEntries = () => (
+    seasonReportEntries.map(entry => (
+      <div key={entry._id || entry.id} className="entry-card">
+        <div className="entry-header">
+          <span className="entry-season"> {entry.season} {entry.year}</span>
+          <span className="entry-date"> {formatDate(entry.createdAt)}</span>
+        </div>
+        
+        <div className="entry-details">
+          <p><strong>{t('Product Name:', 'பொருள் பெயர்:')}</strong> {entry.productName}</p>
+          <p><strong>{t('Total Yield:', 'மொத்த விளைச்சல்:')}</strong> {entry.totalYield} {t('bags', 'மூட்டை')}</p>
+          <p><strong>{t('Total Amount Earned:', 'மொத்த வருமானம்:')}</strong> ₹{entry.totalAmount.toLocaleString()}</p>
+          <p><strong>{t('Per Bag Rate:', 'ஒரு மூட்டைக்கு:')}</strong> ₹{(entry.totalAmount / entry.totalYield).toFixed(2)}</p>
+        </div>
+      </div>
+    ))
+  );
+
   const calculateSeasonTotal = (season, year) => {
-    let total = 0;
+    let totalExpenses = 0;
+    let totalIncome = 0;
 
     // Seed Sowing costs
     historyEntries
       .filter(e => e.season === season && e.year === year)
       .forEach(e => {
-        total += e.seedCost || 0;
-        total += e.totalSeedingCost || 0;
+        totalExpenses += e.seedCost || 0;
+        totalExpenses += e.totalSeedingCost || 0;
         if (e.workers) {
-          e.workers.forEach(w => total += parseInt(w.cost || 0));
+          e.workers.forEach(w => totalExpenses += parseInt(w.cost || 0));
         }
       });
 
     // Tractor costs
     tractorEntries
       .filter(e => e.season === season && e.year === year)
-      .forEach(e => total += e.total || 0);
+      .forEach(e => totalExpenses += e.total || 0);
 
     // Product costs
     productEntries
       .filter(e => e.season === season && e.year === year)
-      .forEach(e => total += e.total || 0);
+      .forEach(e => totalExpenses += e.total || 0);
 
     // Cultivation costs
     cultivationEntries
       .filter(e => e.season === season && e.year === year)
-      .forEach(e => total += e.total || 0);
+      .forEach(e => totalExpenses += e.total || 0);
 
     // Mandi costs
     kamittyEntries
       .filter(e => e.season === season && e.year === year)
-      .forEach(e => total += parseFloat(e.totalKamitty || 0));
+      .forEach(e => totalExpenses += parseFloat(e.totalKamitty || 0));
 
-    return total;
+    // Season Report income
+    seasonReportEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => totalIncome += parseFloat(e.totalAmount || 0));
+
+    return { totalExpenses, totalIncome, netProfit: totalIncome - totalExpenses };
   };
 
   const getSeasonBreakdown = (season, year) => {
@@ -331,7 +366,8 @@ function CreatorHistory() {
       tractor: 0,
       products: 0,
       cultivation: 0,
-      mandi: 0
+      mandi: 0,
+      seasonReport: 0
     };
 
     historyEntries
@@ -359,6 +395,10 @@ function CreatorHistory() {
       .filter(e => e.season === season && e.year === year)
       .forEach(e => breakdown.mandi += parseFloat(e.totalKamitty || 0));
 
+    seasonReportEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => breakdown.seasonReport += parseFloat(e.totalAmount || 0));
+
     return breakdown;
   };
 
@@ -368,7 +408,8 @@ function CreatorHistory() {
       tractor: [],
       products: [],
       cultivation: [],
-      mandi: []
+      mandi: [],
+      seasonReport: []
     };
 
     historyEntries
@@ -411,6 +452,12 @@ function CreatorHistory() {
         details.mandi.push({ name: t('Mandi Cost', 'மண்டி செலவு'), amount: parseFloat(e.totalKamitty || 0), date: e.date, bags: e.numBags });
       });
 
+    seasonReportEntries
+      .filter(e => e.season === season && e.year === year)
+      .forEach(e => {
+        details.seasonReport.push({ name: e.productName, amount: parseFloat(e.totalAmount || 0), date: e.createdAt, yield: e.totalYield });
+      });
+
     return details;
   };
 
@@ -424,7 +471,7 @@ function CreatorHistory() {
 
   const getUniqueSeasons = () => {
     const seasons = new Set();
-    [...historyEntries, ...tractorEntries, ...productEntries, ...cultivationEntries, ...kamittyEntries]
+    [...historyEntries, ...tractorEntries, ...productEntries, ...cultivationEntries, ...kamittyEntries, ...seasonReportEntries]
       .forEach(e => {
         if (e.season && e.year) {
           seasons.add(`${e.season}-${e.year}`);
@@ -444,6 +491,7 @@ function CreatorHistory() {
       case 'cultivation': return cultivationEntries;
       case 'kamitty': return kamittyEntries;
       case 'review': return reviewEntries;
+      case 'seasonReport': return seasonReportEntries;
       default: return [];
     }
   };
@@ -456,6 +504,7 @@ function CreatorHistory() {
       case 'cultivation': return renderCultivationEntries();
       case 'kamitty': return renderKamittyEntries();
       case 'review': return renderReviewEntries();
+      case 'seasonReport': return renderSeasonReportEntries();
       default: return null;
     }
   };
@@ -530,22 +579,37 @@ function CreatorHistory() {
           
           {showSeasonTotals && (
             <div className="season-totals-grid">
-              {getUniqueSeasons().map(({ season, year }) => (
-                <button 
-                  key={`${season}-${year}`} 
-                  className="season-total-card"
-                  onClick={() => handleSeasonClick(season, year)}
-                >
-                  <div className="season-total-header">
-                    <span>{season} {year}</span>
-                  </div>
-                  <div className="season-total-amount">
-                    <strong>{t('Total Amount:', 'மொத்த தொகை:')}</strong>
-                    <span className="total-value">₹{calculateSeasonTotal(season, year).toLocaleString()}</span>
-                  </div>
-                  <div className="click-hint">{t('Click for details', 'விவரங்களுக்கு கிளிக் செய்க')}</div>
-                </button>
-              ))}
+              {getUniqueSeasons().map(({ season, year }) => {
+                const totals = calculateSeasonTotal(season, year);
+                return (
+                  <button 
+                    key={`${season}-${year}`} 
+                    className="season-total-card"
+                    onClick={() => handleSeasonClick(season, year)}
+                  >
+                    <div className="season-total-header">
+                      <span>{season} {year}</span>
+                    </div>
+                    <div className="season-total-breakdown">
+                      <div className="total-line">
+                        <span>{t('Total Expenses:', 'மொத்த செலவுகள்:')}</span>
+                        <span className="expense-value">₹{totals.totalExpenses.toLocaleString()}</span>
+                      </div>
+                      <div className="total-line">
+                        <span>{t('Total Income:', 'மொத்த வருமானம்:')}</span>
+                        <span className="income-value">₹{totals.totalIncome.toLocaleString()}</span>
+                      </div>
+                      <div className="total-line net-line">
+                        <strong>{t('Net Profit/Loss:', 'நிகர லாபம்/நஷ்டம்:')}</strong>
+                        <strong className={totals.netProfit >= 0 ? 'profit-value' : 'loss-value'}>
+                          ₹{totals.netProfit.toLocaleString()}
+                        </strong>
+                      </div>
+                    </div>
+                    <div className="click-hint">{t('Click for details', 'விவரங்களுக்கு கிளிக் செய்க')}</div>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -564,6 +628,7 @@ function CreatorHistory() {
                 
                 {(() => {
                   const breakdown = getSeasonBreakdown(selectedSeasonDetail.season, selectedSeasonDetail.year);
+                  const totals = calculateSeasonTotal(selectedSeasonDetail.season, selectedSeasonDetail.year);
                   return (
                     <div className="breakdown-list">
                       <div className="breakdown-item">
@@ -586,9 +651,19 @@ function CreatorHistory() {
                         <span className="breakdown-label">{t('Mandi', 'மண்டி')}</span>
                         <span className="breakdown-value">₹{breakdown.mandi.toLocaleString()}</span>
                       </div>
+                      <div className="breakdown-item subtotal-row">
+                        <span className="breakdown-label"><strong>{t('Total Expenses', 'மொத்த செலவுகள்')}</strong></span>
+                        <span className="breakdown-value"><strong>₹{totals.totalExpenses.toLocaleString()}</strong></span>
+                      </div>
+                      <div className="breakdown-item income-row">
+                        <span className="breakdown-label">{t('Season Report (Income)', 'பருவ அறிக்கை (வருமானம்)')}</span>
+                        <span className="breakdown-value income">₹{breakdown.seasonReport.toLocaleString()}</span>
+                      </div>
                       <div className="breakdown-item total-row">
-                        <span className="breakdown-label"><strong>{t('Total', 'மொத்தம்')}</strong></span>
-                        <span className="breakdown-value total"><strong>₹{calculateSeasonTotal(selectedSeasonDetail.season, selectedSeasonDetail.year).toLocaleString()}</strong></span>
+                        <span className="breakdown-label"><strong>{t('Net Profit/Loss', 'நிகர லாபம்/நஷ்டம்')}</strong></span>
+                        <span className={`breakdown-value total ${totals.netProfit >= 0 ? 'profit' : 'loss'}`}>
+                          <strong>₹{totals.netProfit.toLocaleString()}</strong>
+                        </span>
                       </div>
                     </div>
                   );
@@ -699,6 +774,26 @@ function CreatorHistory() {
                           </div>
                         </div>
                       )}
+
+                      {details.seasonReport.length > 0 && (
+                        <div className="detail-category income-category">
+                          <h4>{t('Season Report (Income)', 'பருவ அறிக்கை (வருமானம்)')}</h4>
+                          <div className="detail-items">
+                            {details.seasonReport.map((item, idx) => (
+                              <div key={idx} className="detail-item income-item">
+                                <div className="detail-item-header">
+                                  <span className="detail-name">{item.name}</span>
+                                  <span className="detail-amount income">₹{item.amount.toLocaleString()}</span>
+                                </div>
+                                <div className="detail-meta">
+                                  {item.date && <span>{formatDate(item.date)}</span>}
+                                  {item.yield && <span>{item.yield} {t('bags', 'மூட்டை')}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })()}
@@ -745,6 +840,12 @@ function CreatorHistory() {
               onClick={() => setActiveTab('review')}
             >
                {t('Review History', 'மதிப்பாய்வு வரலாறு')}
+            </button>
+            <button 
+              className={activeTab === 'seasonReport' ? 'tab active' : 'tab'}
+              onClick={() => setActiveTab('seasonReport')}
+            >
+               {t('Season Report', 'பருவ அறிக்கை')}
             </button>
           </div>
         </div>

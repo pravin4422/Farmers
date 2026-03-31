@@ -141,7 +141,6 @@ function Review() {
       }
       
       if (response.ok) {
-        alert(t('Saved successfully!', 'வெற்றிகரமாக சேமிக்கப்பட்டது!'));
         resetForm();
         fetchExpiries();
       } else {
@@ -151,7 +150,6 @@ function Review() {
       }
     } catch (error) {
       console.error('Error saving expiry:', error);
-      alert(t('Failed to save. Please try again.', 'சேமிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'));
     } finally {
       setLoading(false);
     }
@@ -270,7 +268,6 @@ function Review() {
       }
       
       if (response.ok) {
-        alert(t('Problem saved successfully!', 'பிரச்சனை வெற்றிகரமாக சேமிக்கப்பட்டது!'));
         resetProblemForm();
         fetchProblems();
       } else {
@@ -279,7 +276,6 @@ function Review() {
       }
     } catch (error) {
       console.error('Error saving problem:', error);
-      alert(t('Failed to save. Please try again.', 'சேமிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'));
     } finally {
       setLoading(false);
     }

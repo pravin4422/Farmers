@@ -161,12 +161,12 @@ function Schemes({ user }) {
 Please provide a comprehensive explanation with practical guidance for farmers.`;
     
     localStorage.setItem('aiChatPrompt', prompt);
+    localStorage.setItem('selectedSchemeForAI', JSON.stringify(scheme));
     navigate('/ai-chat');
   };
 
   const handleAddScheme = async () => {
     if (!newScheme.name || !newScheme.startDate) {
-      alert('Please fill in Scheme Name and Start Date (required fields)');
       return;
     }
 
@@ -211,11 +211,9 @@ Please provide a comprehensive explanation with practical guidance for farmers.`
             applicationMode: "Offline"
           }
         });
-        alert('Scheme added successfully! Thank you for contributing.');
       }
     } catch (error) {
       console.error('Error adding scheme:', error);
-      alert('Failed to add scheme. Please try again.');
     }
   };
 

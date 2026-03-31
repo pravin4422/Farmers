@@ -26,6 +26,7 @@ const schemeRoutes = require('./routes/schemeRoutes'); // ✅ Scheme routes
 const chatbotRoutes = require('./routes/chatbotRoutes'); // ✅ Chatbot routes
 const cropRecommendationRoutes = require('./routes/cropRecommendationRoutes'); // ✅ Crop recommendation routes
 const adminRoutes = require('./routes/adminRoutes'); // ✅ Admin routes
+const seasonReportRoutes = require('./routes/seasonReportRoutes'); // ✅ Season report routes
 
 // Load environment variables
 dotenv.config();
@@ -74,6 +75,7 @@ app.use('/api/schemes', schemeRoutes); // ✅ Scheme routes
 app.use('/api/chatbot', chatbotRoutes); // ✅ Chatbot routes
 app.use('/api/crop-recommendation', cropRecommendationRoutes); // ✅ Crop recommendation routes
 app.use('/api/admin', adminRoutes); // ✅ Admin routes
+app.use('/api/season-reports', seasonReportRoutes); // ✅ Season report routes
 
 
 // Test routes

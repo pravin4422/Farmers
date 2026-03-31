@@ -189,7 +189,7 @@ function CultivatingField() {
   }, [showHistoryView, filterMonth, filterYear, filterDate, search]);
 
   const showMessage = (message) => {
-    alert(message); 
+    // Silent - no alert
   };
 
   const handleSegmentChange = (index, key, value) => {
@@ -272,25 +272,24 @@ function CultivatingField() {
   };
 
   const handleEdit = (item) => {
-    const entry = showHistoryView ? item : activities[item];
-    setTitle(entry.title);
-    setNote(entry.note);
-    setDate(entry.date);
-    setDriver(entry.driver);
-    setOwnerName(entry.owner.name);
-    setOwnerAddress(entry.owner.address);
-    setOwnerPhone1(entry.owner.phone1);
-    setOwnerPhone2(entry.owner.phone2);
-    setTimeSegments(entry.timeSegments);
-    setRate(entry.rate.toString());
-    setEditingId(entry.id || entry._id);
-    setEditingIndex(entry.id || entry._id);
+    setTitle(item.title);
+    setNote(item.note);
+    setDate(item.date);
+    setDriver(item.driver);
+    setOwnerName(item.owner.name);
+    setOwnerAddress(item.owner.address);
+    setOwnerPhone1(item.owner.phone1);
+    setOwnerPhone2(item.owner.phone2);
+    setTimeSegments(item.timeSegments);
+    setRate(item.rate.toString());
+    setEditingId(item.id || item._id);
+    setEditingIndex(item.id || item._id);
   };
 
   const handleDelete = async (item) => {
     if (window.confirm(t('Are you sure you want to delete this record?', 'இந்த பதிவை நீக்க விரும்புகிறீர்களா?'))) {
       try {
-        const id = showHistoryView ? (item.id || item._id) : (activities[item].id || activities[item]._id);
+        const id = item.id || item._id;
         await deleteFromDatabase(id);
         
         if (showHistoryView) {
@@ -504,31 +503,101 @@ function CultivatingField() {
         </button>
       </div>
 
-      <div className="actions">
-        <button onClick={handlePrint}> {t("Print", "அச்சிடு")}</button>
+      <div className="view-toggle">
+        <button 
+          onClick={() => setShowHistoryView(!showHistoryView)}
+          className="toggle-btn"
+        >
+          {showHistoryView ? t('Back to Latest', 'சமீபத்தியதற்கு திரும்பு') : t('View History', 'வரலாறு பார்க்க')}
+        </button>
       </div>
 
+      {showHistoryView && (
+        <div className="filter-bar">
+          <input 
+            type="date" 
+            value={filterDate} 
+            onChange={(e) => setFilterDate(e.target.value)}
+            placeholder={t('Filter by Date', 'தேதி மூலம் வடிகட்டு')}
+          />
+          <input 
+            type="month" 
+            value={filterMonth} 
+            onChange={(e) => setFilterMonth(e.target.value)}
+            placeholder={t('Filter by Month', 'மாதம் மூலம் வடிகட்டு')}
+          />
+          <input 
+            type="number" 
+            value={filterYear} 
+            onChange={(e) => setFilterYear(e.target.value)}
+            placeholder={t('Filter by Year', 'வருடம் மூலம் வடிகட்டு')}
+            min="2000" 
+            max="2100"
+          />
+          <input 
+            type="text" 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('Search', 'தேடு')}
+          />
+          <button onClick={clearFilters}>{t('Clear Filters', 'வடிகட்டிகளை அழி')}</button>
+          <button onClick={handlePrint}>{t('Print', 'அச்சிடு')}</button>
+        </div>
+      )}
+
+      {!showHistoryView && (
+        <div className="export-bar">
+          <button onClick={handlePrint}>{t('Print', 'அச்சிடு')}</button>
+        </div>
+      )}
+
       <div className="section-header">
-        <h2>{t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
+        <h2>{showHistoryView ? t('View History', 'வரலாறு பார்க்க') : t('Latest Entry', 'சமீபத்திய பதிவு')}</h2>
       </div>
 
       <div id="print-section" className="activity-list">
-        {lastEntry ? (
-          <div className="activity-card">
-            <h3>{lastEntry.title} ({lastEntry.date})</h3>
-            <p><strong>{t('Note', 'குறிப்பு')}:</strong> {lastEntry.note}</p>
-            <p>{t("Driver", "டிரைவர்")}: {lastEntry.driver}</p>
-            <p>{t("Owner", "உரிமையாளர்")}: {lastEntry.owner.name} |  {lastEntry.owner.phone1}, {lastEntry.owner.phone2}</p>
-            <p>{t("Address", "முகவரி")}: {lastEntry.owner.address}</p>
-            <p>{t("Time", "நேரம்")}: {lastEntry.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
-            <p>{t("Hours", "மணிநேரம்")}: {lastEntry.totalHours} | {t("Rate", "விலை")}: ₹{lastEntry.rate} | {t("Total", "மொத்தம்")}: ₹{lastEntry.total}</p>
-          </div>
-        ) : (
+        {currentData.length === 0 ? (
           <div className="no-records">
             {t('No records found', 'பதிவுகள் இல்லை')}
           </div>
+        ) : (
+          paginatedActivities.map((item, index) => (
+            <div key={item.id || item._id || index} className="activity-card">
+              <h3>{item.title} ({item.date})</h3>
+              <p><strong>{t('Note', 'குறிப்பு')}:</strong> {item.note}</p>
+              <p>{t("Driver", "டிரைவர்")}: {item.driver}</p>
+              <p>{t("Owner", "உரிமையாளர்")}: {item.owner.name} |  {item.owner.phone1}, {item.owner.phone2}</p>
+              <p>{t("Address", "முகவரி")}: {item.owner.address}</p>
+              <p>{t("Time", "நேரம்")}: {item.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
+              <p>{t("Hours", "மணிநேரம்")}: {item.totalHours} | {t("Rate", "விலை")}: ₹{item.rate} | {t("Total", "மொத்தம்")}: ₹{item.total}</p>
+              {showHistoryView && (
+                <div className="actions">
+                  <button onClick={() => handleEdit(item)}>{t('Edit', 'திருத்து')}</button>
+                  <button onClick={() => handleDelete(item)}>{t('Delete', 'நீக்கு')}</button>
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
+
+      {showHistoryView && totalPages > 1 && (
+        <div className="pagination">
+          <button 
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            {t('Previous', 'முந்தைய')}
+          </button>
+          <span>{t('Page', 'பக்கம்')} {currentPage} {t('of', 'இன்')} {totalPages}</span>
+          <button 
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            {t('Next', 'அடுத்த')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

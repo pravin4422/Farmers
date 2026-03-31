@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import '../css/AiChat.css';
 import '../css/ai-chart.css';
 
-// Load Puter.js for TTS
-if (typeof window !== 'undefined' && !window.puter) {
-  const script = document.createElement('script');
-  script.src = 'https://js.puter.com/v2/';
-  script.async = true;
-  script.onload = () => {
-    console.log('✅ Puter.js loaded successfully');
-    console.log('✅ Puter TTS available:', !!(window.puter?.ai?.txt2speech));
-  };
-  script.onerror = () => {
-    console.error('❌ Failed to load Puter.js');
-  };
-  document.head.appendChild(script);
-}
+// Load Puter.js for TTS - DISABLED DUE TO FUNDING
+// if (typeof window !== 'undefined' && !window.puter) {
+//   const script = document.createElement('script');
+//   script.src = 'https://js.puter.com/v2/';
+//   script.async = true;
+//   script.onload = () => {
+//     console.log('✅ Puter.js loaded successfully');
+//     console.log('✅ Puter TTS available:', !!(window.puter?.ai?.txt2speech));
+//   };
+//   script.onerror = () => {
+//     console.error('❌ Failed to load Puter.js');
+//   };
+//   document.head.appendChild(script);
+// }
 
 const formatMessage = (text) => {
   if (!text) return '';
@@ -36,10 +36,15 @@ const AiChat = ({ initialMessage = '' }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [showYieldForm, setShowYieldForm] = useState(false);
   const [showCropRecommendation, setShowCropRecommendation] = useState(false);
+  const [cropRecommendationForm, setCropRecommendationForm] = useState({
+    season: '',
+    product: ''
+  });
   const [cropRecommendationData, setCropRecommendationData] = useState(null);
   const [showSchemeModal, setShowSchemeModal] = useState(false);
   const [schemes, setSchemes] = useState([]);
   const [selectedScheme, setSelectedScheme] = useState(null);
+  const [fromSchemePageScheme, setFromSchemePageScheme] = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [audioMode, setAudioMode] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -66,10 +71,24 @@ const AiChat = ({ initialMessage = '' }) => {
 
   useEffect(() => {
     const storedPrompt = localStorage.getItem('aiChatPrompt');
+    const storedScheme = localStorage.getItem('selectedSchemeForAI');
+    
     if (storedPrompt && !initialMessageSentRef.current) {
       initialMessageSentRef.current = true;
-      setInput(storedPrompt);
       localStorage.removeItem('aiChatPrompt');
+      
+      // If there's a stored scheme, save it and open the modal automatically
+      if (storedScheme) {
+        try {
+          const schemeData = JSON.parse(storedScheme);
+          setFromSchemePageScheme(schemeData);
+          setSelectedScheme(schemeData);
+          setShowSchemeModal(true);
+          localStorage.removeItem('selectedSchemeForAI');
+        } catch (e) {
+          console.error('Error parsing stored scheme:', e);
+        }
+      }
     } else if (initialMessage && !initialMessageSentRef.current) {
       initialMessageSentRef.current = true;
       setInput(initialMessage);
@@ -143,19 +162,25 @@ const AiChat = ({ initialMessage = '' }) => {
         
         // Check if selection is within an assistant message
         let node = selection.anchorNode;
+        let isInAssistantMessage = false;
+        
         while (node && node !== document.body) {
-          if (node.classList && node.classList.contains('message-content')) {
-            const messageDiv = node.closest('.message.assistant');
-            if (messageDiv) {
-              setSelectedText(text);
-              setSelectionPosition({
-                top: rect.bottom + window.scrollY,
-                left: rect.left + window.scrollX + (rect.width / 2)
-              });
-              return;
+          if (node.classList) {
+            if (node.classList.contains('message') && node.classList.contains('assistant')) {
+              isInAssistantMessage = true;
+              break;
             }
           }
           node = node.parentNode;
+        }
+        
+        if (isInAssistantMessage) {
+          setSelectedText(text);
+          setSelectionPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX + (rect.width / 2)
+          });
+          return;
         }
       }
       
@@ -164,11 +189,9 @@ const AiChat = ({ initialMessage = '' }) => {
     };
 
     document.addEventListener('mouseup', handleSelection);
-    document.addEventListener('selectionchange', handleSelection);
     
     return () => {
       document.removeEventListener('mouseup', handleSelection);
-      document.removeEventListener('selectionchange', handleSelection);
     };
   }, []);
 
@@ -209,7 +232,7 @@ const AiChat = ({ initialMessage = '' }) => {
 
   const [conversationHistory, setConversationHistory] = useState([]);
 
-  // Load chat history when component mounts
+  // Load chat history when component mounts or when navigating back
   useEffect(() => {
     const loadChatHistory = async () => {
       try {
@@ -243,6 +266,17 @@ const AiChat = ({ initialMessage = '' }) => {
     };
     
     loadChatHistory();
+    
+    // Reload chat history when window regains focus (user navigates back)
+    const handleFocus = () => {
+      loadChatHistory();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const handleSend = async () => {
@@ -401,33 +435,38 @@ const AiChat = ({ initialMessage = '' }) => {
     }
   };
 
-  const handleCropRecommendation = async () => {
+  const handleCropRecommendation = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
     const userMessage = {
       role: 'user',
-      content: 'Recommend the best crop to plant based on my historical data'
+      content: `Recommend the best crop to plant for ${cropRecommendationForm.season} season and ${cropRecommendationForm.product} product based on my historical data, comparing expenditure vs price, yield, and problems reported`
     };
     setMessages(prev => [...prev, userMessage]);
 
     try {
-      const response = await fetch('http://localhost:5000/api/crop-recommendation/recommend', {
+      const token = localStorage.getItem('token');
+      
+      // Fetch cultivation records
+      const cultivationResponse = await fetch('http://localhost:5000/api/crop-recommendation/recommend', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           targetYear: new Date().getFullYear(),
-          targetSeason: 'All'
+          targetSeason: cropRecommendationForm.season,
+          targetProduct: cropRecommendationForm.product
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!cultivationResponse.ok) {
+        const errorData = await cultivationResponse.json();
         throw new Error(errorData.error || errorData.details || 'Failed to get recommendations');
       }
 
-      const data = await response.json();
+      const data = await cultivationResponse.json();
       
       if (data.success) {
         setCropRecommendationData(data);
@@ -435,7 +474,9 @@ const AiChat = ({ initialMessage = '' }) => {
         let aiResponse = `🌾 CROP RECOMMENDATION ANALYSIS\n\n`;
         aiResponse += `📍 Location: ${data.userLocation}\n`;
         aiResponse += `🌾 Land Size: ${data.landSize}\n`;
-        aiResponse += `📈 Records Analyzed: ${data.totalRecordsAnalyzed}\n\n`;
+        aiResponse += `📈 Records Analyzed: ${data.totalRecordsAnalyzed}\n`;
+        aiResponse += `🗓️ Season: ${cropRecommendationForm.season}\n`;
+        aiResponse += `🌱 Product: ${cropRecommendationForm.product}\n\n`;
         
         // Warning for insufficient data
         if (data.totalRecordsAnalyzed < 5) {
@@ -451,15 +492,132 @@ const AiChat = ({ initialMessage = '' }) => {
         aiResponse += `⭐ TOP ${data.topRecommendations.length} RECOMMENDED CROPS:\n\n`;
         
         data.topRecommendations.forEach((rec, idx) => {
-          aiResponse += `${idx + 1}. ${rec.crop.toUpperCase()} (Score: ${rec.score.toFixed(1)}/100)\n`;
-          aiResponse += `   💰 Avg Cost: ₹${rec.avgCost.toLocaleString()}\n`;
+          aiResponse += `${idx + 1}. ${rec.crop.toUpperCase()} (Score: ${rec.score.toFixed(1)}/100)\n\n`;
+          
+          // Financial Analysis
+          aiResponse += `   💰 Financial Analysis:\n`;
+          aiResponse += `      • Total Expenditure: ₹${rec.avgCost?.toLocaleString() || 'N/A'} (avg)\n`;
           if (rec.avgPrice) {
-            aiResponse += `   💵 Avg Price: ₹${rec.avgPrice.toLocaleString()}\n`;
-            aiResponse += `   📈 Est. Profit: ₹${rec.estimatedProfit?.toLocaleString() || 'N/A'}\n`;
+            aiResponse += `      • Total Selling Price: ₹${rec.avgPrice.toLocaleString()} (avg)\n`;
+            aiResponse += `      • Net Profit: ₹${rec.estimatedProfit?.toLocaleString() || 'N/A'}`;
+            if (rec.profitMargin) {
+              aiResponse += ` (${rec.profitMargin.toFixed(1)}% margin)`;
+            }
+            aiResponse += `\n`;
           }
+          aiResponse += `\n`;
+          
+          // Yield Performance
+          if (rec.avgYield || rec.totalProduction) {
+            aiResponse += `   📊 Yield Performance:\n`;
+            if (rec.avgYield) {
+              aiResponse += `      • Average Yield: ${rec.avgYield.toLocaleString()} kg/hectare\n`;
+            }
+            if (rec.totalProduction) {
+              aiResponse += `      • Total Production: ${rec.totalProduction.toLocaleString()} kg\n`;
+            }
+            if (rec.yieldEfficiency) {
+              aiResponse += `      • Yield Efficiency: ${rec.yieldEfficiency}\n`;
+            }
+            aiResponse += `\n`;
+          }
+          
+          // Problem Analysis
+          if (rec.problemCount !== undefined) {
+            aiResponse += `   ⚠️ Problem Analysis:\n`;
+            aiResponse += `      • Total Problems Reported: ${rec.problemCount}\n`;
+            if (rec.problemTypes && rec.problemTypes.length > 0) {
+              aiResponse += `      • Problem Types: ${rec.problemTypes.join(', ')}\n`;
+            }
+            if (rec.successRate !== undefined) {
+              aiResponse += `      • Success Rate: ${rec.successRate.toFixed(1)}% (${rec.successfulAttempts} out of ${rec.timesGrown} times)\n`;
+            }
+            aiResponse += `\n`;
+          }
+          
           aiResponse += `   🔄 Times Grown: ${rec.timesGrown}\n`;
           aiResponse += `   🎯 ${rec.recommendation}\n\n`;
+          aiResponse += `---\n\n`;
         });
+        
+        // Comparative Analysis Table
+        if (data.topRecommendations.length > 1) {
+          aiResponse += `📊 COMPARATIVE ANALYSIS:\n\n`;
+          aiResponse += `Metric          `;
+          data.topRecommendations.forEach(rec => {
+            aiResponse += `| ${rec.crop.padEnd(10)} `;
+          });
+          aiResponse += `\n`;
+          aiResponse += `----------------|`;
+          data.topRecommendations.forEach(() => {
+            aiResponse += `------------|`;
+          });
+          aiResponse += `\n`;
+          
+          // Profit Margin Row
+          if (data.topRecommendations[0].profitMargin !== undefined) {
+            aiResponse += `Profit Margin   `;
+            data.topRecommendations.forEach(rec => {
+              const value = rec.profitMargin ? `${rec.profitMargin.toFixed(1)}%` : 'N/A';
+              aiResponse += `| ${value.padEnd(10)} `;
+            });
+            aiResponse += `\n`;
+          }
+          
+          // Yield Row
+          if (data.topRecommendations[0].avgYield !== undefined) {
+            aiResponse += `Yield/Hectare   `;
+            data.topRecommendations.forEach(rec => {
+              const value = rec.avgYield ? `${rec.avgYield}kg` : 'N/A';
+              aiResponse += `| ${value.padEnd(10)} `;
+            });
+            aiResponse += `\n`;
+          }
+          
+          // Problems Row
+          if (data.topRecommendations[0].problemCount !== undefined) {
+            aiResponse += `Problems        `;
+            data.topRecommendations.forEach(rec => {
+              const value = rec.problemCount !== undefined ? rec.problemCount.toString() : 'N/A';
+              aiResponse += `| ${value.padEnd(10)} `;
+            });
+            aiResponse += `\n`;
+          }
+          
+          // Success Rate Row
+          if (data.topRecommendations[0].successRate !== undefined) {
+            aiResponse += `Success Rate    `;
+            data.topRecommendations.forEach(rec => {
+              const value = rec.successRate !== undefined ? `${rec.successRate.toFixed(1)}%` : 'N/A';
+              aiResponse += `| ${value.padEnd(10)} `;
+            });
+            aiResponse += `\n`;
+          }
+          
+          // Final Score Row
+          aiResponse += `Final Score     `;
+          data.topRecommendations.forEach(rec => {
+            const value = `${rec.score.toFixed(1)}`;
+            aiResponse += `| ${value.padEnd(10)} `;
+          });
+          aiResponse += `\n\n`;
+          
+          // Winner Declaration
+          const winner = data.topRecommendations[0];
+          aiResponse += `🏆 WINNER: ${winner.crop.toUpperCase()}\n`;
+          if (winner.profitMargin && winner.profitMargin === Math.max(...data.topRecommendations.map(r => r.profitMargin || 0))) {
+            aiResponse += `   ✅ Highest profit margin\n`;
+          }
+          if (winner.avgYield && winner.avgYield === Math.max(...data.topRecommendations.map(r => r.avgYield || 0))) {
+            aiResponse += `   ✅ Best yield per hectare\n`;
+          }
+          if (winner.successRate && winner.successRate === Math.max(...data.topRecommendations.map(r => r.successRate || 0))) {
+            aiResponse += `   ✅ Highest success rate\n`;
+          }
+          if (winner.problemCount !== undefined && winner.problemCount === Math.min(...data.topRecommendations.map(r => r.problemCount !== undefined ? r.problemCount : Infinity))) {
+            aiResponse += `   ✅ Fewest problems reported\n`;
+          }
+        }
         
         aiResponse += `\n💡 KEY INSIGHTS:\n`;
         aiResponse += `• Most Frequent: ${data.insights.mostFrequentCrop}\n`;
@@ -469,6 +627,12 @@ const AiChat = ({ initialMessage = '' }) => {
         }
         if (data.insights.bestProfitCrop) {
           aiResponse += `• Best Profit: ${data.insights.bestProfitCrop}\n`;
+        }
+        if (data.insights.leastProblemsCrop) {
+          aiResponse += `• Least Problems: ${data.insights.leastProblemsCrop}\n`;
+        }
+        if (data.insights.bestYieldCrop) {
+          aiResponse += `• Best Yield: ${data.insights.bestYieldCrop}\n`;
         }
         
         const aiMessage = {
@@ -483,11 +647,13 @@ const AiChat = ({ initialMessage = '' }) => {
       console.error('Crop recommendation error:', error);
       const errorMessage = {
         role: 'assistant',
-        content: `❌ ${error.message}\n\n💡 TO GET BETTER RECOMMENDATIONS:\n\n1️⃣ Add More Farming Records:\n   • Go to Creator Details\n   • Add at least 5-10 records\n   • Include different crops/seasons\n   • Add data from multiple years\n\n2️⃣ Complete Cost Information:\n   • Seed costs\n   • Labor costs (people count × cost per person)\n   • Other expenses\n\n3️⃣ Add Price Data:\n   • Go to Prices section\n   • Add market prices for your crops\n   • Update regularly\n\n4️⃣ Update Your Profile:\n   • Add your location\n   • Specify land size\n   • Set main crop\n\nOnce you have more data, the AI can provide accurate, data-driven recommendations! 🌾`
+        content: `❌ ${error.message}\n\n💡 TO GET BETTER RECOMMENDATIONS:\n\n1️⃣ Add More Farming Records:\n   • Go to Creator Details\n   • Add at least 5-10 records\n   • Include different crops/seasons\n   • Add data from multiple years\n   • Include yield data (production quantity)\n\n2️⃣ Complete Cost Information:\n   • Seed costs\n   • Labor costs (people count × cost per person)\n   • Other expenses\n\n3️⃣ Add Price Data:\n   • Go to Prices section\n   • Add market prices for your crops\n   • Update regularly\n\n4️⃣ Report Problems/Issues:\n   • Use Review section to report any problems\n   • This helps AI understand crop risks\n   • Include disease, pest, or weather issues\n\n5️⃣ Update Your Profile:\n   • Add your location\n   • Specify land size\n   • Set main crop\n\nOnce you have more data, the AI can provide accurate, data-driven recommendations! 🌾`
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setLoading(false);
+      setShowCropRecommendation(false);
+      setCropRecommendationForm({ season: '', product: '' });
     }
   };
 
@@ -509,7 +675,8 @@ const AiChat = ({ initialMessage = '' }) => {
   };
 
   const handleSchemeQuestion = async (question) => {
-    if (!selectedScheme) return;
+    const schemeToUse = selectedScheme || fromSchemePageScheme;
+    if (!schemeToUse) return;
     
     console.log('📋 Scheme question clicked:', question);
     
@@ -528,7 +695,7 @@ const AiChat = ({ initialMessage = '' }) => {
       queueAudioResponse(question);
 
       try {
-        const prompt = `${question}\n\nScheme: ${selectedScheme.name}\nObjective: ${selectedScheme.details.objective}\nBenefits: ${selectedScheme.details.benefit}\nEligibility: ${selectedScheme.details.eligibility}\nHow to Apply: ${selectedScheme.details.apply}\nDocuments: ${selectedScheme.details.documents}\nWebsite: ${selectedScheme.details.website}`;
+        const prompt = `${question}\n\nScheme: ${schemeToUse.name}\nObjective: ${schemeToUse.details.objective}\nBenefits: ${schemeToUse.details.benefit}\nEligibility: ${schemeToUse.details.eligibility}\nHow to Apply: ${schemeToUse.details.apply}\nDocuments: ${schemeToUse.details.documents}\nWebsite: ${schemeToUse.details.website}`;
 
         console.log('📡 Calling chatbot API for scheme...');
         const response = await fetch('http://localhost:5000/api/chatbot/chat', {
@@ -612,107 +779,60 @@ const AiChat = ({ initialMessage = '' }) => {
     setIsPlayingSelected(isSelected);
     
     try {
-      // Check if Puter.js is available
-      if (window.puter && window.puter.ai && window.puter.ai.txt2speech) {
-        console.log('✅ Puter.js TTS available, generating audio...');
-        const voice = language === 'tamil' ? 'nova' : 'alloy';
-        console.log('🎤 Using voice:', voice, 'for language:', language);
+      // Use browser TTS directly
+      console.log('⚠️ Using browser TTS');
+      setIsGeneratingAudio(false);
+      setTimeout(() => {
+        const voices = window.speechSynthesis.getVoices();
+        const utterance = new SpeechSynthesisUtterance(text);
         
-        const audio = await window.puter.ai.txt2speech(text, {
-          provider: 'openai',
-          voice: voice,
-          model: 'gpt-4o-mini-tts',
-          response_format: 'mp3'
-        });
+        if (language === 'tamil') {
+          utterance.lang = 'ta-IN';
+          const tamilVoice = voices.find(v => v.lang.includes('ta'));
+          if (tamilVoice) {
+            utterance.voice = tamilVoice;
+            console.log('🎤 Using Tamil voice:', tamilVoice.name);
+          }
+        } else {
+          utterance.lang = 'en-US';
+          const englishVoice = voices.find(v => v.lang.includes('en'));
+          if (englishVoice) {
+            utterance.voice = englishVoice;
+            console.log('🎤 Using English voice:', englishVoice.name);
+          }
+        }
         
-        console.log('✅ Audio generated successfully');
-        setIsGeneratingAudio(false);
-        setIsPlayingAudio(true);
-        currentAudioRef.current = audio;
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
         
-        audio.onended = () => {
-          console.log('✅ Audio playback ended');
+        utterance.onstart = () => {
+          console.log('▶️ Browser TTS started');
+          setIsPlayingAudio(true);
+        };
+        utterance.onend = () => {
+          console.log('✅ Browser TTS ended');
           setIsPlayingAudio(false);
           setPlayingMessageIndex(null);
           setIsPlayingSelected(false);
-          currentAudioRef.current = null;
           // Process next in queue if any
           if (audioQueueRef.current.length > 0) {
-            console.log('▶️ Processing next in queue');
             processAudioQueue();
           }
         };
-        audio.onerror = (error) => {
-          console.error('❌ Audio playback error:', error);
+        utterance.onerror = (error) => {
+          console.error('❌ Browser TTS error:', error);
           setIsPlayingAudio(false);
-          setIsGeneratingAudio(false);
           setPlayingMessageIndex(null);
           setIsPlayingSelected(false);
-          currentAudioRef.current = null;
           // Process next in queue if any
           if (audioQueueRef.current.length > 0) {
             processAudioQueue();
           }
         };
         
-        await audio.play();
-        console.log('▶️ Audio playing...');
-      } else {
-        console.warn('⚠️ Puter.js not available, falling back to browser TTS');
-        // Fallback to browser TTS if Puter.js is not available
-        setIsGeneratingAudio(false);
-        setTimeout(() => {
-          const voices = window.speechSynthesis.getVoices();
-          const utterance = new SpeechSynthesisUtterance(text);
-          
-          if (language === 'tamil') {
-            utterance.lang = 'ta-IN';
-            const tamilVoice = voices.find(v => v.lang.includes('ta'));
-            if (tamilVoice) {
-              utterance.voice = tamilVoice;
-              console.log('🎤 Using Tamil voice:', tamilVoice.name);
-            }
-          } else {
-            utterance.lang = 'en-US';
-            const englishVoice = voices.find(v => v.lang.includes('en'));
-            if (englishVoice) {
-              utterance.voice = englishVoice;
-              console.log('🎤 Using English voice:', englishVoice.name);
-            }
-          }
-          
-          utterance.rate = 0.9;
-          utterance.pitch = 1;
-          utterance.volume = 1;
-          
-          utterance.onstart = () => {
-            console.log('▶️ Browser TTS started');
-            setIsPlayingAudio(true);
-          };
-          utterance.onend = () => {
-            console.log('✅ Browser TTS ended');
-            setIsPlayingAudio(false);
-            setPlayingMessageIndex(null);
-            setIsPlayingSelected(false);
-            // Process next in queue if any
-            if (audioQueueRef.current.length > 0) {
-              processAudioQueue();
-            }
-          };
-          utterance.onerror = (error) => {
-            console.error('❌ Browser TTS error:', error);
-            setIsPlayingAudio(false);
-            setPlayingMessageIndex(null);
-            setIsPlayingSelected(false);
-            // Process next in queue if any
-            if (audioQueueRef.current.length > 0) {
-              processAudioQueue();
-            }
-          };
-          
-          window.speechSynthesis.speak(utterance);
-        }, 150);
-      }
+        window.speechSynthesis.speak(utterance);
+      }, 150);
     } catch (error) {
       console.error('❌ TTS error:', error);
       setIsPlayingAudio(false);
@@ -806,44 +926,38 @@ const AiChat = ({ initialMessage = '' }) => {
       <div className="chat-header">
         <h2>{t.title}</h2>
         <div className="header-actions">
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className="refresh-btn"
-            title="Toggle Debug Panel"
-          >
-            🐛 Debug
-          </button>
+
           <button
             onClick={() => navigate('/ai-home')}
             className="predictions-btn"
             title="Predictions"
           >
-            🔮 Predictions
+            Predictions
           </button>
           <button
             onClick={handleRefresh}
             className="refresh-btn"
             title={language === 'tamil' ? 'புதிய உரையாடல்' : 'New Chat'}
           >
-            🔄 {language === 'tamil' ? 'புதிது' : 'New'}
+            {language === 'tamil' ? 'புதிது' : 'New'}
           </button>
+
           <button
-            onClick={() => setShowYieldForm(!showYieldForm)}
-            className="yield-btn"
-          >
-            🌾 Yield Prediction
-          </button>
-          <button
-            onClick={handleCropRecommendation}
+            onClick={() => setShowCropRecommendation(true)}
             className="recommend-btn"
           >
-            🎯 Best Crop
+            Best Crop
           </button>
           <button
-            onClick={() => setShowSchemeModal(true)}
+            onClick={() => {
+              if (fromSchemePageScheme) {
+                setSelectedScheme(fromSchemePageScheme);
+              }
+              setShowSchemeModal(true);
+            }}
             className="scheme-btn"
           >
-            📋 Schemes
+            Schemes
           </button>
           <button
             onClick={toggleAutoPlayAudio}
@@ -851,7 +965,7 @@ const AiChat = ({ initialMessage = '' }) => {
             title={audioMode ? (language === 'tamil' ? 'ஆடியோவை நிறுத்து' : 'Disable Audio Mode') : (language === 'tamil' ? 'ஆடியோவை இயக்கு' : 'Enable Audio Mode')}
             style={{ display: 'none' }}
           >
-            {audioMode ? '🔊' : '🔇'} {language === 'tamil' ? (audioMode ? 'ஆடியோ ஆன்' : 'ஆடியோ ஆஃப்') : (audioMode ? 'Audio ON' : 'Audio OFF')}
+            {language === 'tamil' ? (audioMode ? 'ஆடியோ ஆன்' : 'ஆடியோ ஆஃப்') : (audioMode ? 'Audio ON' : 'Audio OFF')}
           </button>
           <button
             onClick={() => setLanguage(language === 'english' ? 'tamil' : 'english')}
@@ -862,10 +976,45 @@ const AiChat = ({ initialMessage = '' }) => {
         </div>
       </div>
 
+      {showCropRecommendation && (
+        <div className="yield-form-overlay" onClick={() => setShowCropRecommendation(false)}>
+          <div className="yield-form-container" onClick={(e) => e.stopPropagation()}>
+            <h3>Best Crop Recommendation</h3>
+            <form onSubmit={handleCropRecommendation}>
+              <select
+                value={cropRecommendationForm.season}
+                onChange={(e) => setCropRecommendationForm({...cropRecommendationForm, season: e.target.value})}
+                required
+              >
+                <option value="">Select Season</option>
+                <option value="Kharif">Kharif</option>
+                <option value="Rabi">Rabi</option>
+                <option value="Zaid">Zaid</option>
+                <option value="Summer">Summer</option>
+                <option value="Winter">Winter</option>
+                <option value="Autumn">Autumn</option>
+                <option value="All">All Seasons</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Agricultural Product (e.g., Rice, Wheat, Cotton)"
+                value={cropRecommendationForm.product}
+                onChange={(e) => setCropRecommendationForm({...cropRecommendationForm, product: e.target.value})}
+                required
+              />
+              <div className="form-actions">
+                <button type="submit" disabled={loading}>Get Recommendation</button>
+                <button type="button" onClick={() => setShowCropRecommendation(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {showYieldForm && (
         <div className="yield-form-overlay" onClick={() => setShowYieldForm(false)}>
           <div className="yield-form-container" onClick={(e) => e.stopPropagation()}>
-            <h3>🌾 Yield Prediction</h3>
+            <h3>Yield Prediction</h3>
             <form onSubmit={handleYieldPrediction}>
               <select
                 value={yieldFormData.crop}
@@ -951,7 +1100,28 @@ const AiChat = ({ initialMessage = '' }) => {
                 disabled={(isPlayingAudio && playingMessageIndex === index && !isPlayingSelected) || isGeneratingAudio}
                 title={isGeneratingAudio ? (language === 'tamil' ? 'ஆடியோ உருவாக்கப்படுகிறது...' : 'Generating audio...') : (language === 'tamil' ? 'இந்த செய்தியை கேட்க' : 'Play this message')}
               >
-                {(playingMessageIndex === index && !isPlayingSelected) ? (isGeneratingAudio ? '⏳' : (isPlayingAudio ? '🔊' : '🔉')) : '🔉'}
+                {(playingMessageIndex === index && !isPlayingSelected) ? (
+                  isGeneratingAudio ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="12" r="10" opacity="0.3"/>
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" opacity="0.6"/>
+                    </svg>
+                  ) : (
+                    isPlayingAudio ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    )
+                  )
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                )}
               </button>
             )}
           </div>
@@ -973,7 +1143,28 @@ const AiChat = ({ initialMessage = '' }) => {
             disabled={(isPlayingAudio && isPlayingSelected) || isGeneratingAudio}
             title={language === 'tamil' ? 'தேர்ந்தெடுத்ததை கேட்க' : 'Play selected text'}
           >
-            {isPlayingSelected ? (isGeneratingAudio ? '⏳' : (isPlayingAudio ? '🔊' : '🔉')) : '🔉'} {language === 'tamil' ? 'தேர்ந்தெடுத்ததை கேட்க' : 'Play Selected'}
+            {isPlayingSelected ? (
+              isGeneratingAudio ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="10" opacity="0.3"/>
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" opacity="0.6"/>
+                </svg>
+              ) : (
+                isPlayingAudio ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                )
+              )
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
           </button>
         )}
 
@@ -989,11 +1180,6 @@ const AiChat = ({ initialMessage = '' }) => {
       </div>
 
       <div className="chat-input-container">
-        {(isPlayingAudio || isGeneratingAudio) && (
-          <button onClick={stopAudio} className="stop-audio-floating-btn" title={language === 'tamil' ? 'ஆடியோவை நிறுத்து' : 'Stop Audio'}>
-            {isGeneratingAudio ? '⏳' : '⏹️'} {isGeneratingAudio ? (language === 'tamil' ? 'உருவாக்குகிறது...' : 'Generating...') : (language === 'tamil' ? 'நிறுத்து' : 'Stop')}
-          </button>
-        )}
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -1006,8 +1192,30 @@ const AiChat = ({ initialMessage = '' }) => {
           onClick={handleVoiceClick}
           title={isRecording ? (language === 'tamil' ? 'நிறுத்து' : 'Stop') : (language === 'tamil' ? 'குரல் உள்ளீடு' : 'Voice Input')}
         >
-          {isRecording ? '⏹️' : '🎤'}
+          {isRecording ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h12v12H6z"/>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+          )}
         </button>
+        {(isPlayingAudio || isGeneratingAudio) ? (
+          <button onClick={stopAudio} className="stop-audio-btn-input" title={language === 'tamil' ? 'ஆடியோவை நிறுத்து' : 'Stop Audio'}>
+            {isGeneratingAudio ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="rotating-icon">
+                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h12v12H6z"/>
+              </svg>
+            )}
+          </button>
+        ) : null}
         <button onClick={handleSend} disabled={!input.trim() || loading}>
           {t.send}
         </button>
@@ -1017,9 +1225,9 @@ const AiChat = ({ initialMessage = '' }) => {
       {showSchemeModal && (
         <div className="yield-form-overlay" onClick={() => { setShowSchemeModal(false); stopAudio(); }}>
           <div className="scheme-modal-container" onClick={(e) => e.stopPropagation()}>
-            <h3>📋 {language === 'tamil' ? 'அரசு திட்டங்கள்' : 'Government Schemes'}</h3>
+            <h3>{language === 'tamil' ? 'அரசு திட்டங்கள்' : 'Government Schemes'}</h3>
             
-            {!selectedScheme ? (
+            {!selectedScheme && !fromSchemePageScheme ? (
               <div className="scheme-list">
                 {schemes.map(scheme => (
                   <div 
@@ -1034,10 +1242,12 @@ const AiChat = ({ initialMessage = '' }) => {
               </div>
             ) : (
               <div className="scheme-questions">
-                <h4>{selectedScheme.name}</h4>
-                <button onClick={() => setSelectedScheme(null)} className="back-btn">
-                  ← {language === 'tamil' ? 'பின்செல்' : 'Back'}
-                </button>
+                <h4>{(selectedScheme || fromSchemePageScheme)?.name}</h4>
+                {!fromSchemePageScheme && (
+                  <button onClick={() => setSelectedScheme(null)} className="back-btn">
+                    {language === 'tamil' ? 'பின்செல்' : 'Back'}
+                  </button>
+                )}
                 
                 <div className="question-buttons">
                   <button 
@@ -1045,7 +1255,7 @@ const AiChat = ({ initialMessage = '' }) => {
                     disabled={loading || isPlayingAudio}
                     className="question-btn"
                   >
-                    {isPlayingAudio ? '🔊' : '🎤'} {language === 'tamil' ? 'திட்டத்தைப் பற்றி' : 'About Scheme'}
+                    {isPlayingAudio ? 'Playing' : 'Audio'} {language === 'tamil' ? 'திட்டத்தைப் பற்றி' : 'About Scheme'}
                   </button>
 
                   <button 
@@ -1053,7 +1263,7 @@ const AiChat = ({ initialMessage = '' }) => {
                     disabled={loading || isPlayingAudio}
                     className="question-btn"
                   >
-                    {isPlayingAudio ? '🔊' : '🎤'} {language === 'tamil' ? 'ஆவணங்கள்' : 'Documents'}
+                    {isPlayingAudio ? 'Playing' : 'Audio'} {language === 'tamil' ? 'ஆவணங்கள்' : 'Documents'}
                   </button>
 
                   <button 
@@ -1061,7 +1271,7 @@ const AiChat = ({ initialMessage = '' }) => {
                     disabled={loading || isPlayingAudio}
                     className="question-btn"
                   >
-                    {isPlayingAudio ? '🔊' : '🎤'} {language === 'tamil' ? 'தகுதி' : 'Eligibility'}
+                    {isPlayingAudio ? 'Playing' : 'Audio'} {language === 'tamil' ? 'தகுதி' : 'Eligibility'}
                   </button>
 
                   <button 
@@ -1069,7 +1279,7 @@ const AiChat = ({ initialMessage = '' }) => {
                     disabled={loading || isPlayingAudio}
                     className="question-btn"
                   >
-                    {isPlayingAudio ? '🔊' : '🎤'} {language === 'tamil' ? 'விண்ணப்பம்' : 'How to Apply'}
+                    {isPlayingAudio ? 'Playing' : 'Audio'} {language === 'tamil' ? 'விண்ணப்பம்' : 'How to Apply'}
                   </button>
 
                   <button 
@@ -1077,13 +1287,13 @@ const AiChat = ({ initialMessage = '' }) => {
                     disabled={loading || isPlayingAudio}
                     className="question-btn"
                   >
-                    {isPlayingAudio ? '🔊' : '🎤'} {language === 'tamil' ? 'நன்மைகள்' : 'Benefits'}
+                    {isPlayingAudio ? 'Playing' : 'Audio'} {language === 'tamil' ? 'நன்மைகள்' : 'Benefits'}
                   </button>
                 </div>
 
                 {isPlayingAudio && (
                   <button onClick={stopAudio} className="stop-audio-btn">
-                    ⏹️ {language === 'tamil' ? 'ஆடியோவை நிறுத்து' : 'Stop Audio'}
+                    {language === 'tamil' ? 'ஆடியோவை நிறுத்து' : 'Stop Audio'}
                   </button>
                 )}
               </div>

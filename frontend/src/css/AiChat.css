@@ -232,6 +232,39 @@
   background: #2e7d32;
 }
 
+.stop-audio-btn-input {
+  padding: 14px 18px;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.2);
+  white-space: nowrap;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stop-audio-btn-input:hover {
+  background: #b71c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.stop-audio-btn-input:active {
+  animation: shake-inline 0.3s ease-in-out;
+}
+
+@keyframes shake-inline {
+  0%, 100% { transform: translateX(0) translateY(-2px); }
+  25% { transform: translateX(-3px) translateY(-2px); }
+  75% { transform: translateX(3px) translateY(-2px); }
+}
+
 @keyframes pulse-recording {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -874,9 +907,9 @@
 /* Play Message Button */
 .message.assistant {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .play-message-btn {
@@ -886,7 +919,7 @@
   background: #2e7d32;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   font-size: 1.2rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -899,7 +932,7 @@
 
 .play-message-btn:hover:not(:disabled) {
   background: #1b5e20;
-  transform: scale(1.05);
+  transform: scale(1.1);
   box-shadow: 0 3px 10px rgba(46, 125, 50, 0.3);
 }
 
@@ -922,32 +955,24 @@
 
 /* Play Selected Text Button */
 .play-selected-btn {
-  padding: 10px 20px;
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  padding: 0;
   background: #ff6f00;
   color: white;
   border: none;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 50%;
+  font-size: 1.3rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 111, 0, 0.4);
-  z-index: 1000;
-  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(255, 111, 0, 0.6);
+  z-index: 10000;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   animation: fadeInScale 0.2s ease-out;
   pointer-events: auto;
-}
-
-.chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
 }
 
 @keyframes fadeInScale {
@@ -963,8 +988,8 @@
 
 .play-selected-btn:hover:not(:disabled) {
   background: #e65100;
-  transform: translateX(-50%) scale(1.05);
-  box-shadow: 0 6px 16px rgba(255, 111, 0, 0.5);
+  transform: translateX(-50%) scale(1.15);
+  box-shadow: 0 6px 16px rgba(255, 111, 0, 0.8);
 }
 
 .play-selected-btn:disabled {
@@ -977,24 +1002,36 @@
 /* Stop Audio Floating Button */
 .stop-audio-floating-btn {
   position: absolute;
-  top: -50px;
+  top: -60px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 10px 20px;
+  width: 50px;
+  height: 50px;
+  padding: 0;
   background: #d32f2f;
   color: white;
   border: none;
-  border-radius: 25px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border-radius: 50%;
+  font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
   z-index: 10;
-  animation: slideDown 0.3s ease-out;
+  animation: slideDownBtn 0.3s ease-out;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+}
+
+@keyframes slideDownBtn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .stop-audio-floating-btn.generating {
@@ -1007,8 +1044,31 @@
 
 .stop-audio-floating-btn:hover {
   background: #b71c1c;
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateX(-50%) scale(1.1);
   box-shadow: 0 6px 16px rgba(211, 47, 47, 0.4);
+}
+
+.stop-audio-floating-btn:active {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  25% { transform: translateX(-55%) translateY(0); }
+  75% { transform: translateX(-45%) translateY(0); }
+}
+
+.rotating-icon {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Audio Response Container */

@@ -10,6 +10,7 @@ const Tractor = require('../models/Tractor');
 const Expiry = require('../models/Expiry');
 const Problem = require('../models/Problem');
 const Kamitty = require('../models/Kamitty');
+const SeasonReport = require('../models/SeasonReport');
 
 // Decode HTML entities
 const decodeHtmlEntities = (text) => {
@@ -62,19 +63,25 @@ const chat = async (req, res) => {
     // Get expiry/solution records
     const expiryRecords = await Expiry.find({ userId })
       .sort({ createdAt: -1 })
-      .select('productName expiryDate category notes season year')
+      .select('productName expiryDate category notes cropName season year hypotheticalSolution effectiveness')
       .lean();
 
     // Get problem reports
     const problemRecords = await Problem.find({ userId })
       .sort({ createdAt: -1 })
-      .select('title description season year status solution')
+      .select('title description cropName season year status solution severity')
       .lean();
 
     // Get Kamitty (Mandi) records
     const kamittyRecords = await Kamitty.find({ user: userId })
       .sort({ createdAt: -1 })
       .select('season year date description numBags costPerBag otherCost totalKamitty')
+      .lean();
+
+    // Get Season Reports (Yield & Revenue data)
+    const seasonReports = await SeasonReport.find({ user: userId })
+      .sort({ year: -1, createdAt: -1 })
+      .select('season year productName totalYield numberOfBags totalAmount createdAt')
       .lean();
 
     // Create user context for AI
@@ -225,27 +232,134 @@ const chat = async (req, res) => {
       });
     }
 
-    // Add expiry/solution records
+    // Add expiry/solution records with crop-wise analysis
     if (expiryRecords && expiryRecords.length > 0) {
-      userContext += `\n\nHYPOTHETICAL SOLUTIONS & EXPIRY TRACKING (${expiryRecords.length} entries):\n`;
+      userContext += `\n\nHYPOTHETICAL SOLUTIONS & PRODUCT TRACKING (${expiryRecords.length} entries):\n`;
+      
+      // Group by crop for analysis
+      const cropWiseSolutions = {};
+      
       expiryRecords.forEach((record, index) => {
-        userContext += `\n${index + 1}. ${record.productName}\n`;
+        const crop = record.cropName || 'General';
+        if (!cropWiseSolutions[crop]) {
+          cropWiseSolutions[crop] = { total: 0, effective: 0, solutions: [] };
+        }
+        cropWiseSolutions[crop].total++;
+        if (record.effectiveness === 'Good' || record.effectiveness === 'Excellent') {
+          cropWiseSolutions[crop].effective++;
+        }
+        cropWiseSolutions[crop].solutions.push(record);
+      });
+      
+      // Summary by crop
+      userContext += `\nSOLUTION EFFECTIVENESS BY CROP:\n`;
+      Object.keys(cropWiseSolutions).forEach(crop => {
+        const data = cropWiseSolutions[crop];
+        const successRate = data.total > 0 ? ((data.effective / data.total) * 100).toFixed(1) : 0;
+        userContext += `\n${crop}:\n`;
+        userContext += `  - Total Solutions Tried: ${data.total}\n`;
+        userContext += `  - Effective Solutions: ${data.effective}\n`;
+        userContext += `  - Success Rate: ${successRate}%\n`;
+      });
+      
+      userContext += `\n\nDETAILED SOLUTION RECORDS:\n`;
+      expiryRecords.forEach((record, index) => {
+        userContext += `\n${index + 1}. ${record.productName}`;
+        if (record.cropName) userContext += ` (for ${record.cropName})`;
+        userContext += `\n`;
         if (record.category) userContext += `   Category: ${record.category}\n`;
         if (record.expiryDate) userContext += `   Expiry Date: ${new Date(record.expiryDate).toLocaleDateString()}\n`;
+        if (record.season) userContext += `   Season: ${record.season}, Year: ${record.year}\n`;
+        if (record.hypotheticalSolution) userContext += `   Solution Applied: ${record.hypotheticalSolution}\n`;
+        if (record.effectiveness) userContext += `   Effectiveness: ${record.effectiveness}\n`;
         if (record.notes) userContext += `   Notes: ${record.notes}\n`;
-        if (record.season) userContext += `   Season: ${record.season}\n`;
-        if (record.year) userContext += `   Year: ${record.year}\n`;
       });
     }
 
-    // Add problem reports
+    // Add problem reports with crop-wise severity analysis
     if (problemRecords && problemRecords.length > 0) {
-      userContext += `\n\nREPORTED PROBLEMS (${problemRecords.length} problems):\n`;
+      userContext += `\n\nREPORTED PROBLEMS & ISSUES (${problemRecords.length} problems):\n`;
+      
+      // Group by crop and analyze
+      const cropWiseProblems = {};
+      const seasonYearProblems = {};
+      
+      problemRecords.forEach(record => {
+        const crop = record.cropName || 'General';
+        const seasonYear = `${record.season}-${record.year}`;
+        
+        // Crop-wise grouping
+        if (!cropWiseProblems[crop]) {
+          cropWiseProblems[crop] = {
+            total: 0,
+            resolved: 0,
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            problems: []
+          };
+        }
+        cropWiseProblems[crop].total++;
+        if (record.status === 'Resolved' || record.status === 'Closed') {
+          cropWiseProblems[crop].resolved++;
+        }
+        if (record.severity === 'Critical') cropWiseProblems[crop].critical++;
+        if (record.severity === 'High') cropWiseProblems[crop].high++;
+        if (record.severity === 'Medium') cropWiseProblems[crop].medium++;
+        if (record.severity === 'Low') cropWiseProblems[crop].low++;
+        cropWiseProblems[crop].problems.push(record);
+        
+        // Season-Year grouping
+        if (!seasonYearProblems[seasonYear]) {
+          seasonYearProblems[seasonYear] = { total: 0, critical: 0, resolved: 0 };
+        }
+        seasonYearProblems[seasonYear].total++;
+        if (record.severity === 'Critical' || record.severity === 'High') {
+          seasonYearProblems[seasonYear].critical++;
+        }
+        if (record.status === 'Resolved' || record.status === 'Closed') {
+          seasonYearProblems[seasonYear].resolved++;
+        }
+      });
+      
+      // Crop-wise problem summary
+      userContext += `\nPROBLEM ANALYSIS BY CROP:\n`;
+      Object.keys(cropWiseProblems).sort((a, b) => {
+        return cropWiseProblems[b].total - cropWiseProblems[a].total;
+      }).forEach(crop => {
+        const data = cropWiseProblems[crop];
+        const resolveRate = data.total > 0 ? ((data.resolved / data.total) * 100).toFixed(1) : 0;
+        const riskScore = (data.critical * 4 + data.high * 3 + data.medium * 2 + data.low * 1);
+        
+        userContext += `\n${crop}:\n`;
+        userContext += `  - Total Problems: ${data.total}\n`;
+        userContext += `  - Resolved: ${data.resolved} (${resolveRate}%)\n`;
+        userContext += `  - Critical Issues: ${data.critical}\n`;
+        userContext += `  - High Severity: ${data.high}\n`;
+        userContext += `  - Medium Severity: ${data.medium}\n`;
+        userContext += `  - Low Severity: ${data.low}\n`;
+        userContext += `  - Risk Score: ${riskScore} ${riskScore > 10 ? '⚠️ HIGH RISK' : riskScore > 5 ? '⚡ MODERATE' : '✅ LOW RISK'}\n`;
+      });
+      
+      // Season-Year problem trends
+      userContext += `\n\nPROBLEM TRENDS BY SEASON & YEAR:\n`;
+      Object.keys(seasonYearProblems).sort().reverse().forEach(seasonYear => {
+        const data = seasonYearProblems[seasonYear];
+        userContext += `\n${seasonYear}:\n`;
+        userContext += `  - Total Problems: ${data.total}\n`;
+        userContext += `  - Critical/High: ${data.critical}\n`;
+        userContext += `  - Resolved: ${data.resolved}\n`;
+      });
+      
+      userContext += `\n\nDETAILED PROBLEM RECORDS:\n`;
       problemRecords.forEach((record, index) => {
-        userContext += `\n${index + 1}. ${record.title}\n`;
+        userContext += `\n${index + 1}. ${record.title}`;
+        if (record.cropName) userContext += ` [${record.cropName}]`;
+        userContext += `\n`;
         userContext += `   Description: ${record.description}\n`;
-        if (record.season) userContext += `   Season: ${record.season}\n`;
-        if (record.year) userContext += `   Year: ${record.year}\n`;
+        if (record.season) userContext += `   Season: ${record.season}, Year: ${record.year}\n`;
+        if (record.severity) userContext += `   Severity: ${record.severity}\n`;
         if (record.status) userContext += `   Status: ${record.status}\n`;
         if (record.solution) userContext += `   Solution: ${record.solution}\n`;
       });
@@ -275,6 +389,92 @@ const chat = async (req, res) => {
         if (record.totalKamitty) userContext += `   Total Mandi Cost: ₹${record.totalKamitty}\n`;
         userContext += `\n`;
       });
+    }
+
+    // Add Season Reports with profit analysis
+    if (seasonReports && seasonReports.length > 0) {
+      userContext += `\n\nSEASON REPORTS - YIELD & REVENUE DATA (${seasonReports.length} reports):\n`;
+      
+      // Calculate totals and group by year
+      const yearWiseReports = {};
+      let totalRevenue = 0;
+      let totalBags = 0;
+      
+      seasonReports.forEach(report => {
+        const year = report.year;
+        if (!yearWiseReports[year]) {
+          yearWiseReports[year] = { crops: [], totalYield: 0, totalBags: 0, totalRevenue: 0 };
+        }
+        yearWiseReports[year].crops.push(report);
+        yearWiseReports[year].totalYield += report.totalYield || 0;
+        yearWiseReports[year].totalBags += report.numberOfBags || 0;
+        yearWiseReports[year].totalRevenue += report.totalAmount || 0;
+        totalRevenue += report.totalAmount || 0;
+        totalBags += report.numberOfBags || 0;
+      });
+      
+      userContext += `Total Production: ${totalBags} bags\n`;
+      userContext += `Total Revenue (All Time): ₹${totalRevenue}\n\n`;
+      
+      // Year-wise summary
+      userContext += `YEAR-WISE PRODUCTION & REVENUE SUMMARY:\n`;
+      Object.keys(yearWiseReports).sort((a, b) => b - a).forEach(year => {
+        const data = yearWiseReports[year];
+        userContext += `\nYear ${year}:\n`;
+        userContext += `  - Total Yield: ${data.totalYield} kg\n`;
+        userContext += `  - Total Bags: ${data.totalBags} bags\n`;
+        userContext += `  - Total Revenue: ₹${data.totalRevenue}\n`;
+        userContext += `  - Average per Bag: ₹${(data.totalRevenue / data.totalBags).toFixed(2)}\n`;
+        userContext += `  - Crops Grown: ${data.crops.map(c => c.productName).join(', ')}\n`;
+      });
+      
+      userContext += `\n\nDETAILED SEASON REPORTS:\n`;
+      seasonReports.forEach((report, index) => {
+        userContext += `\n${index + 1}. ${report.productName}\n`;
+        userContext += `   Season: ${report.season}, Year: ${report.year}\n`;
+        userContext += `   Total Yield: ${report.totalYield} kg\n`;
+        userContext += `   Number of Bags: ${report.numberOfBags} bags\n`;
+        userContext += `   Kg per Bag: ${(report.totalYield / report.numberOfBags).toFixed(2)} kg\n`;
+        userContext += `   Total Revenue: ₹${report.totalAmount}\n`;
+        userContext += `   Revenue per Bag: ₹${(report.totalAmount / report.numberOfBags).toFixed(2)}\n`;
+        userContext += `   Revenue per Kg: ₹${(report.totalAmount / report.totalYield).toFixed(2)}\n`;
+        userContext += `   Date: ${new Date(report.createdAt).toLocaleDateString()}\n`;
+      });
+      
+      userContext += `\n\n🎯 BEST CROP RECOMMENDATION ANALYSIS:\n`;
+      userContext += `Use the above data to provide intelligent crop recommendations by:\n`;
+      userContext += `1. PROFIT ANALYSIS: Calculate profit = Revenue (totalAmount) - Total Costs (from Creator + Products + Kamitty)\n`;
+      userContext += `2. ROI CALCULATION: Compare investment vs returns for each crop\n`;
+      userContext += `3. YIELD EFFICIENCY: Analyze yield per acre, per bag, and per rupee invested\n`;
+      userContext += `4. BAG ANALYSIS: Compare number of bags produced vs market demand\n`;
+      userContext += `5. PRICE PER BAG: Identify crops with highest revenue per bag\n`;
+      userContext += `6. SEASONAL PATTERNS: Identify which crops perform best in which seasons\n`;
+      userContext += `7. TREND ANALYSIS: Compare year-over-year performance in bags and revenue\n`;
+      userContext += `8. COST-BENEFIT: Match low-cost crops with high revenue per bag\n`;
+      userContext += `9. RISK ASSESSMENT: Identify consistent performers vs volatile crops\n`;
+      userContext += `10. MARKET TIMING: Suggest best planting/harvesting times based on past data\n`;
+      userContext += `11. PROBLEM FREQUENCY: Analyze which crops had fewer problems (from Problem Reports)\n`;
+      userContext += `12. PROBLEM SEVERITY: Consider crops with lower risk scores and fewer critical issues\n`;
+      userContext += `13. SOLUTION SUCCESS: Factor in crops with higher solution effectiveness rates\n`;
+      userContext += `14. RESOLVE RATE: Prefer crops with higher problem resolution rates\n`;
+      userContext += `15. SEASONAL RISK: Identify which seasons had more problems for each crop\n`;
+      userContext += `16. COMPREHENSIVE RISK SCORE: Combine financial risk + problem risk for each crop\n`;
+      userContext += `\nWhen asked "Which crop should I grow?" or "Best crop recommendation":\n`;
+      userContext += `- Rank crops by: (Profitability × 0.4) + (Low Problem Score × 0.3) + (Solution Success × 0.2) + (ROI × 0.1)\n`;
+      userContext += `- Show top 3 crops with detailed breakdown:\n`;
+      userContext += `  * Expected profit and costs\n`;
+      userContext += `  * Yields (kg + bags) and revenue\n`;
+      userContext += `  * Revenue per bag and per kg\n`;
+      userContext += `  * Historical problem count and severity\n`;
+      userContext += `  * Problem resolution rate\n`;
+      userContext += `  * Solution effectiveness rate\n`;
+      userContext += `  * Overall risk assessment (Financial + Operational)\n`;
+      userContext += `  * Season-specific recommendations\n`;
+      userContext += `  * Preventive measures based on past problems\n`;
+      userContext += `- Provide data-driven predictions for next season\n`;
+      userContext += `- Include risk mitigation strategies\n`;
+      userContext += `- Suggest which problems to watch out for\n`;
+      userContext += `- Recommend proven solutions from past experience\n`;
     }
 
     const result = await chatWithAI(message, conversationHistory || [], language || 'english', userContext);

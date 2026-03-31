@@ -22,6 +22,7 @@ import CreatorHistory from "./pages/CreatorDetails/CreatorHistory.js";
 import Tractor from "./pages/CreatorDetails/Tractor.js";
 import AgromedicalProducts from "./pages/CreatorDetails/AgromedicalProducts.js";
 import CultivatingField from "./pages/CreatorDetails/CultivatingField.js";
+import SeasonReport from "./pages/CreatorDetails/SeasonReport.js";
 import Schemes from "./pages/Schemes/Scheme.js";
 import Weather from "./pages/weather/weather.js";
 import Reminder from "./pages/Reminders/reminder.js";
@@ -120,6 +121,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CultivatingField user={user} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/season-report"
+          element={
+            <ProtectedRoute>
+              <SeasonReport user={user} />
             </ProtectedRoute>
           }
         />

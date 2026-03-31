@@ -33,7 +33,6 @@ const FarmerLibrary = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please login first');
         window.location.href = '/login';
         return;
       }
@@ -41,7 +40,6 @@ const FarmerLibrary = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401) {
-        alert('Session expired. Please login again');
         localStorage.clear();
         window.location.href = '/login';
         return;
@@ -131,23 +129,18 @@ const FarmerLibrary = () => {
     e.preventDefault();
     
     if (!formData.symptoms.trim() && !voiceBlobs.symptoms) {
-      alert('Please provide symptoms (text or voice)');
       return;
     }
     if (!formData.description.trim() && !voiceBlobs.description) {
-      alert('Please provide description (text or voice)');
       return;
     }
     if (!formData.solution.trim() && !voiceBlobs.solution) {
-      alert('Please provide solution (text or voice)');
       return;
     }
     if (!formData.category) {
-      alert('Please select a category');
       return;
     }
     if (!formData.severity) {
-      alert('Please select severity');
       return;
     }
 
@@ -185,7 +178,6 @@ const FarmerLibrary = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please login first');
         window.location.href = '/login';
         return;
       }
@@ -206,7 +198,6 @@ const FarmerLibrary = () => {
         })
       });
       if (response.status === 401) {
-        alert('Session expired. Please login again');
         localStorage.clear();
         window.location.href = '/login';
         return;
@@ -218,14 +209,9 @@ const FarmerLibrary = () => {
         setRecordingTime({ symptoms: 0, description: 0, solution: 0 });
         setShowAddForm(false);
         setDuplicateWarning('');
-        alert('Problem added successfully!');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to add problem: ${errorData.message || 'Server error'}`);
       }
     } catch (error) {
       console.error('Error adding problem:', error);
-      alert('Failed to add problem. Please try again.');
     }
   };
 

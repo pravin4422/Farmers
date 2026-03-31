@@ -445,3 +445,78 @@
   border-bottom: 2px solid #ffcc80;
 }
 
+.income-row {
+  background: #e8f5e9 !important;
+}
+
+.income-row .breakdown-value {
+  color: #2e7d32 !important;
+  font-weight: 700;
+}
+
+.income-category {
+  background: #e8f5e9 !important;
+  border-left: 4px solid #2e7d32;
+}
+
+.income-item {
+  background: #f1f8e9 !important;
+}
+
+.income-item .detail-amount {
+  color: #2e7d32 !important;
+  font-weight: 700;
+}
+
+.season-total-breakdown {
+  margin-top: 12px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.net-line {
+  border-top: 2px solid #c8e6c9;
+  margin-top: 8px;
+  padding-top: 12px !important;
+  font-size: 16px;
+}
+
+.expense-value {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.income-value {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.profit-value {
+  color: #2e7d32 !important;
+  font-weight: 700;
+}
+
+.loss-value {
+  color: #d32f2f !important;
+  font-weight: 700;
+}
+
+.subtotal-row {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 8px;
+  padding-top: 12px !important;
+}
+
+.breakdown-value.profit {
+  color: #2e7d32 !important;
+}
+
+.breakdown-value.loss {
+  color: #d32f2f !important;
+}
+

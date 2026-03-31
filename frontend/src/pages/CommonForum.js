@@ -49,7 +49,6 @@ function CommonForum() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please login to post a question');
         return;
       }
       const userName = localStorage.getItem('displayName') || localStorage.getItem('userEmail');
@@ -61,7 +60,6 @@ function CommonForum() {
       if (response.ok) {
         fetchDiscussions();
         setDiscussionData({ question: '' });
-        alert('Question posted successfully!');
       }
     } catch (error) {
       console.error('Error adding discussion:', error);
@@ -82,23 +80,11 @@ function CommonForum() {
         const result = await response.json();
         fetchDiscussions();
         setSolutionData({ ...solutionData, [discussionId]: '' });
-        
-        if (result.aiValidation) {
-          alert(`✅ Solution submitted!\n\n🤖 AI Score: ${result.aiValidation.score}/100\nFeedback: ${result.aiValidation.reason}`);
-        } else {
-          alert('Solution submitted!');
-        }
       } else {
         const error = await response.json();
-        if (error.aiScore !== undefined) {
-          alert(`❌ Solution rejected by AI\n\nScore: ${error.aiScore}/100\nReason: ${error.aiReason}\n\nPlease improve your solution.`);
-        } else {
-          alert('Error: ' + error.message);
-        }
       }
     } catch (error) {
       console.error('Error adding solution:', error);
-      alert('Error: ' + error.message);
     }
   };
 
@@ -207,25 +193,20 @@ function CommonForum() {
     e.preventDefault();
     
     if (!isAdmin) {
-      alert('Only validated users can post solutions.');
       return;
     }
     
     
     if (!adminPostData.problem && !audioBlob['admin-problem']) {
-      alert('Please provide problem (text or audio)');
       return;
     }
     if (!adminPostData.solution && !audioBlob['admin-solution']) {
-      alert('Please provide solution (text or audio)');
       return;
     }
     if (!adminPostData.pros && !audioBlob['admin-pros']) {
-      alert('Please provide pros (text or audio)');
       return;
     }
     if (!adminPostData.cons && !audioBlob['admin-cons']) {
-      alert('Please provide cons (text or audio)');
       return;
     }
 
@@ -233,7 +214,6 @@ function CommonForum() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please login as admin');
         return;
       }
 
@@ -291,26 +271,12 @@ function CommonForum() {
         setAdminPostData({ problem: '', solution: '', pros: '', cons: '' });
         setAudioBlob({});
         setEditingId(null);
-        
-        if (result.aiValidation) {
-          alert(`✅ Solution posted successfully!\n\n🤖 AI Validation:\nScore: ${result.aiValidation.score}/100\nReason: ${result.aiValidation.reason}`);
-        } else {
-          alert(editingId ? 'Solution updated!' : 'Solution posted successfully!');
-        }
       } else {
         const error = await response.json();
         console.error('Server error:', error);
-        if (error.aiScore !== undefined) {
-          alert(`❌ AI Validation Failed\n\nScore: ${error.aiScore}/100\nReason: ${error.aiReason}\n\nPlease improve your solution.`);
-        } else if (error.message === 'Admin access required') {
-          alert('Admin access required. Please login as admin@gmail.com');
-        } else {
-          alert('Error: ' + (error.message || 'Failed to post'));
-        }
       }
     } catch (error) {
       console.error('Error posting solution:', error);
-      alert('Error: ' + error.message);
     }
   };
 

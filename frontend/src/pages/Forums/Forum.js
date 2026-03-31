@@ -83,7 +83,6 @@ function Forum() {
     let userId = localStorage.getItem('userId');
     
     if (!token) {
-      alert('Please login to create a post');
       window.location.href = '/login';
       return;
     }
@@ -133,7 +132,6 @@ function Forum() {
           // Handle token expiration
           if (errorData.message === 'Token expired' || response.status === 401) {
             localStorage.clear();
-            alert('Your session has expired. Please login again.');
             window.location.href = '/login';
             return;
           }
@@ -155,7 +153,6 @@ function Forum() {
     } catch (err) {
       setError(err.message);
       console.error('Error creating post:', err);
-      alert(`Failed to create post: ${err.message}`);
     }
   };
 
@@ -252,7 +249,6 @@ function Forum() {
   const likePost = async (id) => {
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) {
-      alert('Please login to like posts');
       return;
     }
 

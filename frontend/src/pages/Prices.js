@@ -259,14 +259,9 @@ function Prices() {
         },
       });
       if (response.ok) {
-        alert('Government prices synced successfully! Data will be available for graph analysis.');
         await handleRefresh();
-      } else {
-        alert('❌ Failed to sync prices');
       }
     } catch (error) {
-      console.error('Error syncing prices:', error);
-      alert('❌ Error syncing prices');
     } finally {
       setLoading(false);
     }

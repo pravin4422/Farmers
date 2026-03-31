@@ -85,7 +85,6 @@ function Tractor() {
       };
       
       recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
         if (event.error !== 'aborted') {
           setIsRecording(false);
           setListeningField(null);
@@ -132,7 +131,7 @@ function Tractor() {
         setLastKamittyEntry(kamittyData);
       }
     } catch (error) {
-      console.error('Error fetching last entries:', error);
+      // Error handled silently
     }
   };
 
@@ -172,7 +171,7 @@ function Tractor() {
         }
       }
     } catch (error) {
-      console.error(`Error fetching ${type} history entries:`, error);
+      // Error handled silently
     } finally {
       setLoading(false);
     }
@@ -186,8 +185,6 @@ function Tractor() {
         ? `${API_BASE_URL}/tractor/${editingId}` 
         : `${API_BASE_URL}/tractor`;
       
-      console.log('Sending tractor data:', entryData);
-      
       const response = await fetch(url, {
         method: method,
         headers: {
@@ -200,17 +197,12 @@ function Tractor() {
       if (response.ok) {
         const savedEntry = await response.json();
         setLastTractorEntry(savedEntry);
-        alert(t('Saved successfully!', 'வெற்றிகரமாக சேமிக்கப்பட்டது!'));
         return true;
       } else {
         const errorData = await response.json();
-        console.error('Backend error:', errorData);
-        alert(t('Error: ', 'பிழை: ') + (errorData.message || errorData.error || 'Failed to save'));
         return false;
       }
     } catch (error) {
-      console.error('Error saving tractor entry:', error);
-      alert(t('Error saving entry. Please try again.', 'பதிவை சேமிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
       return false;
     }
   };
@@ -240,8 +232,6 @@ function Tractor() {
         throw new Error('Failed to save kamitty entry');
       }
     } catch (error) {
-      console.error('Error saving kamitty entry:', error);
-      alert(t('Error saving entry. Please try again.', 'பதிவை சேமிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
       return false;
     }
   };
@@ -260,8 +250,6 @@ function Tractor() {
         throw new Error(`Failed to delete ${type} entry`);
       }
     } catch (error) {
-      console.error(`Error deleting ${type} entry:`, error);
-      alert(t('Error deleting entry. Please try again.', 'பதிவை அழிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
       return false;
     }
   };
@@ -276,7 +264,7 @@ function Tractor() {
       try {
         recognitionRef.current.stop();
       } catch (e) {
-        console.error('Error stopping recognition:', e);
+        // Error handled silently
       }
       setIsRecording(false);
     } else {
@@ -284,7 +272,7 @@ function Tractor() {
         try {
           recognitionRef.current.stop();
         } catch (e) {
-          console.error('Error stopping previous recognition:', e);
+          // Error handled silently
         }
       }
       
@@ -295,7 +283,6 @@ function Tractor() {
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.error('Error starting recognition:', e);
         setIsRecording(false);
         setListeningField(null);
       }
@@ -582,8 +569,7 @@ function Tractor() {
         throw new Error('Failed to update');
       }
     } catch (error) {
-      console.error('Error toggling payment:', error);
-      alert(t('Error updating payment status. Please try again.', 'பணம் நிலையை புதுப்பிப்பதில் பிழை. மீண்டும் முயற்சிக்கவும்.'));
+      // Error handled silently
     } finally {
       setLoading(false);
     }

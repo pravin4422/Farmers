@@ -11,10 +11,13 @@
   display: flex;
   gap: 20px;
   align-items: flex-end;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .season-year-fields label {
-  flex: 1;
+  flex: 0 0 200px;
   font-weight: 700;
   color: #2e7d32;
 }
@@ -41,14 +44,19 @@
 
 .season-display {
   margin-top: 15px;
-  padding: 12px;
-  background: #e8f5e9;
-  border-radius: 8px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border-radius: 10px;
   text-align: center;
-  color: #2e7d32;
-  font-size: 16px;
-  font-weight: 600;
-  border: 2px solid #c8e6c9;
+  color: #1b5e20;
+  font-size: 18px;
+  font-weight: 700;
+  border: 2px solid #2e7d32;
+  box-shadow: 0 3px 8px rgba(46, 125, 50, 0.15);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {

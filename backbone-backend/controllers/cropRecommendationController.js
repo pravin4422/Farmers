@@ -1,6 +1,8 @@
 const Creator = require('../models/Creator');
 const Price = require('../models/Price');
 const UserProfile = require('../models/UserProfile');
+const Problem = require('../models/Problem');
+const CultivationActivity = require('../models/CultivationActivity');
 const axios = require('axios');
 
 const YIELD_ML_SERVICE_URL = 'http://127.0.0.1:5002';
@@ -8,20 +10,35 @@ const YIELD_ML_SERVICE_URL = 'http://127.0.0.1:5002';
 exports.recommendBestCrop = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
-    const { targetYear, targetSeason } = req.body;
+    const { targetYear, targetSeason, targetProduct } = req.body;
 
     console.log('Crop recommendation request from user:', userId);
+    console.log('Target Season:', targetSeason, 'Target Product:', targetProduct);
 
     // Get user profile for location context
     const userProfile = await UserProfile.findOne({ userId }).select('address mainCrop landSize');
     
     // Get historical farming records (last 3 years)
-    const creatorRecords = await Creator.find({ user: userId })
+    let creatorRecords = await Creator.find({ user: userId })
       .sort({ year: -1 })
       .limit(50)
       .lean();
 
-    console.log('Found creator records:', creatorRecords.length);
+    // Filter by season if specified and not "All"
+    if (targetSeason && targetSeason !== 'All') {
+      creatorRecords = creatorRecords.filter(record => 
+        record.season && record.season.toLowerCase().includes(targetSeason.toLowerCase())
+      );
+    }
+
+    // Filter by product if specified
+    if (targetProduct) {
+      creatorRecords = creatorRecords.filter(record => 
+        record.season && record.season.toLowerCase().includes(targetProduct.toLowerCase())
+      );
+    }
+
+    console.log('Found creator records after filtering:', creatorRecords.length);
 
     // Get recent price data
     const priceData = await Price.find({ userId })
@@ -31,10 +48,22 @@ exports.recommendBestCrop = async (req, res) => {
 
     console.log('Found price records:', priceData.length);
 
+    // Get problem/review data
+    const problemData = await Problem.find({ userId })
+      .lean();
+
+    console.log('Found problem records:', problemData.length);
+
+    // Get cultivation activities for yield data
+    const cultivationData = await CultivationActivity.find({ user: userId })
+      .lean();
+
+    console.log('Found cultivation records:', cultivationData.length);
+
     if (!creatorRecords || creatorRecords.length === 0) {
       return res.status(400).json({ 
         success: false,
-        error: 'No historical farming data found. Please add your farming records in Creator Details first.' 
+        error: 'No historical farming data found for the selected criteria. Please add your farming records in Creator Details first.' 
       });
     }
 
@@ -62,7 +91,8 @@ exports.recommendBestCrop = async (req, res) => {
           avgLaborCost: 0,
           avgTotalCost: 0,
           years: new Set(),
-          seasons: []
+          seasons: [],
+          recordIds: []
         };
       }
       
@@ -75,6 +105,7 @@ exports.recommendBestCrop = async (req, res) => {
       cropAnalysis[crop].totalCost += (seedCost + laborCost);
       cropAnalysis[crop].years.add(record.year);
       cropAnalysis[crop].seasons.push(record.season);
+      cropAnalysis[crop].recordIds.push(record._id);
     });
 
     // Calculate averages
@@ -113,40 +144,116 @@ exports.recommendBestCrop = async (req, res) => {
       data.avgPrice = (data.avgMinPrice + data.avgMaxPrice) / 2;
     });
 
-    // Calculate profitability scores
+    // Analyze problems by crop/season
+    const problemAnalysis = {};
+    problemData.forEach(problem => {
+      const crop = problem.season || 'Unknown';
+      if (!problemAnalysis[crop]) {
+        problemAnalysis[crop] = {
+          count: 0,
+          problems: []
+        };
+      }
+      problemAnalysis[crop].count++;
+      problemAnalysis[crop].problems.push({
+        title: problem.title,
+        description: problem.description,
+        year: problem.year
+      });
+    });
+
+    // Analyze yield data from cultivation activities
+    const yieldAnalysis = {};
+    cultivationData.forEach(activity => {
+      const crop = activity.season;
+      if (!yieldAnalysis[crop]) {
+        yieldAnalysis[crop] = {
+          totalActivities: 0,
+          totalCost: 0,
+          activities: []
+        };
+      }
+      yieldAnalysis[crop].totalActivities++;
+      yieldAnalysis[crop].totalCost += activity.total || 0;
+      yieldAnalysis[crop].activities.push(activity);
+    });
+
+    // Calculate profitability scores with enhanced metrics
     const recommendations = [];
     
     Object.keys(cropAnalysis).forEach(crop => {
       const costData = cropAnalysis[crop];
       const priceInfo = priceAnalysis[crop] || priceAnalysis[crop.toLowerCase()] || {};
+      const problemInfo = problemAnalysis[crop] || { count: 0, problems: [] };
+      const yieldInfo = yieldAnalysis[crop] || { totalActivities: 0, totalCost: 0 };
       
-      // Calculate score based on:
-      // 1. Low cost (40%)
-      // 2. High price (40%)
-      // 3. Frequency of cultivation (20%)
+      // Enhanced scoring system:
+      // 1. Profit margin (40%)
+      // 2. Yield efficiency (30%)
+      // 3. Problem-free rate (20%)
+      // 4. Experience/Frequency (10%)
       
-      const maxCost = Math.max(...Object.values(cropAnalysis).map(c => c.avgTotalCost));
-      const costScore = maxCost > 0 ? (1 - (costData.avgTotalCost / maxCost)) * 40 : 20;
+      const totalExpenditure = costData.avgTotalCost + (yieldInfo.totalCost / Math.max(yieldInfo.totalActivities, 1));
+      const sellingPrice = priceInfo.avgPrice || 0;
+      const profit = sellingPrice - totalExpenditure;
+      const profitMargin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
       
-      const maxPrice = Math.max(...Object.values(priceAnalysis).map(p => p.avgPrice || 0));
-      const priceScore = maxPrice > 0 && priceInfo.avgPrice ? (priceInfo.avgPrice / maxPrice) * 40 : 20;
+      // Profit score (40%)
+      const maxProfit = Math.max(...Object.keys(cropAnalysis).map(c => {
+        const p = priceAnalysis[c] || {};
+        const cost = cropAnalysis[c].avgTotalCost;
+        return (p.avgPrice || 0) - cost;
+      }));
+      const profitScore = maxProfit > 0 ? (profit / maxProfit) * 40 : 20;
       
-      const frequencyScore = (costData.totalRecords / creatorRecords.length) * 20;
+      // Yield efficiency score (30%) - based on cultivation activities
+      const maxYieldActivities = Math.max(...Object.values(yieldAnalysis).map(y => y.totalActivities || 0));
+      const yieldScore = maxYieldActivities > 0 ? (yieldInfo.totalActivities / maxYieldActivities) * 30 : 15;
       
-      const totalScore = costScore + priceScore + frequencyScore;
+      // Problem-free score (20%) - fewer problems = higher score
+      const maxProblems = Math.max(...Object.values(problemAnalysis).map(p => p.count || 0), 1);
+      const problemScore = 20 - ((problemInfo.count / maxProblems) * 20);
+      
+      // Experience score (10%)
+      const frequencyScore = (costData.totalRecords / creatorRecords.length) * 10;
+      
+      const totalScore = profitScore + yieldScore + problemScore + frequencyScore;
+      
+      // Calculate success rate (records without problems)
+      const successfulAttempts = costData.totalRecords - problemInfo.count;
+      const successRate = (successfulAttempts / costData.totalRecords) * 100;
+      
+      // Determine yield efficiency rating
+      let yieldEfficiency = 'Low';
+      if (yieldInfo.totalActivities >= maxYieldActivities * 0.7) yieldEfficiency = 'Excellent';
+      else if (yieldInfo.totalActivities >= maxYieldActivities * 0.4) yieldEfficiency = 'Good';
+      else if (yieldInfo.totalActivities >= maxYieldActivities * 0.2) yieldEfficiency = 'Moderate';
+      
+      // Extract problem types
+      const problemTypes = problemInfo.problems.map(p => p.title || 'Unknown issue').slice(0, 3);
       
       recommendations.push({
         crop,
         score: totalScore,
-        avgCost: Math.round(costData.avgTotalCost),
+        avgCost: Math.round(totalExpenditure),
         avgSeedCost: Math.round(costData.avgSeedCost),
         avgLaborCost: Math.round(costData.avgLaborCost),
-        avgPrice: priceInfo.avgPrice ? Math.round(priceInfo.avgPrice) : null,
-        estimatedProfit: priceInfo.avgPrice ? Math.round(priceInfo.avgPrice - costData.avgTotalCost) : null,
+        avgPrice: sellingPrice ? Math.round(sellingPrice) : null,
+        estimatedProfit: sellingPrice ? Math.round(profit) : null,
+        profitMargin: profitMargin,
         timesGrown: costData.totalRecords,
         yearsGrown: costData.yearsGrown,
-        costTrend: costData.avgTotalCost < 50000 ? 'Low' : costData.avgTotalCost < 100000 ? 'Medium' : 'High',
-        recommendation: totalScore > 70 ? 'Highly Recommended' : totalScore > 50 ? 'Recommended' : 'Consider Alternatives'
+        problemCount: problemInfo.count,
+        problemTypes: problemTypes,
+        successfulAttempts: successfulAttempts,
+        successRate: successRate,
+        avgYield: yieldInfo.totalActivities > 0 ? Math.round(yieldInfo.totalCost / yieldInfo.totalActivities) : null,
+        totalProduction: yieldInfo.totalCost ? Math.round(yieldInfo.totalCost) : null,
+        yieldEfficiency: yieldEfficiency,
+        costTrend: totalExpenditure < 50000 ? 'Low' : totalExpenditure < 100000 ? 'Medium' : 'High',
+        recommendation: totalScore > 70 ? 'Highly Recommended - Best overall performance' : 
+                       totalScore > 50 ? 'Recommended - Good balance of factors' : 
+                       'Consider Alternatives - Lower performance metrics'
       });
     });
 
@@ -172,7 +279,9 @@ exports.recommendBestCrop = async (req, res) => {
         mostFrequentCrop: recommendations[0]?.crop,
         lowestCostCrop: recCopy.sort((a, b) => a.avgCost - b.avgCost)[0]?.crop,
         highestPriceCrop: recCopy.sort((a, b) => (b.avgPrice || 0) - (a.avgPrice || 0))[0]?.crop,
-        bestProfitCrop: recCopy.sort((a, b) => (b.estimatedProfit || 0) - (a.estimatedProfit || 0))[0]?.crop
+        bestProfitCrop: recCopy.sort((a, b) => (b.estimatedProfit || 0) - (a.estimatedProfit || 0))[0]?.crop,
+        leastProblemsCrop: recCopy.sort((a, b) => a.problemCount - b.problemCount)[0]?.crop,
+        bestYieldCrop: recCopy.sort((a, b) => (b.avgYield || 0) - (a.avgYield || 0))[0]?.crop
       }
     });
 

@@ -81,7 +81,6 @@ function CreatorDetail() {
     try {
       const token = getAuthToken();
       if (!token) {
-        console.error('No authentication token found');
         navigate('/login', { replace: true });
         return;
       }
@@ -97,7 +96,6 @@ function CreatorDetail() {
       });
       
       if (response.status === 401) {
-        console.error('Authentication failed - redirecting to login');
         localStorage.removeItem('token');
         navigate('/login', { replace: true });
         return;
@@ -110,7 +108,7 @@ function CreatorDetail() {
         setLastEntry(null);
       }
     } catch (error) {
-      console.error('Error fetching last entry:', error);
+      // Error handled silently
     }
   };
 
@@ -142,7 +140,7 @@ function CreatorDetail() {
         setHistoryEntries(data);
       }
     } catch (error) {
-      console.error('Error fetching history entries:', error);
+      // Error handled silently
     } finally {
       setLoading(false);
     }
@@ -173,11 +171,9 @@ function CreatorDetail() {
         return true;
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Error response:', errorData);
         throw new Error(errorData.message || 'Failed to save entry');
       }
     } catch (error) {
-      console.error('Error saving entry:', error);
       return false;
     }
   };
@@ -200,7 +196,6 @@ function CreatorDetail() {
         throw new Error('Failed to delete entry');
       }
     } catch (error) {
-      console.error('Error deleting entry:', error);
       return false;
     }
   };
@@ -239,14 +234,10 @@ function CreatorDetail() {
       updatedAt: new Date().toISOString()
     };
 
-    console.log('Saving entry:', entryData);
     const success = await saveEntryToDatabase(entryData, existingEntryId);
     
     if (success) {
-      alert(t('Saved successfully!', 'வெற்றிகரமாக சேமிக்கப்பட்டது!'));
       await fetchLastEntry();
-    } else {
-      alert(t('Failed to save. Please try again.', 'சேமிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.'));
     }
     
     setLoading(false);
@@ -407,9 +398,6 @@ function CreatorDetail() {
           <button className="toggle-btn" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}>
              {t('தமிழ்', 'English')}
           </button>
-          <button className="print-btn" onClick={() => window.print()}>
-             {t('Print', 'அச்சிடுக')}
-          </button>
           <button className="tracker-btn" onClick={() => navigate('/tractor')}>
              {t('Tracker', 'டிராக்டர்')}
           </button>
@@ -418,6 +406,9 @@ function CreatorDetail() {
           </button>
           <button className="cultivating-btn" onClick={() => navigate('/cultivatingfield')}>
              {t('Cultivating Field', 'வயல் உழுது')}
+          </button>
+          <button className="season-report-btn" onClick={() => navigate('/season-report')}>
+             {t('Season Report', 'பருவ அறிக்கை')}
           </button>
           <button className="review-btn" onClick={() => navigate('/review')}>
              {t('Review', 'மதிப்பாய்வு')}
