@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../css/Mainpages/CreatorHistory.css';
 import '../../css/Mainpages/SeasonTotals.css';
+import '../../css/Mainpages/graph-modal.css';
 
 function CreatorHistory() {
   const [language, setLanguage] = useState('en');
@@ -19,6 +20,10 @@ function CreatorHistory() {
   const [seasonReportEntries, setSeasonReportEntries] = useState([]);
   const [showSeasonTotals, setShowSeasonTotals] = useState(false);
   const [selectedSeasonDetail, setSelectedSeasonDetail] = useState(null);
+  const [showGraphModal, setShowGraphModal] = useState(false);
+  const [selectedSeasonForGraph, setSelectedSeasonForGraph] = useState(null);
+  const [graphFilterSeason, setGraphFilterSeason] = useState('');
+  const [graphFilterProduct, setGraphFilterProduct] = useState('');
 
   const navigate = useNavigate();
   const API_BASE_URL = 'http://localhost:5000/api';
@@ -44,6 +49,14 @@ function CreatorHistory() {
     }
   }, []);
 
+  useEffect(() => {
+    // Re-fetch when filters change (but not on initial mount)
+    const token = getAuthToken();
+    if (token && (filterSeason || filterYear || filterDay)) {
+      fetchHistoryEntries();
+    }
+  }, [filterSeason, filterYear, filterDay]);
+
   const fetchHistoryEntries = async () => {
     setLoading(true);
     try {
@@ -53,6 +66,8 @@ function CreatorHistory() {
       if (filterDay) params.push(`day=${encodeURIComponent(filterDay)}`);
       
       const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+      
+      console.log('Fetching history with query:', queryString);
       
       // Fetch all module data
       const [creatorRes, tractorRes, productRes, cultivationRes, kamittyRes, expiriesRes, problemsRes, seasonReportRes] = await Promise.all([
@@ -66,7 +81,18 @@ function CreatorHistory() {
         fetch(`${API_BASE_URL}/season-reports${queryString}`, { headers: getAuthHeaders() })
       ]);
       
-      if (creatorRes.ok) setHistoryEntries(await creatorRes.json());
+      console.log('Creator response status:', creatorRes.status);
+      console.log('Tractor response status:', tractorRes.status);
+      console.log('Product response status:', productRes.status);
+      
+      if (creatorRes.ok) {
+        const data = await creatorRes.json();
+        console.log('Creator data received:', data.length, 'entries');
+        setHistoryEntries(data);
+      } else {
+        console.error('Creator fetch failed:', creatorRes.status);
+      }
+      
       if (tractorRes.ok) setTractorEntries(await tractorRes.json());
       if (productRes.ok) setProductEntries(await productRes.json());
       if (cultivationRes.ok) setCultivationEntries(await cultivationRes.json());
@@ -469,6 +495,128 @@ function CreatorHistory() {
     setSelectedSeasonDetail(null);
   };
 
+  const handleGraphClick = (season) => {
+    setSelectedSeasonForGraph(season);
+    setGraphFilterSeason(season);
+    setGraphFilterProduct('');
+    setShowGraphModal(true);
+  };
+
+  const closeGraphModal = () => {
+    setShowGraphModal(false);
+    setSelectedSeasonForGraph(null);
+    setGraphFilterSeason('');
+    setGraphFilterProduct('');
+  };
+
+  const viewDetailedRecords = (specificSeason = null, specificYear = null) => {
+    // Apply filters from graph to main filter
+    const seasonToApply = specificSeason || graphFilterSeason;
+    const yearToApply = specificYear;
+    
+    if (seasonToApply) {
+      setFilterSeason(seasonToApply);
+    }
+    if (yearToApply) {
+      setFilterYear(yearToApply.toString());
+    }
+    
+    // Close the graph modal
+    setShowGraphModal(false);
+    setSelectedSeasonForGraph(null);
+    setGraphFilterSeason('');
+    setGraphFilterProduct('');
+  };
+
+  const getSeasonHistoricalData = (season, product) => {
+    const uniqueYears = getUniqueSeasons()
+      .filter(s => !season || s.season === season)
+      .map(s => ({ season: s.season, year: s.year }))
+      .sort((a, b) => a.year - b.year);
+
+    const yearMap = new Map();
+
+    uniqueYears.forEach(({ season: s, year }) => {
+      const key = `${s}-${year}`;
+      if (!yearMap.has(key)) {
+        let totalExpenses = 0;
+        let totalIncome = 0;
+
+        // Calculate expenses
+        historyEntries
+          .filter(e => e.season === s && e.year === year)
+          .forEach(e => {
+            totalExpenses += e.seedCost || 0;
+            totalExpenses += e.totalSeedingCost || 0;
+            if (e.workers) {
+              e.workers.forEach(w => totalExpenses += parseInt(w.cost || 0));
+            }
+          });
+
+        tractorEntries
+          .filter(e => e.season === s && e.year === year)
+          .forEach(e => totalExpenses += e.total || 0);
+
+        productEntries
+          .filter(e => e.season === s && e.year === year)
+          .forEach(e => totalExpenses += e.total || 0);
+
+        cultivationEntries
+          .filter(e => e.season === s && e.year === year)
+          .forEach(e => totalExpenses += e.total || 0);
+
+        kamittyEntries
+          .filter(e => e.season === s && e.year === year)
+          .forEach(e => totalExpenses += parseFloat(e.totalKamitty || 0));
+
+        // Calculate income - filter by product if specified
+        const incomeEntries = seasonReportEntries
+          .filter(e => e.season === s && e.year === year)
+          .filter(e => !product || e.productName === product);
+
+        incomeEntries.forEach(e => totalIncome += parseFloat(e.totalAmount || 0));
+
+        yearMap.set(key, {
+          season: s,
+          year,
+          expenses: totalExpenses,
+          income: totalIncome,
+          profit: totalIncome - totalExpenses
+        });
+      }
+    });
+
+    return Array.from(yearMap.values());
+  };
+
+  const getAllProducts = () => {
+    const products = new Set();
+    seasonReportEntries.forEach(e => {
+      if (e.productName) {
+        products.add(e.productName);
+      }
+    });
+    return Array.from(products).sort();
+  };
+
+  const getAllSeasons = () => {
+    const seasons = new Set();
+    [...historyEntries, ...tractorEntries, ...productEntries, ...cultivationEntries, ...kamittyEntries, ...seasonReportEntries]
+      .forEach(e => {
+        if (e.season) {
+          seasons.add(e.season);
+        }
+      });
+    return Array.from(seasons).sort();
+  };
+
+  const openGraphModalFromMenu = () => {
+    setSelectedSeasonForGraph('menu');
+    setGraphFilterSeason('');
+    setGraphFilterProduct('');
+    setShowGraphModal(true);
+  };
+
   const getUniqueSeasons = () => {
     const seasons = new Set();
     [...historyEntries, ...tractorEntries, ...productEntries, ...cultivationEntries, ...kamittyEntries, ...seasonReportEntries]
@@ -530,10 +678,9 @@ function CreatorHistory() {
             onChange={(e) => setFilterSeason(e.target.value)}
           >
             <option value="">{t('All Seasons', 'அனைத்து பருவங்கள்')}</option>
-            <option value="Summer">Summer</option>
-            <option value="Winter">Winter</option>
-            <option value="Spring">Spring</option>
-            <option value="Rain">Rain</option>
+            {getAllSeasons().map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
           </select>
           
           <input 
@@ -562,6 +709,10 @@ function CreatorHistory() {
           <button onClick={fetchHistoryEntries} disabled={loading}>
              {t('Search', 'தேடல்')}
           </button>
+          
+          <button onClick={openGraphModalFromMenu} className="graph-analysis-btn">
+            📊 {t('Graph Analysis', 'வரைபட பகுப்பாய்வு')}
+          </button>
         </div>
       </div>
 
@@ -589,6 +740,16 @@ function CreatorHistory() {
                   >
                     <div className="season-total-header">
                       <span>{season} {year}</span>
+                      <button 
+                        className="graph-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGraphClick(season);
+                        }}
+                        title={t('View Graph Analysis', 'வரைபட பகுப்பாய்வு காண்க')}
+                      >
+                        📊
+                      </button>
                     </div>
                     <div className="season-total-breakdown">
                       <div className="total-line">
@@ -798,6 +959,175 @@ function CreatorHistory() {
                   );
                 })()}
               </div>
+          </div>
+        </div>
+      )}
+
+      {showGraphModal && selectedSeasonForGraph && (
+        <div className="modal-overlay" onClick={closeGraphModal}>
+          <div className="graph-content" onClick={(e) => e.stopPropagation()}>
+            <div className="graph-filters">
+                <div className="filter-header">
+                  <h2>{t('Season Analysis', 'பருவ பகுப்பாய்வு')}</h2>
+                  <button className="close-btn" onClick={closeGraphModal}>✕</button>
+                </div>
+                <h3>{t('Filter Analysis', 'பகுப்பாய்வு வடிகட்டி')}</h3>
+                <div className="filter-row">
+                  <div className="filter-group">
+                    <label>{t('Season:', 'பருவம்:')}</label>
+                    <select 
+                      value={graphFilterSeason} 
+                      onChange={(e) => setGraphFilterSeason(e.target.value)}
+                    >
+                      <option value="">{t('All Seasons', 'அனைத்து பருவங்கள்')}</option>
+                      {getAllSeasons().map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label>{t('Agricultural Product:', 'விவசாய பொருள்:')}</label>
+                    <select 
+                      value={graphFilterProduct} 
+                      onChange={(e) => setGraphFilterProduct(e.target.value)}
+                    >
+                      <option value="">{t('All Products', 'அனைத்து பொருட்கள்')}</option>
+                      {getAllProducts().map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="filter-info">
+                  {graphFilterSeason && graphFilterProduct && (
+                    <p>{t('Showing:', 'காட்டுகிறது:')} <strong>{graphFilterSeason}</strong> {t('season with', 'பருவம்')} <strong>{graphFilterProduct}</strong></p>
+                  )}
+                  {graphFilterSeason && !graphFilterProduct && (
+                    <p>{t('Showing:', 'காட்டுகிறது:')} <strong>{graphFilterSeason}</strong> {t('season - all products', 'பருவம் - அனைத்து பொருட்கள்')}</p>
+                  )}
+                  {!graphFilterSeason && graphFilterProduct && (
+                    <p>{t('Showing:', 'காட்டுகிறது:')} <strong>{graphFilterProduct}</strong> {t('across all seasons', 'அனைத்து பருவங்களிலும்')}</p>
+                  )}
+                  {!graphFilterSeason && !graphFilterProduct && (
+                    <p>{t('Showing: All seasons and all products', 'காட்டுகிறது: அனைத்து பருவங்கள் மற்றும் அனைத்து பொருட்கள்')}</p>
+                  )}
+                </div>
+              </div>
+
+              {(() => {
+                const data = getSeasonHistoricalData(graphFilterSeason, graphFilterProduct);
+                
+                if (data.length === 0) {
+                  return <p className="no-data">{t('No data available for selected filters', 'தேர்ந்தெடுக்கப்பட்ட வடிகட்டிகளுக்கு தரவு இல்லை')}</p>;
+                }
+
+                const maxValue = Math.max(
+                  ...data.map(d => Math.max(d.expenses, d.income, Math.abs(d.profit)))
+                );
+
+                const bestYear = data.reduce((best, curr) => curr.profit > best.profit ? curr : best);
+                const highestProfit = Math.max(...data.map(d => d.profit));
+
+                return (
+                  <>
+                    <div className="graph-stats">
+                      <div className="stat-card">
+                        <h4>{t('Years Tracked', 'கண்காணிக்கப்பட்ட ஆண்டுகள்')}</h4>
+                        <p className="stat-value">{data.length}</p>
+                      </div>
+                      <div className="stat-card">
+                        <h4>{t('Best Year', 'சிறந்த ஆண்டு')}</h4>
+                        <p className="stat-value">{bestYear.season} {bestYear.year}</p>
+                      </div>
+                      <div className="stat-card">
+                        <h4>{t('Highest Profit', 'அதிக லாபம்')}</h4>
+                        <p className="stat-value profit">₹{highestProfit.toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <div className="graph-section">
+                      <h3>{t('Financial Trends', 'நிதி போக்குகள்')}</h3>
+                      <div className="bar-chart">
+                        {data.map((item, idx) => (
+                          <div key={idx} className="bar-group">
+                            <div className="bar-label">{item.season} {item.year}</div>
+                            <div className="bars-container">
+                              <div className="bar-wrapper">
+                                <div 
+                                  className="bar expenses-bar"
+                                  style={{ height: `${(item.expenses / maxValue) * 200}px` }}
+                                  title={`${t('Expenses', 'செலவுகள்')}: ₹${item.expenses.toLocaleString()}`}
+                                >
+                                  <span className="bar-value">₹{(item.expenses / 1000).toFixed(1)}k</span>
+                                </div>
+                              </div>
+                              <div className="bar-wrapper">
+                                <div 
+                                  className="bar income-bar"
+                                  style={{ height: `${(item.income / maxValue) * 200}px` }}
+                                  title={`${t('Income', 'வருமானம்')}: ₹${item.income.toLocaleString()}`}
+                                >
+                                  <span className="bar-value">₹{(item.income / 1000).toFixed(1)}k</span>
+                                </div>
+                              </div>
+                              <div className="bar-wrapper">
+                                <div 
+                                  className={`bar profit-bar ${item.profit < 0 ? 'loss' : ''}`}
+                                  style={{ height: `${(Math.abs(item.profit) / maxValue) * 200}px` }}
+                                  title={`${t('Profit/Loss', 'லாபம்/நஷ்டம்')}: ₹${item.profit.toLocaleString()}`}
+                                >
+                                  <span className="bar-value">₹{(item.profit / 1000).toFixed(1)}k</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bar-legend">
+                              <span className="legend-item expenses">{t('Exp', 'செலவு')}</span>
+                              <span className="legend-item income">{t('Inc', 'வருமானம்')}</span>
+                              <span className="legend-item profit">{t('P/L', 'லா/ந')}</span>
+                            </div>
+                            <button 
+                              className="bar-detail-btn"
+                              onClick={() => viewDetailedRecords(item.season, item.year)}
+                              title={t('View records for this season', 'இந்த பருவத்தின் பதிவுகளைக் காண்க')}
+                            >
+                              📋 {t('Details', 'விவரம்')}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="data-table">
+                      <h3>{t('Detailed Data', 'விரிவான தரவு')}</h3>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>{t('Season', 'பருவம்')}</th>
+                            <th>{t('Year', 'ஆண்டு')}</th>
+                            <th>{t('Expenses', 'செலவுகள்')}</th>
+                            <th>{t('Income', 'வருமானம்')}</th>
+                            <th>{t('Profit/Loss', 'லாபம்/நஷ்டம்')}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.map((item, idx) => (
+                            <tr key={idx}>
+                              <td><strong>{item.season}</strong></td>
+                              <td><strong>{item.year}</strong></td>
+                              <td className="expense-cell">₹{item.expenses.toLocaleString()}</td>
+                              <td className="income-cell">₹{item.income.toLocaleString()}</td>
+                              <td className={item.profit >= 0 ? 'profit-cell' : 'loss-cell'}>
+                                ₹{item.profit.toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                );
+              })()}
           </div>
         </div>
       )}

@@ -279,34 +279,42 @@ body {
 }
 
 /* ========== LANGUAGE TOGGLE ========== */
-.language-toggle {
-  position: fixed !important;
-  top: 80px !important;
-  right: 20px !important;
+.forum-language-toggle {
+  position: absolute;
+  top: 100px;
+  right: 20px;
   z-index: 1000;
 }
 
-.lang-btn {
-  padding: 8px 20px;
+.forum-lang-btn {
+  width: 90px;
+  height: 45px;
   border: none;
-  background: #4CAF50;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 10px;
+  background: #2e7d32 !important;
+  color: white !important;
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  white-space: nowrap;
-  outline: none;
-  border-radius: 0;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.25);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  min-height: 45px;
 }
 
-.lang-btn:active {
-  transform: scale(0.95);
+.forum-lang-btn:hover {
+  background: #1b5e20 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
 }
 
-.lang-btn:hover {
-  background: #45a049;
-  transform: scale(1.05);
+.forum-lang-btn:active {
+  transform: translateY(0px) scale(0.95);
+  box-shadow: 0 2px 10px rgba(46, 125, 50, 0.3);
 }
 
 /* ========== ERROR MESSAGE ========== */

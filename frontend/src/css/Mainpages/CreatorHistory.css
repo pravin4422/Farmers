@@ -149,6 +149,19 @@
   transform: none;
 }
 
+.graph-analysis-btn {
+  background: #2e7d32 !important;
+  color: white !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px !important;
+}
+
+.graph-analysis-btn:hover {
+  background: #1b5e20 !important;
+}
+
 .results-section h3 {
   color: #2e7d32;
   font-size: 24px;
@@ -479,11 +492,25 @@
   font-size: 14px;
 }
 
+.total-line span,
+.total-line strong {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 .net-line {
   border-top: 2px solid #c8e6c9;
   margin-top: 8px;
   padding-top: 12px !important;
   font-size: 16px;
+}
+
+.net-line strong {
+  font-weight: 700 !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .expense-value {
@@ -498,12 +525,20 @@
 
 .profit-value {
   color: #2e7d32 !important;
-  font-weight: 700;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .loss-value {
   color: #d32f2f !important;
-  font-weight: 700;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .subtotal-row {
@@ -514,9 +549,19 @@
 
 .breakdown-value.profit {
   color: #2e7d32 !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .breakdown-value.loss {
   color: #d32f2f !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 

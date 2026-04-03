@@ -379,9 +379,9 @@ function Forum() {
 
   return (
     <>
-      <div className="language-toggle">
+      <div className="forum-language-toggle">
         <button 
-          className="lang-btn active" 
+          className="forum-lang-btn" 
           onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
         >
           {language === 'en' ? 'EN' : 'தமிழ்'}

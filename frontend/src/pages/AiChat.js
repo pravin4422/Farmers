@@ -128,7 +128,11 @@ const AiChat = ({ initialMessage = '' }) => {
       emptySubtitle: 'Ask me anything about agriculture, farming, or any other topic.',
       placeholder: 'Type your message...',
       send: 'Send',
-      error: 'Sorry, something went wrong. Please try again.'
+      error: 'Sorry, something went wrong. Please try again.',
+      predictions: 'Predictions',
+      new: 'New',
+      bestCrop: 'Best Crop',
+      schemes: 'Schemes'
     },
     tamil: {
       title: 'AI உதவியாளர்',
@@ -136,7 +140,11 @@ const AiChat = ({ initialMessage = '' }) => {
       emptySubtitle: 'விவசாயம், பண்ணை அல்லது வேறு எந்த தலைப்பிலும் என்னிடம் கேளுங்கள்.',
       placeholder: 'உங்கள் செய்தியை தட்டச்சு செய்யவும்...',
       send: 'அனுப்பு',
-      error: 'மன்னிக்கவும், ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.'
+      error: 'மன்னிக்கவும், ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.',
+      predictions: 'கணிப்புகள்',
+      new: 'புதிது',
+      bestCrop: 'சிறந்த பயிர்',
+      schemes: 'திட்டங்கள்'
     }
   };
 
@@ -199,16 +207,37 @@ const AiChat = ({ initialMessage = '' }) => {
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
-      console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+      console.log('🔊 Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+      const tamilVoices = voices.filter(v => 
+        v.lang === 'ta-IN' || 
+        v.lang === 'ta' || 
+        v.lang.startsWith('ta-') ||
+        v.name.toLowerCase().includes('tamil') ||
+        v.name.toLowerCase().includes('heera')
+      );
+      console.log('🇮🇳 Tamil voices found:', tamilVoices.length, tamilVoices.map(v => `${v.name} (${v.lang})`));
+      if (tamilVoices.length === 0) {
+        console.warn('⚠️ NO TAMIL VOICES AVAILABLE. Please restart your browser after installing Tamil language support.');
+      } else {
+        console.log('✅ Tamil voice ready:', tamilVoices[0].name);
+      }
     };
     
-    // Load voices
+    // Force clear and reload voices
+    window.speechSynthesis.cancel();
+    
+    // Load voices immediately
     loadVoices();
     
     // Some browsers load voices asynchronously
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
+    
+    // Force load multiple times for stubborn browsers
+    setTimeout(loadVoices, 100);
+    setTimeout(loadVoices, 500);
+    setTimeout(loadVoices, 1000);
   }, []);
 
   useEffect(() => {
@@ -256,9 +285,7 @@ const AiChat = ({ initialMessage = '' }) => {
           }));
           setConversationHistory(aiHistory);
           
-          if (data.language) {
-            setLanguage(data.language);
-          }
+          // Language is always English by default - user must manually switch to Tamil
         }
       } catch (error) {
         console.error('Failed to load chat history:', error);
@@ -780,25 +807,44 @@ const AiChat = ({ initialMessage = '' }) => {
     
     try {
       // Use browser TTS directly
-      console.log('⚠️ Using browser TTS');
+      console.log('⚠️ Using browser TTS for language:', language);
       setIsGeneratingAudio(false);
-      setTimeout(() => {
+      
+      // Wait for voices to be loaded
+      const speakText = () => {
         const voices = window.speechSynthesis.getVoices();
+        console.log('🔊 Total voices available:', voices.length);
+        
         const utterance = new SpeechSynthesisUtterance(text);
         
         if (language === 'tamil') {
           utterance.lang = 'ta-IN';
-          const tamilVoice = voices.find(v => v.lang.includes('ta'));
+          // Try multiple ways to find Tamil voice
+          const tamilVoice = voices.find(v => 
+            v.lang === 'ta-IN' || 
+            v.lang === 'ta' || 
+            v.lang.startsWith('ta-') ||
+            v.name.toLowerCase().includes('tamil') ||
+            v.name.toLowerCase().includes('heera')
+          );
           if (tamilVoice) {
             utterance.voice = tamilVoice;
-            console.log('🎤 Using Tamil voice:', tamilVoice.name);
+            console.log('✅ Using Tamil voice:', tamilVoice.name, '(' + tamilVoice.lang + ')');
+          } else {
+            console.error('❌ NO TAMIL VOICE FOUND!');
+            console.log('📋 Available voices:', voices.map(v => `${v.name} (${v.lang})`).join(', '));
+            alert('Tamil voice not installed or browser needs restart!\n\nSteps to fix:\n\n1. Make sure Tamil is installed in Windows Settings\n2. CLOSE your browser COMPLETELY (all windows)\n3. Reopen the browser\n4. Try again\n\nIf still not working:\n- Go to Windows Settings\n- Time & Language > Language\n- Click Tamil > Options\n- Make sure "Speech" is downloaded\n- Restart computer if needed');
+            setIsPlayingAudio(false);
+            setPlayingMessageIndex(null);
+            setIsPlayingSelected(false);
+            return;
           }
         } else {
           utterance.lang = 'en-US';
           const englishVoice = voices.find(v => v.lang.includes('en'));
           if (englishVoice) {
             utterance.voice = englishVoice;
-            console.log('🎤 Using English voice:', englishVoice.name);
+            console.log('✅ Using English voice:', englishVoice.name);
           }
         }
         
@@ -807,7 +853,7 @@ const AiChat = ({ initialMessage = '' }) => {
         utterance.volume = 1;
         
         utterance.onstart = () => {
-          console.log('▶️ Browser TTS started');
+          console.log('▶️ Browser TTS started for', language);
           setIsPlayingAudio(true);
         };
         utterance.onend = () => {
@@ -831,8 +877,20 @@ const AiChat = ({ initialMessage = '' }) => {
           }
         };
         
+        console.log('🎤 Speaking text with voice:', utterance.voice?.name || 'default', 'lang:', utterance.lang);
         window.speechSynthesis.speak(utterance);
-      }, 150);
+      };
+      
+      // Ensure voices are loaded before speaking
+      if (window.speechSynthesis.getVoices().length === 0) {
+        console.log('⏳ Waiting for voices to load...');
+        window.speechSynthesis.onvoiceschanged = () => {
+          console.log('✅ Voices loaded, now speaking');
+          speakText();
+        };
+      } else {
+        setTimeout(speakText, 150);
+      }
     } catch (error) {
       console.error('❌ TTS error:', error);
       setIsPlayingAudio(false);
@@ -932,21 +990,21 @@ const AiChat = ({ initialMessage = '' }) => {
             className="predictions-btn"
             title="Predictions"
           >
-            Predictions
+            {t.predictions}
           </button>
           <button
             onClick={handleRefresh}
             className="refresh-btn"
             title={language === 'tamil' ? 'புதிய உரையாடல்' : 'New Chat'}
           >
-            {language === 'tamil' ? 'புதிது' : 'New'}
+            {t.new}
           </button>
 
           <button
             onClick={() => setShowCropRecommendation(true)}
             className="recommend-btn"
           >
-            Best Crop
+            {t.bestCrop}
           </button>
           <button
             onClick={() => {
@@ -957,7 +1015,7 @@ const AiChat = ({ initialMessage = '' }) => {
             }}
             className="scheme-btn"
           >
-            Schemes
+            {t.schemes}
           </button>
           <button
             onClick={toggleAutoPlayAudio}

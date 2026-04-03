@@ -61,7 +61,7 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, onValidate,
       voiceMessage: '🎤 Voice Message:',
       titleVoice: '🎤 Title:',
       contentVoice: '🎤 Content:',
-      aiCheck: '🤖 AI Check',
+      aiCheck: 'AI Check',
       validating: 'Validating...',
       aiValidation: 'AI Validation'
     },
@@ -81,7 +81,7 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, onValidate,
       voiceMessage: '🎤 குரல் செய்தி:',
       titleVoice: '🎤 தலைப்பு:',
       contentVoice: '🎤 உள்ளடக்கம்:',
-      aiCheck: '🤖 AI சரிபார்ப்பு',
+      aiCheck: 'AI சரிபார்ப்பு',
       validating: 'சரிபார்க்கிறது...',
       aiValidation: 'AI சரிபார்ப்பு'
     }
@@ -703,7 +703,6 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, onValidate,
                 paddingBottom: '15px',
                 borderBottom: '2px solid #dee2e6'
               }}>
-                <span style={{ fontSize: '24px', marginRight: '10px' }}>🤖</span>
                 <h4 style={{ margin: 0, fontSize: '20px', color: '#495057' }}>AI Solution Analysis</h4>
               </div>
 

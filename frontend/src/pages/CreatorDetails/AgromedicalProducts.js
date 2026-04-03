@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useSeason } from '../../context/SeasonContext';
 import '../../css/Mainpages/AgromedicalProducts.css';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 function AgromedicalProducts() {
-  const { season, year } = useSeason();
   const [products, setProducts] = useState([]);
   const [lastEntry, setLastEntry] = useState(null);
   const [date, setDate] = useState('');
@@ -25,7 +23,8 @@ function AgromedicalProducts() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = 'http://localhost:5000/api'; 
+  // Replace with your actual API base URL
+  const API_BASE_URL = 'http://localhost:5000/api'; // Update this to your backend URL
 
   const translations = {
     en: {
@@ -96,6 +95,7 @@ function AgromedicalProducts() {
 
   const t = translations[language];
 
+  // API Functions
   const saveToDatabase = async (productData) => {
     try {
       setLoading(true);
@@ -231,6 +231,7 @@ function AgromedicalProducts() {
     }
   };
 
+  // Load latest entry on component mount
   useEffect(() => {
     loadLatestEntry();
   }, []);
@@ -271,25 +272,15 @@ function AgromedicalProducts() {
   };
 
   const addProduct = async () => {
-    if (!date || !day) {
-      alert('Please fill in date and day');
-      return;
-    }
-
-    if (!season || !year) {
-      alert('Please select Season and Year from Creator Details page');
-      return;
-    }
+    if (!date || !day || !name || !quantity || !cost) return;
 
     const newEntry = {
       date,
       day,
-      name: name || '',
-      quantity: quantity ? parseFloat(quantity) : 0,
-      cost: cost ? parseFloat(cost) : 0,
-      total: (quantity && cost) ? parseFloat(quantity) * parseFloat(cost) : 0,
-      season,
-      year: parseInt(year)
+      name,
+      quantity: parseFloat(quantity),
+      cost: parseFloat(cost),
+      total: parseFloat(quantity) * parseFloat(cost),
     };
 
     setButtonLoading(true);
@@ -310,6 +301,7 @@ function AgromedicalProducts() {
 
       resetForm();
     } catch (error) {
+      // Error already handled in API functions
     } finally {
       setButtonLoading(false);
     }
@@ -321,7 +313,7 @@ function AgromedicalProducts() {
     setName(item.name);
     setQuantity(item.quantity.toString());
     setCost(item.cost.toString());
-    setEditingId(item.id || item._id); 
+    setEditingId(item.id || item._id); // Handle both SQL and MongoDB IDs
     setEditingIndex(item.id || item._id);
   };
 
@@ -330,12 +322,14 @@ function AgromedicalProducts() {
       try {
         await deleteFromDatabase(item.id || item._id);
         
+        // Refresh data
         if (showHistoryView) {
           await loadHistoryData();
         } else {
           await loadLatestEntry();
         }
       } catch (error) {
+        // Error already handled in API functions
       }
     }
   };
@@ -425,18 +419,18 @@ function AgromedicalProducts() {
       <h1>{t.title}</h1>
 
       {error && (
-        <div className="error-message">
+        <div className="agro-error-message">
           {error}
         </div>
       )}
 
       {loading && (
-        <div className="loading-message">
+        <div className="agro-loading-message">
           {t.loading}
         </div>
       )}
 
-      <div className="form-section">
+      <div className="agro-form-section">
         <input
           type="date"
           value={date}
@@ -456,17 +450,17 @@ function AgromedicalProducts() {
         </button>
       </div>
 
-      <div className="view-toggle">
+      <div className="agro-view-toggle">
         <button 
           onClick={() => setShowHistoryView(!showHistoryView)}
-          className="toggle-btn"
+          className="agro-toggle-btn"
         >
           {showHistoryView ? t.backToLatest : t.viewHistory}
         </button>
       </div>
 
       {showHistoryView && (
-        <div className="filter-bar">
+        <div className="agro-filter-bar">
           <input 
             type="date" 
             value={filterDate} 
@@ -488,17 +482,21 @@ function AgromedicalProducts() {
             max="2100"
           />
           <button onClick={clearFilters}>{t.clearFilters}</button>
+          <button onClick={exportToExcel}>{t.exportExcel}</button>
+          <button onClick={exportToPDF}>{t.exportPDF}</button>
           <button onClick={handlePrint}>{t.print}</button>
         </div>
       )}
 
       {!showHistoryView && (
-        <div className="export-bar">
+        <div className="agro-export-bar">
+          <button onClick={exportToExcel}>{t.exportExcel}</button>
+          <button onClick={exportToPDF}>{t.exportPDF}</button>
           <button onClick={handlePrint}>{t.print}</button>
         </div>
       )}
 
-      <div className="section-header">
+      <div className="agro-section-header">
         <h2>{showHistoryView ? t.viewHistory : t.lastEntry}</h2>
       </div>
 
@@ -554,7 +552,7 @@ function AgromedicalProducts() {
             <p><strong>{t.cost}:</strong> ₹{item.cost}</p>
             <p><strong>{t.total}:</strong> ₹{item.total}</p>
             {showHistoryView && (
-              <div className="actions">
+              <div className="agro-actions">
                 <button onClick={() => editProduct(item)}>{t.edit}</button>
                 <button onClick={() => deleteProduct(item)}>{t.delete}</button>
               </div>

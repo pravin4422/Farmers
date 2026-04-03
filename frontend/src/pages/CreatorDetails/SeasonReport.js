@@ -181,7 +181,7 @@ function SeasonReport() {
         </div>
       )}
 
-      <div className="form-section">
+      <div className="season-form-section">
         <h3>{editingId ? t('Edit Report', 'அறிக்கையை திருத்து') : t('Add Report', 'அறிக்கை சேர்க்க')}</h3>
         
         <label>{t('Agricultural Product Name', 'விவசாய பொருள் பெயர்')}</label>
@@ -220,7 +220,7 @@ function SeasonReport() {
         </div>
       </div>
 
-      <div className="view-toggle">
+      <div className="season-view-toggle">
         <button 
           onClick={() => setShowHistoryView(!showHistoryView)}
           className="toggle-view-btn"

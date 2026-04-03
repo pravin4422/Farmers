@@ -7,7 +7,7 @@
   min-height: 100vh;
 }
 
-h1 {
+.cultivating-container h1 {
   text-align: center;
   color: #2e7d32;
   margin-bottom: 35px;
@@ -15,7 +15,7 @@ h1 {
   font-weight: 700;
 }
 
-.form-section {
+.cultivating-container .cultivating-form-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 18px;
@@ -27,10 +27,10 @@ h1 {
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-.form-section input, 
-.form-section textarea, 
-.form-section select, 
-.form-section button {
+.cultivating-container .cultivating-form-section input, 
+.cultivating-container .cultivating-form-section textarea, 
+.cultivating-container .cultivating-form-section select, 
+.cultivating-container .cultivating-form-section button {
   padding: 14px 18px;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
@@ -39,20 +39,20 @@ h1 {
   line-height: 1.5;
 }
 
-.form-section input:focus, 
-.form-section textarea:focus, 
-.form-section select:focus {
+.cultivating-container .cultivating-form-section input:focus, 
+.cultivating-container .cultivating-form-section textarea:focus, 
+.cultivating-container .cultivating-form-section select:focus {
   outline: none;
   border-color: #2e7d32;
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
-.form-section textarea {
+.cultivating-container .cultivating-form-section textarea {
   min-height: 90px;
   resize: vertical;
 }
 
-.form-section button {
+.cultivating-container .cultivating-form-section button {
   background: #2e7d32;
   color: white;
   border: none;
@@ -63,13 +63,13 @@ h1 {
   box-shadow: 0 3px 12px rgba(46, 125, 50, 0.3);
 }
 
-.form-section button.loading {
+.cultivating-container .cultivating-form-section button.loading {
   background: #8d6e63;
   cursor: wait;
   opacity: 0.8;
 }
 
-.form-section button.loading::after {
+.cultivating-container .cultivating-form-section button.loading::after {
   content: '';
   position: absolute;
   width: 16px;
@@ -81,26 +81,26 @@ h1 {
   border: 2px solid rgba(255,255,255,.3);
   border-radius: 50%;
   border-top-color: #fff;
-  animation: spin 0.8s linear infinite;
+  animation: cultivating-spin 0.8s linear infinite;
 }
 
-@keyframes spin {
+@keyframes cultivating-spin {
   to { transform: rotate(360deg); }
 }
 
-.form-section button:hover {
+.cultivating-container .cultivating-form-section button:hover {
   background: #1b5e20;
   transform: translateY(-2px);
   box-shadow: 0 5px 16px rgba(46, 125, 50, 0.4);
 }
 
-.form-section button:disabled {
+.cultivating-container .cultivating-form-section button:disabled {
   background: #8d6e63;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.time-segments-section {
+.cultivating-container .time-segments-section {
   grid-column: 1 / -1;
   border: 2px solid #c5e1a5;
   border-radius: 10px;
@@ -108,7 +108,7 @@ h1 {
   background: #f1f8e9;
 }
 
-.time-segments-section label {
+.cultivating-container .time-segments-section label {
   display: block;
   margin-bottom: 15px;
   font-weight: 600;
@@ -116,15 +116,15 @@ h1 {
   font-size: 1.1rem;
 }
 
-.segment-row {
+.cultivating-container .segment-row {
   display: flex;
   gap: 12px;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.segment-row select,
-.segment-row input {
+.cultivating-container .segment-row select,
+.cultivating-container .segment-row input {
   flex: 1;
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
@@ -132,14 +132,14 @@ h1 {
   font-size: 1.05rem;
 }
 
-.segment-row select:focus,
-.segment-row input:focus {
+.cultivating-container .segment-row select:focus,
+.cultivating-container .segment-row input:focus {
   outline: none;
   border-color: #2e7d32;
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
-.segment-row button {
+.cultivating-container .segment-row button {
   background: #d32f2f;
   color: white;
   border: none;
@@ -151,12 +151,12 @@ h1 {
   transition: all 0.3s ease;
 }
 
-.segment-row button:hover {
+.cultivating-container .segment-row button:hover {
   background: #b71c1c;
   transform: translateY(-2px);
 }
 
-.time-segments-section > button {
+.cultivating-container .time-segments-section > button {
   background: #2e7d32;
   color: white;
   border: none;
@@ -170,19 +170,19 @@ h1 {
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
 }
 
-.time-segments-section > button:hover {
+.cultivating-container .time-segments-section > button:hover {
   background: #1b5e20;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.4);
 }
 
-.view-toggle {
+.cultivating-container .cultivating-view-toggle {
   display: flex;
   justify-content: center;
   margin: 25px 0;
 }
 
-.toggle-btn {
+.cultivating-container .cultivating-toggle-btn {
   background: #2e7d32;
   color: white;
   border: none;
@@ -195,13 +195,13 @@ h1 {
   box-shadow: 0 3px 12px rgba(46, 125, 50, 0.3);
 }
 
-.toggle-btn:hover {
+.cultivating-container .cultivating-toggle-btn:hover {
   background: #1b5e20;
   transform: translateY(-2px);
   box-shadow: 0 5px 16px rgba(46, 125, 50, 0.4);
 }
 
-.filter-section {
+.cultivating-container .cultivating-filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
@@ -214,21 +214,21 @@ h1 {
   align-items: center;
 }
 
-.filter-section input,
-.filter-section button {
+.cultivating-container .cultivating-filter-bar input,
+.cultivating-container .cultivating-filter-bar button {
   padding: 12px 18px;
   border: 2px solid #e0e0e0;
   border-radius: 10px;
   font-size: 1.05rem;
 }
 
-.filter-section input:focus {
+.cultivating-container .cultivating-filter-bar input:focus {
   outline: none;
   border-color: #2e7d32;
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
 
-.filter-section button {
+.cultivating-container .cultivating-filter-bar button {
   background: #8d6e63;
   color: white;
   border: none;
@@ -238,13 +238,13 @@ h1 {
   box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3);
 }
 
-.filter-section button:hover {
+.cultivating-container .cultivating-filter-bar button:hover {
   background: #6d4c41;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(141, 110, 99, 0.4);
 }
 
-.actions {
+.cultivating-container .cultivating-export-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
@@ -257,7 +257,7 @@ h1 {
   align-items: center;
 }
 
-.actions button {
+.cultivating-container .cultivating-export-bar button {
   background: #8d6e63;
   color: white;
   border: none;
@@ -270,32 +270,32 @@ h1 {
   box-shadow: 0 2px 8px rgba(141, 110, 99, 0.3);
 }
 
-.actions button:hover {
+.cultivating-container .cultivating-export-bar button:hover {
   background: #6d4c41;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(141, 110, 99, 0.4);
 }
 
-.section-header {
+.cultivating-container .cultivating-section-header {
   text-align: center;
   margin: 25px 0;
 }
 
-.section-header h2 {
+.cultivating-container .cultivating-section-header h2 {
   color: #2e7d32;
   font-size: 1.9rem;
   margin: 0;
   font-weight: 700;
 }
 
-.activity-list {
+.cultivating-container .activity-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
   margin: 28px 0;
 }
 
-.activity-card {
+.cultivating-container .activity-card {
   background: white;
   padding: 28px;
   border-radius: 12px;
@@ -306,7 +306,7 @@ h1 {
   overflow: hidden;
 }
 
-.activity-card::before {
+.cultivating-container .activity-card::before {
   content: '';
   position: absolute;
   top: 0;
@@ -316,12 +316,12 @@ h1 {
   background: #2e7d32;
 }
 
-.activity-card:hover {
+.cultivating-container .activity-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
 
-.activity-card h3 {
+.cultivating-container .activity-card h3 {
   margin: 0 0 18px 0;
   color: #2e7d32;
   font-size: 1.4rem;
@@ -330,19 +330,19 @@ h1 {
   font-weight: 700;
 }
 
-.activity-card p {
+.cultivating-container .activity-card p {
   margin: 10px 0;
   color: #333;
   font-size: 1.05rem;
   line-height: 1.6;
 }
 
-.activity-card strong {
+.cultivating-container .activity-card strong {
   color: #2e7d32;
   font-weight: 600;
 }
 
-.card-actions {
+.cultivating-container .cultivating-actions {
   display: flex;
   gap: 12px;
   margin-top: 18px;
@@ -351,7 +351,7 @@ h1 {
   padding-top: 18px;
 }
 
-.card-actions button {
+.cultivating-container .cultivating-actions button {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
@@ -361,36 +361,36 @@ h1 {
   transition: all 0.3s ease;
 }
 
-.card-actions button:first-child {
+.cultivating-container .cultivating-actions button:first-child {
   background: #ffd54f;
   color: #333;
 }
 
-.card-actions button:first-child:hover {
+.cultivating-container .cultivating-actions button:first-child:hover {
   background: #ffc107;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
 }
 
-.card-actions button:last-child {
+.cultivating-container .cultivating-actions button:last-child {
   background: #d32f2f;
   color: white;
 }
 
-.card-actions button:last-child:hover {
+.cultivating-container .cultivating-actions button:last-child:hover {
   background: #b71c1c;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
 }
 
-.pagination {
+.cultivating-container .pagination {
   display: flex;
   justify-content: center;
   gap: 8px;
   margin: 25px 0;
 }
 
-.pagination button {
+.cultivating-container .pagination button {
   background: white;
   color: #2e7d32;
   border: 2px solid #2e7d32;
@@ -402,18 +402,18 @@ h1 {
   font-weight: 600;
 }
 
-.pagination button:hover {
+.cultivating-container .pagination button:hover {
   background: #f1f8e9;
   transform: translateY(-2px);
 }
 
-.pagination button.active {
+.cultivating-container .pagination button.active {
   background: #2e7d32;
   color: white;
   border-color: #2e7d32;
 }
 
-.error-message {
+.cultivating-container .cultivating-error-message {
   background: #ffebee;
   color: #c62828;
   padding: 14px 20px;
@@ -425,7 +425,7 @@ h1 {
   font-size: 1.05rem;
 }
 
-.loading-message {
+.cultivating-container .cultivating-loading-message {
   background: #e3f2fd;
   color: #1565c0;
   padding: 14px 20px;
@@ -437,7 +437,7 @@ h1 {
   font-size: 1.05rem;
 }
 
-.no-records {
+.cultivating-container .no-records {
   text-align: center;
   color: #666;
   font-style: italic;
@@ -448,7 +448,6 @@ h1 {
   border: 2px dashed #c5e1a5;
 }
 
-/* Language Toggle Button */
 .cultivating-container > div:first-child button {
   background: #2e7d32;
   color: white;
@@ -468,53 +467,51 @@ h1 {
   box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
 }
 
-/* Focus and Accessibility */
-button:focus,
-input:focus,
-select:focus,
-textarea:focus {
+.cultivating-container button:focus,
+.cultivating-container input:focus,
+.cultivating-container select:focus,
+.cultivating-container textarea:focus {
   outline: 2px solid #2e7d32;
   outline-offset: 2px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .cultivating-container {
     padding: 15px;
   }
   
-  h1 {
+  .cultivating-container h1 {
     font-size: 2rem;
   }
   
-  .form-section {
+  .cultivating-container .cultivating-form-section {
     grid-template-columns: 1fr;
     padding: 25px;
   }
   
-  .filter-section,
-  .actions {
+  .cultivating-container .cultivating-filter-bar,
+  .cultivating-container .cultivating-export-bar {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .filter-section button,
-  .filter-section input,
-  .actions button {
+  .cultivating-container .cultivating-filter-bar button,
+  .cultivating-container .cultivating-filter-bar input,
+  .cultivating-container .cultivating-export-bar button {
     width: 100%;
     margin: 5px 0;
   }
   
-  .segment-row {
+  .cultivating-container .segment-row {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .card-actions {
+  .cultivating-container .cultivating-actions {
     justify-content: center;
   }
   
-  .pagination {
+  .cultivating-container .pagination {
     flex-wrap: wrap;
   }
 }
@@ -524,33 +521,32 @@ textarea:focus {
     padding: 10px;
   }
   
-  h1 {
+  .cultivating-container h1 {
     font-size: 1.8rem;
   }
   
-  .form-section {
+  .cultivating-container .cultivating-form-section {
     padding: 20px;
   }
   
-  .activity-card {
+  .cultivating-container .activity-card {
     padding: 20px;
   }
   
-  .activity-card h3 {
+  .cultivating-container .activity-card h3 {
     font-size: 1.2rem;
   }
 }
 
-/* Print Styles */
 @media print {
-  .form-section,
-  .view-toggle,
-  .filter-section,
-  .actions,
-  .card-actions,
-  .pagination,
-  .error-message,
-  .loading-message {
+  .cultivating-container .cultivating-form-section,
+  .cultivating-container .cultivating-view-toggle,
+  .cultivating-container .cultivating-filter-bar,
+  .cultivating-container .cultivating-export-bar,
+  .cultivating-container .cultivating-actions,
+  .cultivating-container .pagination,
+  .cultivating-container .cultivating-error-message,
+  .cultivating-container .cultivating-loading-message {
     display: none !important;
   }
   
@@ -559,7 +555,7 @@ textarea:focus {
     box-shadow: none;
   }
   
-  .activity-card {
+  .cultivating-container .activity-card {
     box-shadow: none;
     border: 1px solid #ccc;
     margin-bottom: 15px;
@@ -567,12 +563,11 @@ textarea:focus {
   }
 }
 
-/* Smooth Animations */
-.activity-card {
-  animation: fadeInUp 0.5s ease-out;
+.cultivating-container .activity-card {
+  animation: cultivating-fadeInUp 0.5s ease-out;
 }
 
-@keyframes fadeInUp {
+@keyframes cultivating-fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);

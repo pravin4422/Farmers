@@ -459,18 +459,18 @@ function CultivatingField() {
       <h1>{t('Cultivating Field - Activity Log', 'விவசாய செயல் பதிவேடு')}</h1>
 
       {error && (
-        <div className="error-message">
+        <div className="cultivating-error-message">
           {error}
         </div>
       )}
 
       {loading && (
-        <div className="loading-message">
+        <div className="cultivating-loading-message">
           {t('Loading...', 'ஏற்றுகிறது...')}
         </div>
       )}
 
-      <div className="form-section">
+      <div className="cultivating-form-section">
         <input type="text" placeholder={t("Activity Title", "செயலின் தலைப்பு")} value={title} onChange={e => setTitle(e.target.value)} />
         <textarea placeholder={t("Activity Notes", "செயலுக்கான குறிப்புகள்")} value={note} onChange={e => setNote(e.target.value)} />
         <input type="date" value={date} onChange={e => setDate(e.target.value)} />
@@ -503,17 +503,17 @@ function CultivatingField() {
         </button>
       </div>
 
-      <div className="view-toggle">
+      <div className="cultivating-view-toggle">
         <button 
           onClick={() => setShowHistoryView(!showHistoryView)}
-          className="toggle-btn"
+          className="cultivating-toggle-btn"
         >
           {showHistoryView ? t('Back to Latest', 'சமீபத்தியதற்கு திரும்பு') : t('View History', 'வரலாறு பார்க்க')}
         </button>
       </div>
 
       {showHistoryView && (
-        <div className="filter-bar">
+        <div className="cultivating-filter-bar">
           <input 
             type="date" 
             value={filterDate} 
@@ -546,7 +546,7 @@ function CultivatingField() {
       )}
 
       {!showHistoryView && (
-        <div className="export-bar">
+        <div className="cultivating-export-bar">
           <button onClick={handlePrint}>{t('Print', 'அச்சிடு')}</button>
         </div>
       )}
@@ -571,7 +571,7 @@ function CultivatingField() {
               <p>{t("Time", "நேரம்")}: {item.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
               <p>{t("Hours", "மணிநேரம்")}: {item.totalHours} | {t("Rate", "விலை")}: ₹{item.rate} | {t("Total", "மொத்தம்")}: ₹{item.total}</p>
               {showHistoryView && (
-                <div className="actions">
+                <div className="cultivating-actions">
                   <button onClick={() => handleEdit(item)}>{t('Edit', 'திருத்து')}</button>
                   <button onClick={() => handleDelete(item)}>{t('Delete', 'நீக்கு')}</button>
                 </div>
