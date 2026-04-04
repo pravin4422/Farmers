@@ -212,20 +212,18 @@ function CreatorDetail() {
 
     setLoading(true);
     
+    // Only use existing entry ID if we're explicitly editing
     let existingEntryId = editingId;
-    if (!existingEntryId && lastEntry && lastEntry.season === season && lastEntry.year === parseInt(year)) {
-      existingEntryId = lastEntry._id || lastEntry.id;
-    }
     
     const entryData = {
       season,
-      year,
+      year: parseInt(year),
       seedDate: seedDate || null,
-      seedWeight: seedWeight || null,
-      seedCost: seedCost || null,
-      seedingCount: seedingCount || null,
-      peopleCount: peopleCount || null,
-      moneyPerPerson: moneyPerPerson || null,
+      seedWeight: seedWeight ? parseFloat(seedWeight) : null,
+      seedCost: seedCost ? parseFloat(seedCost) : null,
+      seedingCount: seedingCount ? parseInt(seedingCount) : null,
+      peopleCount: peopleCount ? parseInt(peopleCount) : null,
+      moneyPerPerson: moneyPerPerson ? parseFloat(moneyPerPerson) : null,
       totalSeedingCost: totalSeedingCost || null,
       seedingTakers: seedingTakers.length > 0 ? seedingTakers : null,
       plantingDate: plantingDate || null,
@@ -237,6 +235,8 @@ function CreatorDetail() {
     const success = await saveEntryToDatabase(entryData, existingEntryId);
     
     if (success) {
+      resetForm();
+      setShowForm(false);
       await fetchLastEntry();
     }
     
@@ -253,17 +253,19 @@ function CreatorDetail() {
     setSeedingTakers([]);
     setPlantingDate('');
     setWorkers([]);
+    setEditingId(null);
+    setEditingIndex(null);
   };
 
   const handleEdit = (entry) => {
-    setSeedDate(entry.seedDate);
-    setSeedWeight(entry.seedWeight);
-    setSeedCost(entry.seedCost);
-    setSeedingCount(entry.seedingCount);
-    setPeopleCount(entry.peopleCount);
-    setMoneyPerPerson(entry.moneyPerPerson);
+    setSeedDate(entry.seedDate ? entry.seedDate.split('T')[0] : '');
+    setSeedWeight(entry.seedWeight || '');
+    setSeedCost(entry.seedCost || '');
+    setSeedingCount(entry.seedingCount || '');
+    setPeopleCount(entry.peopleCount || '');
+    setMoneyPerPerson(entry.moneyPerPerson || '');
     setSeedingTakers(entry.seedingTakers || []);
-    setPlantingDate(entry.plantingDate || '');
+    setPlantingDate(entry.plantingDate ? entry.plantingDate.split('T')[0] : '');
     setWorkers(entry.workers || []);
     setShowForm(true);
     setEditingId(entry._id || entry.id);
@@ -456,7 +458,7 @@ function CreatorDetail() {
           <input type="number" value={moneyPerPerson} onChange={(e) => setMoneyPerPerson(e.target.value)} />
 
           <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-            {loading} {t('Save Seed Sowing', 'விதைப்பு சேமிக்க')}
+            {loading ? t('Saving...', 'சேமிக்கிறது...') : t('Save Seed Sowing', 'விதைப்பு சேமிக்க')}
           </button>
 
           <hr style={{margin: '30px 0', border: '1px solid #ddd'}} />
@@ -475,7 +477,7 @@ function CreatorDetail() {
             <button onClick={handleAddSeedingTaker}> {t('Add Person', 'நபரை சேர்க்க')}</button>
 
             <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-              {loading } {t('Save Taking Seeding', 'விதைப்பு எடுத்தல் சேமிக்க')}
+              {loading ? t('Saving...', 'சேமிக்கிறது...') : t('Save Taking Seeding', 'விதைப்பு எடுத்தல் சேமிக்க')}
             </button>
 
             <div className="seeding-takers-list">
@@ -525,7 +527,7 @@ function CreatorDetail() {
             <button onClick={handleAddWorker}> {t('Add Worker', 'நபரை சேர்க்க')}</button>
 
             <button onClick={handleAddOrUpdateEntry} disabled={loading} className="save-button" style={{marginTop: '20px'}}>
-              {loading} {t('Save Planted Cost', 'நட்ட கூலி சேமிக்க')}
+              {loading ? t('Saving...', 'சேமிக்கிறது...') : t('Save Planted Cost', 'நட்ட கூலி சேமிக்க')}
             </button>
 
             <div className="worker-list">

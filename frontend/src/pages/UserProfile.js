@@ -79,11 +79,23 @@ const UserProfile = () => {
         const response = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFormData(response.data);
-        setHasProfile(true);
         
-        if (response.data.userId) {
+        // Handle profile data
+        if (response.data.noProfile) {
+          // User exists but no profile created
+          setHasProfile(false);
           setProfileUserInfo(response.data.userId);
+          if (!userId || userId === currentUserId) {
+            setIsEditing(true);
+          }
+        } else {
+          // Profile exists
+          setFormData(response.data);
+          setHasProfile(true);
+          
+          if (response.data.userId) {
+            setProfileUserInfo(response.data.userId);
+          }
         }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -131,6 +143,25 @@ const UserProfile = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData(profileResponse.data);
+      
+      // Update profileUserInfo with latest data including validSolutionsCount
+      if (profileResponse.data.userId) {
+        setProfileUserInfo(profileResponse.data.userId);
+      }
+      
+      // Refresh admin status after profile update
+      try {
+        const adminResponse = await axios.get('http://localhost:5000/api/common-forum/check-admin', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (adminResponse.data.isAdmin) {
+          localStorage.setItem('isAdmin', 'true');
+        } else {
+          localStorage.removeItem('isAdmin');
+        }
+      } catch (adminError) {
+        console.error('Error checking admin status:', adminError);
+      }
     } catch (error) {
       console.error('Submit error:', error.response || error);
       if (error.response?.status === 401) {
@@ -160,21 +191,19 @@ const UserProfile = () => {
             {(profileUserInfo?.name || userName).charAt(0).toUpperCase()}
           </div>
           <h2>{profileUserInfo?.name || userName}</h2>
-          {profileUserInfo?.email && <p className="profile-email">{profileUserInfo.email}</p>}
-          {profileUserInfo?.validSolutionsCount !== undefined && (
-            <div style={{
-              marginTop: '10px',
-              padding: '8px 16px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: '20px',
-              color: '#fff',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              display: 'inline-block'
-            }}>
-              🏆 Best Solutions: {profileUserInfo.validSolutionsCount}
-            </div>
-          )}
+          {(profileUserInfo?.email || userEmail) && <p className="profile-email">{profileUserInfo?.email || userEmail}</p>}
+          <div style={{
+            marginTop: '10px',
+            padding: '8px 16px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '20px',
+            color: '#fff',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            display: 'inline-block'
+          }}>
+            🏆 Best Solutions: {profileUserInfo?.validSolutionsCount || 0}
+          </div>
           <p className="profile-subtitle">{currentContent.subtitle}</p>
         </div>
 

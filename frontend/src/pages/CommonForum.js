@@ -17,12 +17,37 @@ function CommonForum() {
   const timerRef = useRef({});
 
   useEffect(() => {
-    const adminStatus = localStorage.getItem('isAdmin') === 'true';
-    console.log('CommonForum - isAdmin status:', adminStatus);
-    setIsAdmin(adminStatus);
+    checkAdminStatus();
     fetchDiscussions();
     fetchValidatedSolutions();
   }, []);
+
+  const checkAdminStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsAdmin(false);
+        return;
+      }
+      
+      const response = await fetch('http://localhost:5000/api/common-forum/check-admin', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Admin status from server:', data.isAdmin);
+        setIsAdmin(data.isAdmin);
+        localStorage.setItem('isAdmin', data.isAdmin ? 'true' : 'false');
+      } else {
+        setIsAdmin(false);
+        localStorage.removeItem('isAdmin');
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error);
+      setIsAdmin(false);
+    }
+  };
 
   const fetchDiscussions = async () => {
     try {
@@ -47,44 +72,85 @@ function CommonForum() {
   const handleDiscussionSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
       if (!token) {
+        alert('Please login to post discussions');
+        window.location.href = '/login';
         return;
       }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       const userName = localStorage.getItem('displayName') || localStorage.getItem('userEmail');
       const response = await fetch('http://localhost:5000/api/common-forum/discussions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ ...discussionData, userName })
+        body: JSON.stringify({ ...discussionData, userName, userId })
       });
       if (response.ok) {
         fetchDiscussions();
         setDiscussionData({ question: '' });
+        alert('Discussion posted successfully!');
+      } else {
+        const error = await response.json();
+        alert('Failed to post discussion: ' + (error.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error adding discussion:', error);
+      alert('Error adding discussion: ' + error.message);
     }
   };
 
   const handleSolutionSubmit = async (discussionId) => {
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to submit solutions');
+        window.location.href = '/login';
+        return;
+      }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       const userName = localStorage.getItem('displayName') || localStorage.getItem('userEmail');
       const response = await fetch(`http://localhost:5000/api/common-forum/discussions/${discussionId}/solution`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ solution: solutionData[discussionId], userName })
+        body: JSON.stringify({ solution: solutionData[discussionId], userName, userId })
       });
       
       if (response.ok) {
         const result = await response.json();
         fetchDiscussions();
         setSolutionData({ ...solutionData, [discussionId]: '' });
+        alert('Solution submitted successfully!');
       } else {
         const error = await response.json();
+        alert('Failed to submit solution: ' + (error.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error adding solution:', error);
+      alert('Error adding solution: ' + error.message);
     }
   };
 
@@ -193,35 +259,54 @@ function CommonForum() {
     e.preventDefault();
     
     if (!isAdmin) {
+      alert('You need admin privileges to post solutions');
       return;
     }
     
-    
     if (!adminPostData.problem && !audioBlob['admin-problem']) {
+      alert('Please provide a problem description');
       return;
     }
     if (!adminPostData.solution && !audioBlob['admin-solution']) {
+      alert('Please provide a solution');
       return;
     }
     if (!adminPostData.pros && !audioBlob['admin-pros']) {
+      alert('Please provide pros');
       return;
     }
     if (!adminPostData.cons && !audioBlob['admin-cons']) {
+      alert('Please provide cons');
       return;
     }
 
     console.log('Submitting:', adminPostData);
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
       if (!token) {
+        alert('Please login to post solutions');
+        window.location.href = '/login';
         return;
+      }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
       }
 
       const postData = { 
         problem: adminPostData.problem || 'Audio Message',
         solution: adminPostData.solution || 'Audio Message',
         pros: adminPostData.pros || 'Audio Message',
-        cons: adminPostData.cons || 'Audio Message'
+        cons: adminPostData.cons || 'Audio Message',
+        userId
       };
       
       
@@ -271,12 +356,15 @@ function CommonForum() {
         setAdminPostData({ problem: '', solution: '', pros: '', cons: '' });
         setAudioBlob({});
         setEditingId(null);
+        alert('Solution posted successfully!');
       } else {
         const error = await response.json();
         console.error('Server error:', error);
+        alert('Failed to post solution: ' + (error.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error posting solution:', error);
+      alert('Error posting solution: ' + error.message);
     }
   };
 

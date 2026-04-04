@@ -299,6 +299,7 @@
   margin: 0 0 0.5rem 0;
   font-weight: 500;
   line-height: 1.4;
+  color: white !important;
 }
 
 .summary-count {
@@ -306,6 +307,7 @@
   font-weight: 700;
   margin: 0;
   line-height: 1.2;
+  color: white !important;
 }
 
 .summary-icon {

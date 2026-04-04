@@ -12,8 +12,7 @@ exports.recommendBestCrop = async (req, res) => {
     const userId = req.user.id || req.user._id;
     const { targetYear, targetSeason, targetProduct } = req.body;
 
-    console.log('Crop recommendation request from user:', userId);
-    console.log('Target Season:', targetSeason, 'Target Product:', targetProduct);
+
 
     // Get user profile for location context
     const userProfile = await UserProfile.findOne({ userId }).select('address mainCrop landSize');
@@ -38,27 +37,19 @@ exports.recommendBestCrop = async (req, res) => {
       );
     }
 
-    console.log('Found creator records after filtering:', creatorRecords.length);
-
     // Get recent price data
     const priceData = await Price.find({ userId })
       .sort({ arrival_date: -1 })
       .limit(100)
       .lean();
 
-    console.log('Found price records:', priceData.length);
-
     // Get problem/review data
     const problemData = await Problem.find({ userId })
       .lean();
 
-    console.log('Found problem records:', problemData.length);
-
     // Get cultivation activities for yield data
     const cultivationData = await CultivationActivity.find({ user: userId })
       .lean();
-
-    console.log('Found cultivation records:', cultivationData.length);
 
     if (!creatorRecords || creatorRecords.length === 0) {
       return res.status(400).json({ 

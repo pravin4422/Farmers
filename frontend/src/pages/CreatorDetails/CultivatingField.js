@@ -224,7 +224,7 @@ function CultivatingField() {
   };
 
   const handleAddActivity = async () => {
-    if (!title || !note || !date || !rate || timeSegments.some(seg => !seg.hours)) {
+    if (!title || !note || !date || !driver || !rate || timeSegments.some(seg => !seg.hours)) {
       alert(t('Please fill in all required fields', 'தயவு செய்து அனைத்து புலங்களையும் நிரப்பவும்'));
       return;
     }
@@ -242,7 +242,12 @@ function CultivatingField() {
       note,
       date,
       driver,
-      owner: { name: ownerName, address: ownerAddress, phone1: ownerPhone1, phone2: ownerPhone2 },
+      owner: { 
+        name: ownerName || '', 
+        address: ownerAddress || '', 
+        phone1: ownerPhone1 || '', 
+        phone2: ownerPhone2 || '' 
+      },
       timeSegments,
       rate: parseFloat(rate),
       totalHours: totalHours.toFixed(2),
@@ -276,10 +281,10 @@ function CultivatingField() {
     setNote(item.note);
     setDate(item.date);
     setDriver(item.driver);
-    setOwnerName(item.owner.name);
-    setOwnerAddress(item.owner.address);
-    setOwnerPhone1(item.owner.phone1);
-    setOwnerPhone2(item.owner.phone2);
+    setOwnerName(item.owner?.name || '');
+    setOwnerAddress(item.owner?.address || '');
+    setOwnerPhone1(item.owner?.phone1 || '');
+    setOwnerPhone2(item.owner?.phone2 || '');
     setTimeSegments(item.timeSegments);
     setRate(item.rate.toString());
     setEditingId(item.id || item._id);
@@ -317,10 +322,10 @@ function CultivatingField() {
         `"${act.title}"`,
         `"${act.note}"`,
         `"${act.driver}"`,
-        `"${act.owner.name}"`,
-        `"${act.owner.address}"`,
-        act.owner.phone1,
-        act.owner.phone2,
+        `"${act.owner?.name || ''}"`,
+        `"${act.owner?.address || ''}"`,
+        act.owner?.phone1 || '',
+        act.owner?.phone2 || '',
         `"${act.timeSegments.map(s => `${s.period}: ${s.hours}h`).join(' | ')}"`,
         act.totalHours,
         act.rate,
@@ -366,9 +371,9 @@ function CultivatingField() {
             <h3>${item.title} (${item.date})</h3>
             <p><strong>${t('Note', 'குறிப்பு')}:</strong> ${item.note}</p>
             <p><strong>${t('Driver', 'டிரைவர்')}:</strong> ${item.driver}</p>
-            <p><strong>${t('Owner', 'உரிமையாளர்')}:</strong> ${item.owner.name}</p>
-            <p><strong>${t('Address', 'முகவரி')}:</strong> ${item.owner.address}</p>
-            <p><strong>${t('Phone', 'தொலைபேசி')}:</strong> ${item.owner.phone1}, ${item.owner.phone2}</p>
+            <p><strong>${t('Owner', 'உரிமையாளர்')}:</strong> ${item.owner?.name || 'N/A'}</p>
+            <p><strong>${t('Address', 'முகவரி')}:</strong> ${item.owner?.address || 'N/A'}</p>
+            <p><strong>${t('Phone', 'தொலைபேசி')}:</strong> ${item.owner?.phone1 || ''}, ${item.owner?.phone2 || ''}</p>
             <p><strong>${t('Time Segments', 'நேர பகுதிகள்')}:</strong> ${item.timeSegments.map(s => `${s.period}: ${s.hours}h`).join(', ')}</p>
             <p><strong>${t('Total Hours', 'மொத்த மணிநேரம்')}:</strong> ${item.totalHours} | <strong>${t('Rate', 'விலை')}:</strong> ₹${item.rate} | <strong>${t('Total', 'மொத்தம்')}:</strong> ₹${item.total}</p>
           </div>
@@ -566,8 +571,12 @@ function CultivatingField() {
               <h3>{item.title} ({item.date})</h3>
               <p><strong>{t('Note', 'குறிப்பு')}:</strong> {item.note}</p>
               <p>{t("Driver", "டிரைவர்")}: {item.driver}</p>
-              <p>{t("Owner", "உரிமையாளர்")}: {item.owner.name} |  {item.owner.phone1}, {item.owner.phone2}</p>
-              <p>{t("Address", "முகவரி")}: {item.owner.address}</p>
+              {(item.owner?.name || item.owner?.phone1 || item.owner?.phone2) && (
+                <p>{t("Owner", "உரிமையாளர்")}: {item.owner?.name || 'N/A'} {(item.owner?.phone1 || item.owner?.phone2) && `| ${item.owner?.phone1 || ''}${item.owner?.phone1 && item.owner?.phone2 ? ', ' : ''}${item.owner?.phone2 || ''}`}</p>
+              )}
+              {item.owner?.address && (
+                <p>{t("Address", "முகவரி")}: {item.owner.address}</p>
+              )}
               <p>{t("Time", "நேரம்")}: {item.timeSegments.map(s => `${t(s.period, translatePeriod(s.period))}: ${s.hours}h`).join(', ')}</p>
               <p>{t("Hours", "மணிநேரம்")}: {item.totalHours} | {t("Rate", "விலை")}: ₹{item.rate} | {t("Total", "மொத்தம்")}: ₹{item.total}</p>
               {showHistoryView && (

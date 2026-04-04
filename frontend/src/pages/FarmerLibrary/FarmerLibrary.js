@@ -31,24 +31,43 @@ const FarmerLibrary = () => {
 
   const fetchProblems = async () => {
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
       if (!token) {
+        alert('Please login to view the library');
         window.location.href = '/login';
         return;
       }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       const response = await fetch('http://localhost:5000/api/library/problems', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.status === 401) {
+        alert('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/login';
         return;
+      }
+      if (!response.ok) {
+        throw new Error('Failed to fetch problems');
       }
       const data = await response.json();
       setProblems(Array.isArray(data) ? data : []);
       setTotalCount(Array.isArray(data) ? data.length : 0);
     } catch (error) {
       console.error('Error fetching problems:', error);
+      alert('Error loading library: ' + error.message);
       setProblems([]);
       setTotalCount(0);
     } finally {
@@ -129,18 +148,23 @@ const FarmerLibrary = () => {
     e.preventDefault();
     
     if (!formData.symptoms.trim() && !voiceBlobs.symptoms) {
+      alert('Please provide symptoms (text or voice)');
       return;
     }
     if (!formData.description.trim() && !voiceBlobs.description) {
+      alert('Please provide description (text or voice)');
       return;
     }
     if (!formData.solution.trim() && !voiceBlobs.solution) {
+      alert('Please provide solution (text or voice)');
       return;
     }
     if (!formData.category) {
+      alert('Please select a category');
       return;
     }
     if (!formData.severity) {
+      alert('Please select severity level');
       return;
     }
 
@@ -176,11 +200,25 @@ const FarmerLibrary = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
       if (!token) {
+        alert('Please login to add problems');
         window.location.href = '/login';
         return;
       }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       const response = await fetch('http://localhost:5000/api/library/add', {
         method: 'POST',
         headers: { 
@@ -194,10 +232,12 @@ const FarmerLibrary = () => {
           solution: formData.solution || 'Voice message',
           symptomsVoice: symptomsVoiceData,
           descriptionVoice: descriptionVoiceData,
-          solutionVoice: solutionVoiceData
+          solutionVoice: solutionVoiceData,
+          userId
         })
       });
       if (response.status === 401) {
+        alert('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/login';
         return;
@@ -209,22 +249,50 @@ const FarmerLibrary = () => {
         setRecordingTime({ symptoms: 0, description: 0, solution: 0 });
         setShowAddForm(false);
         setDuplicateWarning('');
+        alert('Problem added successfully!');
+      } else {
+        const error = await response.json();
+        alert('Failed to add problem: ' + (error.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error adding problem:', error);
+      alert('Error adding problem: ' + error.message);
     }
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this problem?')) return;
+    
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to delete problems');
+        window.location.href = '/login';
+        return;
+      }
+      
       const response = await fetch(`http://localhost:5000/api/library/${id}`, { 
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (response.ok) fetchProblems();
+      
+      if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+      
+      if (response.ok) {
+        fetchProblems();
+        alert('Problem deleted successfully!');
+      } else {
+        const error = await response.json();
+        alert('Failed to delete problem: ' + (error.message || 'Unknown error'));
+      }
     } catch (error) {
       console.error('Error deleting problem:', error);
+      alert('Error deleting problem: ' + error.message);
     }
   };
 

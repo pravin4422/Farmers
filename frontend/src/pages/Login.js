@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import '../css/Login.css';
 import api from '../api'; 
 
@@ -96,7 +96,7 @@ function Login({ setUser }) {
       }
 
       // All users go to home page
-      navigate("/home");
+      navigate("/home", { replace: true });
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Login failed. Please try again.";
@@ -155,15 +155,15 @@ function Login({ setUser }) {
         </form>
 
         <p className="forgot-password">
-          <a href="/forgot-password" className="forgot-password-link">
+          <Link to="/forgot-password" className="forgot-password-link">
             {currentContent.forgotPassword}
-          </a>
+          </Link>
         </p>
 
         <p className="signup-link">
-          <a href="/signup">
+          <Link to="/signup">
             {currentContent.signupText}
-          </a>
+          </Link>
         </p>
       </div>
     </div>

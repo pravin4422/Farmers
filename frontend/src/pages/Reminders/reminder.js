@@ -123,7 +123,25 @@ function Reminder() {
 
   const fetchTasks = async () => {
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        console.log('No token found, redirecting to login');
+        window.location.href = '/login';
+        return;
+      }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       const response = await fetch('http://localhost:5000/api/tasks', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -132,6 +150,12 @@ function Reminder() {
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
+      } else if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+      } else {
+        throw new Error('Failed to fetch tasks');
       }
     } catch (err) {
       console.error('Error fetching tasks:', err);
@@ -140,10 +164,31 @@ function Reminder() {
   };
 
   const addTask = async () => {
-    if (!newTask.trim()) return;
+    if (!newTask.trim()) {
+      alert('Please enter a task');
+      return;
+    }
     
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to add tasks');
+        window.location.href = '/login';
+        return;
+      }
+      
+      // Extract userId from token if not in localStorage
+      let userId = localStorage.getItem('userId');
+      if (!userId && token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.userId || payload.id || payload._id || payload.sub;
+          if (userId) localStorage.setItem('userId', String(userId));
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+      
       let taskDateTime;
       
       if (taskDate && taskTime) {
@@ -155,7 +200,8 @@ function Reminder() {
       const taskData = {
         text: newTask,
         date: taskDateTime.toISOString(),
-        completed: false
+        completed: false,
+        userId
       };
       
       const response = await fetch('http://localhost:5000/api/tasks', {
@@ -173,15 +219,30 @@ function Reminder() {
         setNewTask('');
         setTaskDate('');
         setTaskTime('');
+        alert('Task added successfully!');
+      } else if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+      } else {
+        const error = await response.json();
+        alert('Failed to add task: ' + (error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error adding task:', err);
+      alert('Error adding task: ' + err.message);
     }
   };
 
   const toggleComplete = async (taskId) => {
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to update tasks');
+        window.location.href = '/login';
+        return;
+      }
+      
       const task = tasks.find(t => t._id === taskId);
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
         method: 'PUT',
@@ -195,15 +256,31 @@ function Reminder() {
       if (response.ok) {
         const data = await response.json();
         setTasks(tasks.map(t => t._id === taskId ? data : t));
+      } else if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+      } else {
+        const error = await response.json();
+        alert('Failed to update task: ' + (error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error updating task:', err);
+      alert('Error updating task: ' + err.message);
     }
   };
 
   const deleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    
     try {
-      const token = localStorage.getItem('token');
+      let token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to delete tasks');
+        window.location.href = '/login';
+        return;
+      }
+      
       const response = await fetch(`http://localhost:5000/api/tasks/${taskId}`, {
         method: 'DELETE',
         headers: {
@@ -213,9 +290,18 @@ function Reminder() {
       
       if (response.ok) {
         setTasks(tasks.filter(t => t._id !== taskId));
+        alert('Task deleted successfully!');
+      } else if (response.status === 401) {
+        alert('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/login';
+      } else {
+        const error = await response.json();
+        alert('Failed to delete task: ' + (error.message || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error deleting task:', err);
+      alert('Error deleting task: ' + err.message);
     }
   };
 

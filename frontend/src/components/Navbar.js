@@ -15,7 +15,7 @@ const Navbar = ({ user, setUser }) => {
     
     setUser(null);
     
-    navigate("/login");
+    navigate("/", { replace: true });
   };
 
   const handleHomeClick = () => {
@@ -34,7 +34,7 @@ const Navbar = ({ user, setUser }) => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <h2 className="logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>Backbone</h2>
+        <h2 className="logo" onClick={() => navigate(user ? '/dashboard' : '/')} style={{ cursor: 'pointer' }}>Backbone</h2>
         <div className="nav-buttons">
           <button className="nav-btn" onClick={handleHomeClick}>Home</button>
 

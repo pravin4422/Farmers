@@ -1,7 +1,13 @@
 const Groq = require('groq-sdk');
+require('dotenv').config();
 
 const chatWithAI = async (userMessage, conversationHistory = [], language = 'english', userContext = '') => {
   try {
+    // Ensure API key is loaded
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error('The GROQ_API_KEY environment variable is missing or empty; either provide it, or instantiate the Groq client with an apiKey option, like new Groq({ apiKey: \'My API Key\' }).');
+    }
+    
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const systemPrompts = {

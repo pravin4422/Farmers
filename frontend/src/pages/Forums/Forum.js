@@ -247,12 +247,35 @@ function Forum() {
   };
 
   const likePost = async (id) => {
-    const currentUserId = localStorage.getItem('userId');
+    let currentUserId = localStorage.getItem('userId');
+    
+    // If userId is not in localStorage, try to extract from token
     if (!currentUserId) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          currentUserId = payload.userId || payload.id || payload._id || payload.sub;
+          if (currentUserId) {
+            localStorage.setItem('userId', String(currentUserId));
+            console.log('Extracted userId from token:', currentUserId);
+          }
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+    }
+    
+    console.log('Like button clicked - userId:', currentUserId);
+    
+    if (!currentUserId) {
+      alert('Please login to like posts');
+      window.location.href = '/login';
       return;
     }
 
     try {
+      console.log('Sending like request for post:', id);
       const response = await fetch(`${BACKEND_URL}/api/posts/${id}/like`, { 
         method: 'POST',
         headers: {
@@ -260,15 +283,25 @@ function Forum() {
         },
         body: JSON.stringify({ userId: currentUserId })
       });
-      if (!response.ok) throw new Error('Failed to like post');
+      
+      console.log('Like response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Like failed:', errorData);
+        throw new Error(errorData.message || 'Failed to like post');
+      }
 
       const updated = await response.json();
+      console.log('Like successful, updated data:', updated);
+      
       setPosts((prev) =>
         prev.map((post) => (post._id === id ? { ...post, likes: updated.likes, likedBy: updated.likedBy } : post))
       );
     } catch (err) {
       setError(err.message);
       console.error('Error liking post:', err);
+      alert('Failed to like post: ' + err.message);
     }
   };
 

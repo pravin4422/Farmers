@@ -133,8 +133,12 @@ router.post('/:id/like', async (req, res) => {
     if (!post) return res.status(404).json({ message: 'Post not found' });
     
     const userId = String(req.body.userId);
-    if (!userId) return res.status(400).json({ message: 'User ID required' });
+    if (!userId || userId === 'null' || userId === 'undefined') {
+      return res.status(400).json({ message: 'Valid User ID required' });
+    }
     
+    // Initialize likes and likedBy if they don't exist
+    if (typeof post.likes !== 'number') post.likes = 0;
     if (!post.likedBy) post.likedBy = [];
     
     // Convert all likedBy IDs to strings for comparison
@@ -148,13 +152,14 @@ router.post('/:id/like', async (req, res) => {
     } else {
       // Like
       post.likedBy.push(userId);
-      post.likes += 1;
+      post.likes = (post.likes || 0) + 1;
     }
     
     await post.save();
     res.json({ likes: post.likes, likedBy: post.likedBy });
   } catch (err) {
-    res.status(400).json({ message: 'Error liking post' });
+    console.error('Error liking post:', err);
+    res.status(400).json({ message: 'Error liking post', error: err.message });
   }
 });
 

@@ -43,9 +43,9 @@ const chat = async (req, res) => {
       .lean();
 
     // Get cultivation field records
-    const cultivationRecords = await CultivationActivity.find({ userId })
+    const cultivationRecords = await CultivationActivity.find({ user: userId })
       .sort({ date: -1 })
-      .select('crop season year date activity workers cost notes')
+      .select('title note date driver owner timeSegments rate totalHours total season year')
       .lean();
 
     // Get product inventory
@@ -55,9 +55,9 @@ const chat = async (req, res) => {
       .lean();
 
     // Get tractor usage records
-    const tractorRecords = await Tractor.find({ userId })
+    const tractorRecords = await Tractor.find({ user: userId })
       .sort({ date: -1 })
-      .select('date hours fuelUsed cost activity notes')
+      .select('season year date day work tractorName timeSegments totalHours rate total moneyGiven')
       .lean();
 
     // Get expiry/solution records
@@ -193,12 +193,40 @@ const chat = async (req, res) => {
     // Add cultivation field records
     if (cultivationRecords && cultivationRecords.length > 0) {
       userContext += `\n\nCULTIVATION FIELD RECORDS (${cultivationRecords.length} activities):\n`;
+      
+      // Calculate total cultivation costs
+      const totalCultivationCost = cultivationRecords.reduce((sum, r) => {
+        const cost = parseFloat(r.total) || 0;
+        return sum + cost;
+      }, 0);
+      const totalCultivationHours = cultivationRecords.reduce((sum, r) => {
+        const hours = parseFloat(r.totalHours) || 0;
+        return sum + hours;
+      }, 0);
+      userContext += `Total Cultivation Cost: ₹${totalCultivationCost}\n`;
+      userContext += `Total Hours: ${totalCultivationHours} hours\n\n`;
+      
       cultivationRecords.slice(0, 20).forEach((record, index) => {
-        userContext += `\n${index + 1}. ${record.activity} - ${record.crop}\n`;
-        userContext += `   Date: ${new Date(record.date).toLocaleDateString()}, Season: ${record.season}, Year: ${record.year}\n`;
-        if (record.workers) userContext += `   Workers: ${record.workers}\n`;
-        if (record.cost) userContext += `   Cost: ₹${record.cost}\n`;
-        if (record.notes) userContext += `   Notes: ${record.notes}\n`;
+        userContext += `${index + 1}. ${record.title}\n`;
+        userContext += `   Date: ${record.date}\n`;
+        userContext += `   Season: ${record.season}, Year: ${record.year}\n`;
+        if (record.note) userContext += `   Note: ${record.note}\n`;
+        if (record.driver) userContext += `   Driver: ${record.driver}\n`;
+        if (record.owner && record.owner.name) {
+          userContext += `   Owner: ${record.owner.name}`;
+          if (record.owner.phone1) userContext += ` (${record.owner.phone1})`;
+          userContext += `\n`;
+        }
+        if (record.timeSegments && record.timeSegments.length > 0) {
+          userContext += `   Time Breakdown: `;
+          record.timeSegments.forEach(seg => {
+            userContext += `${seg.period}(${seg.hours}h) `;
+          });
+          userContext += `\n`;
+        }
+        userContext += `   Total Hours: ${record.totalHours}\n`;
+        userContext += `   Rate: ₹${record.rate}/hour\n`;
+        userContext += `   Total Cost: ₹${record.total}\n\n`;
       });
     }
 
@@ -223,12 +251,29 @@ const chat = async (req, res) => {
     // Add tractor usage
     if (tractorRecords && tractorRecords.length > 0) {
       userContext += `\n\nTRACTOR USAGE RECORDS (${tractorRecords.length} entries):\n`;
+      
+      // Calculate totals
+      const totalCost = tractorRecords.reduce((sum, r) => sum + (r.total || 0), 0);
+      const totalHours = tractorRecords.reduce((sum, r) => sum + (r.totalHours || 0), 0);
+      userContext += `Total Tractor Cost (All Time): ₹${totalCost}\n`;
+      userContext += `Total Hours Used: ${totalHours} hours\n\n`;
+      
       tractorRecords.slice(0, 15).forEach((record, index) => {
-        userContext += `\n${index + 1}. ${record.activity || 'General use'}\n`;
-        userContext += `   Date: ${new Date(record.date).toLocaleDateString()}\n`;
-        if (record.hours) userContext += `   Hours: ${record.hours}\n`;
-        if (record.fuelUsed) userContext += `   Fuel: ${record.fuelUsed} liters\n`;
-        if (record.cost) userContext += `   Cost: ₹${record.cost}\n`;
+        userContext += `${index + 1}. ${record.work || 'General use'}\n`;
+        userContext += `   Date: ${record.date}, Day: ${record.day}\n`;
+        userContext += `   Season: ${record.season}, Year: ${record.year}\n`;
+        userContext += `   Tractor: ${record.tractorName}\n`;
+        userContext += `   Total Hours: ${record.totalHours} hours\n`;
+        if (record.timeSegments && record.timeSegments.length > 0) {
+          userContext += `   Time Breakdown: `;
+          record.timeSegments.forEach(seg => {
+            userContext += `${seg.period}(${seg.hours}h) `;
+          });
+          userContext += `\n`;
+        }
+        userContext += `   Rate: ₹${record.rate}/hour\n`;
+        userContext += `   Total Cost: ₹${record.total}\n`;
+        userContext += `   Payment Status: ${record.moneyGiven}\n\n`;
       });
     }
 
@@ -479,8 +524,6 @@ const chat = async (req, res) => {
 
     const result = await chatWithAI(message, conversationHistory || [], language || 'english', userContext);
 
-    console.log('🤖 AI Result:', { success: result.success, hasResponse: !!result.response, responseLength: result.response?.length });
-
     if (result.success) {
       // Generate audio if audio mode is enabled
       let audioData = null;
@@ -507,12 +550,6 @@ const chat = async (req, res) => {
         response: decodeHtmlEntities(result.response),
         conversationHistory: result.conversationHistory,
         audio: audioData
-      });
-      
-      console.log('✅ Response sent to frontend:', { 
-        responseLength: result.response?.length, 
-        hasConversationHistory: !!result.conversationHistory,
-        firstChars: result.response?.substring(0, 50)
       });
     } else {
       console.error('❌ AI result failed:', result.error);

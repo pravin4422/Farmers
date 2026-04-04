@@ -280,4 +280,16 @@ router.delete('/discussions/:id', authMiddleware, adminAccessMiddleware, async (
   }
 });
 
+// Check admin status endpoint
+router.get('/check-admin', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const { isAdminUser } = require('../validators/solutionValidators');
+    const isAdmin = await isAdminUser(userId);
+    res.json({ isAdmin });
+  } catch (error) {
+    res.status(500).json({ message: error.message, isAdmin: false });
+  }
+});
+
 module.exports = router;

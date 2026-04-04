@@ -41,8 +41,7 @@ const validateCropExpert = async (userId) => {
     if (!profile) return false;
     return Boolean(
       profile.mainCrop && 
-      profile.agricultureExperience >= 10 && 
-      profile.age >= 30 && 
+      profile.agricultureExperience >= 5 && 
       profile.address
     );
   } catch (error) {

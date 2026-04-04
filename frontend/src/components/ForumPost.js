@@ -639,7 +639,7 @@ function ForumPost({ post, onDelete, onEditToggle, onUpdate, onLike, onValidate,
               }}
             >
               <span style={{ fontSize: '18px' }}>🌿</span>
-              <span style={{ fontSize: '14px' }}>{post.likes || 0}</span>
+              <span style={{ fontSize: '14px' }}>{typeof post.likes === 'number' ? post.likes : 0}</span>
             </button>
             <button 
               onClick={() => onValidate(post._id)} 

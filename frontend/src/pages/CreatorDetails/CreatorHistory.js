@@ -225,8 +225,8 @@ function CreatorHistory() {
           <p><strong>{t('Work:', 'வேலை:')}</strong> {entry.work}</p>
           <p><strong>{t('Tractor:', 'டிராக்டர்:')}</strong> {entry.tractorName}</p>
           <p><strong>{t('Total Hours:', 'மொத்த மணி:')}</strong> {entry.totalHours} {t('hours', 'மணி')}</p>
-          <p><strong>{t('Rate per Hour:', 'ஒரு மணிக்கு:')}</strong> ₹{entry.rate ? entry.rate.toLocaleString() : 0}</p>
-          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total ? entry.total.toLocaleString() : 0}</p>
+          <p><strong>{t('Rate per Hour:', 'ஒரு மணிக்கு:')}</strong> ₹{(entry.rate || 0).toLocaleString()}</p>
+          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{(entry.total || 0).toLocaleString()}</p>
         </div>
       </div>
     ))
@@ -244,8 +244,8 @@ function CreatorHistory() {
           <p><strong>{t('Product Name:', 'பொருள் பெயர்:')}</strong> {entry.name}</p>
           <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
           <p><strong>{t('Quantity:', 'அளவு:')}</strong> {entry.quantity}</p>
-          <p><strong>{t('Cost per Unit:', 'ஒரு அளவுக்கு:')}</strong> ₹{entry.cost ? entry.cost.toLocaleString() : 0}</p>
-          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total ? entry.total.toLocaleString() : 0}</p>
+          <p><strong>{t('Cost per Unit:', 'ஒரு அளவுக்கு:')}</strong> ₹{(entry.cost || 0).toLocaleString()}</p>
+          <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{(entry.total || 0).toLocaleString()}</p>
         </div>
       </div>
     ))
@@ -265,7 +265,7 @@ function CreatorHistory() {
           {entry.note && <p><strong>{t('Note:', 'குறிப்பு:')}</strong> {entry.note}</p>}
           {entry.driver && <p><strong>{t('Driver:', 'ஓட்டுநர்:')}</strong> {entry.driver}</p>}
           {entry.totalHours && <p><strong>{t('Hours:', 'மணி:')}</strong> {entry.totalHours} {t('hours', 'மணி')}</p>}
-          {entry.total && <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{entry.total.toLocaleString()}</p>}
+          {entry.total && <p><strong>{t('Total Cost:', 'மொத்த செலவு:')}</strong> ₹{(entry.total || 0).toLocaleString()}</p>}
         </div>
       </div>
     ))
@@ -283,7 +283,7 @@ function CreatorHistory() {
           <p><strong>{t('Date:', 'தேதி:')}</strong> {entry.date}</p>
           <p><strong>{t('Day:', 'நாள்:')}</strong> {entry.day}</p>
           {entry.numBags && <p><strong>{t('Number of Bags:', 'மூட்டைகள்:')}</strong> {entry.numBags}</p>}
-          {entry.totalKamitty && <p><strong>{t('Total Mandi Cost:', 'மொத்த மண்டி செலவு:')}</strong> ₹{parseFloat(entry.totalKamitty).toLocaleString()}</p>}
+          {entry.totalKamitty && <p><strong>{t('Total Mandi Cost:', 'மொத்த மண்டி செலவு:')}</strong> ₹{(parseFloat(entry.totalKamitty) || 0).toLocaleString()}</p>}
           {entry.numBags && entry.totalKamitty && (
             <p><strong>{t('Per Bag Cost:', 'ஒரு மூட்டைக்கு:')}</strong> ₹{(parseFloat(entry.totalKamitty) / entry.numBags).toFixed(2)}</p>
           )}
@@ -336,8 +336,8 @@ function CreatorHistory() {
         <div className="entry-details">
           <p><strong>{t('Product Name:', 'பொருள் பெயர்:')}</strong> {entry.productName}</p>
           <p><strong>{t('Total Yield:', 'மொத்த விளைச்சல்:')}</strong> {entry.totalYield} {t('bags', 'மூட்டை')}</p>
-          <p><strong>{t('Total Amount Earned:', 'மொத்த வருமானம்:')}</strong> ₹{entry.totalAmount.toLocaleString()}</p>
-          <p><strong>{t('Per Bag Rate:', 'ஒரு மூட்டைக்கு:')}</strong> ₹{(entry.totalAmount / entry.totalYield).toFixed(2)}</p>
+          <p><strong>{t('Total Amount Earned:', 'மொத்த வருமானம்:')}</strong> ₹{(entry.totalAmount || 0).toLocaleString()}</p>
+          <p><strong>{t('Per Bag Rate:', 'ஒரு மூட்டைக்கு:')}</strong> ₹{((entry.totalAmount || 0) / (entry.totalYield || 1)).toFixed(2)}</p>
         </div>
       </div>
     ))
@@ -457,19 +457,19 @@ function CreatorHistory() {
     tractorEntries
       .filter(e => e.season === season && e.year === year)
       .forEach(e => {
-        details.tractor.push({ name: `${e.work} - ${e.tractorName}`, amount: e.total, date: e.date, hours: e.totalHours });
+        details.tractor.push({ name: `${e.work} - ${e.tractorName}`, amount: e.total || 0, date: e.date, hours: e.totalHours });
       });
 
     productEntries
       .filter(e => e.season === season && e.year === year)
       .forEach(e => {
-        details.products.push({ name: e.name, amount: e.total, date: e.date, quantity: e.quantity });
+        details.products.push({ name: e.name, amount: e.total || 0, date: e.date, quantity: e.quantity });
       });
 
     cultivationEntries
       .filter(e => e.season === season && e.year === year)
       .forEach(e => {
-        details.cultivation.push({ name: e.title, amount: e.total, date: e.date, note: e.note });
+        details.cultivation.push({ name: e.title, amount: e.total || 0, date: e.date, note: e.note });
       });
 
     kamittyEntries
@@ -847,7 +847,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 {item.date && <div className="detail-date">{formatDate(item.date)}</div>}
                               </div>
@@ -864,7 +864,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="detail-meta">
                                   {item.date && <span>{formatDate(item.date)}</span>}
@@ -884,7 +884,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="detail-meta">
                                   {item.date && <span>{item.date}</span>}
@@ -904,7 +904,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="detail-meta">
                                   {item.date && <span>{item.date}</span>}
@@ -924,7 +924,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="detail-meta">
                                   {item.date && <span>{item.date}</span>}
@@ -944,7 +944,7 @@ function CreatorHistory() {
                               <div key={idx} className="detail-item income-item">
                                 <div className="detail-item-header">
                                   <span className="detail-name">{item.name}</span>
-                                  <span className="detail-amount income">₹{item.amount.toLocaleString()}</span>
+                                  <span className="detail-amount income">₹{(item.amount || 0).toLocaleString()}</span>
                                 </div>
                                 <div className="detail-meta">
                                   {item.date && <span>{formatDate(item.date)}</span>}
